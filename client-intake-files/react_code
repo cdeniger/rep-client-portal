@@ -1,0 +1,2566 @@
+import React from 'react';
+import {
+ChevronRight,
+ArrowRight,
+Minus,
+Target,
+Users,
+DollarSign,
+AlertCircle,
+CheckCircle2,
+TrendingUp,
+Layers,
+ArrowDown,
+Search,
+FileText,
+Info,
+XCircle,
+Briefcase,
+Activity,
+Compass,
+MapPin,
+ShieldCheck,
+Zap,
+Layout,
+Lock,
+Flag,
+BarChart3,
+RefreshCw,
+Calendar,
+MessageSquare
+} from 'lucide-react';
+
+// --- SHARED UTILS ---
+const colors = {
+oxfordGreen: '#0A231F',
+bone: '#F4F3EF',
+signalOrange: '#D65A31',
+mutedGray: '#A0A0A0',
+lightGray: '#E5E5E5',
+white: '#ffffff'
+};
+
+// --- SHARED COMPONENT: PROCESS GRAPHIC ---
+const ProcessGraphic = ({ activeStep, subtitle }) => {
+const steps = [
+{ label: "Identity & Positioning" },
+{ label: "Career Capital" },
+{ label: "Market Mapping" },
+{ label: "Brand Assets" },
+{ label: "Opportunity Pipeline" },
+{ label: "Compensation Strategy" },
+{ label: "Long-Term Architecture" },
+];
+
+return (
+<div className="w-full py-4 border-b border-gray-200 mb-8">
+    <div className="flex justify-between items-center text-[9px] uppercase tracking-widest text-gray-400 mb-4">
+        {steps.map((step, index) => (
+        <div key={index} className={`flex flex-col items-center gap-2 ${step.label===activeStep
+            ? 'text-[#D65A31] font-bold' : '' }`}>
+            <div className={`w-2 h-2 rounded-full ${step.label===activeStep ? 'bg-[#D65A31]' : 'bg-gray-300' }`}></div>
+            <span className="hidden md:block text-center max-w-[80px] leading-tight">{step.label}</span>
+            <span className="md:hidden block text-center">{index + 1}</span>
+        </div>
+        ))}
+    </div>
+    <div className="relative h-px bg-gray-200 w-full top-[-26px] -z-10 hidden md:block"></div>
+    <p className="text-center text-xs text-gray-500 italic mt-4">
+        {subtitle || "This section focuses on how positioning and assets are converted into real opportunities."}
+    </p>
+</div>
+);
+};
+
+// --- SHARED COMPONENT: ABOUT YOU RAIL ---
+const AboutYouRail = ({ name = "ALEX MERCER", label = "ABOUT YOU", children }) => {
+return <>{children}</>;
+};
+
+// --- PILLAR 0: FRONT MATTER ---
+const FrontMatter = () => {
+return (
+<div className="w-full font-sans antialiased text-[#0A231F]" style={{ backgroundColor: colors.bone }}>
+    {/* PAGE 1: COVER */}
+    <section
+        className="min-h-screen flex flex-col justify-between p-12 md:p-20 relative border-b border-gray-300 bg-[#F4F3EF]">
+        <div className="w-full flex justify-between items-start">
+            <div className="flex flex-col gap-4">
+                <div className="text-3xl font-bold tracking-tighter text-[#0A231F]">
+                    Rep<span className="text-[#D65A31]">.</span>
+                </div>
+                <div className="w-8 h-1 bg-[#0A231F]"></div>
+            </div>
+            <div className="text-[10px] uppercase tracking-[0.2em] font-bold opacity-40">Confidential Strategy Artifact
+            </div>
+        </div>
+
+        <div className="max-w-4xl mt-20">
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[0.9] mb-8 text-[#0A231F]">
+                KICKOFF<br /> STRATEGY<br /> BRIEF
+            </h1>
+            <div className="w-24 h-px bg-[#D65A31] mb-8"></div>
+            <p className="text-xl md:text-2xl font-light leading-relaxed opacity-80 max-w-2xl">
+                A market-level read of how you are currently positioned — and how we will reposition you.
+            </p>
+        </div>
+
+        <div className="mt-auto mb-20">
+            <div className="inline-block border-l-2 border-[#0A231F] pl-4 py-1">
+                <div className="text-xs uppercase tracking-widest opacity-50 mb-1">Prepared For</div>
+                <div className="text-lg font-bold font-mono tracking-wide">ALEX MERCER</div>
+                <div className="text-sm opacity-60 font-mono mt-1">Client Reference: AM-001</div>
+            </div>
+        </div>
+
+        <footer
+            className="w-full flex flex-col md:flex-row justify-between items-end border-t border-[#0A231F] border-opacity-10 pt-6">
+            <div className="text-[10px] uppercase tracking-widest opacity-40">
+                Rep. Career Agency © 2025
+            </div>
+            <div className="text-[10px] uppercase tracking-widest font-medium opacity-60 mt-2 md:mt-0">
+                Strategic Counsel • Invisible Leverage • Fiduciary Representation
+            </div>
+        </footer>
+    </section>
+
+    {/* PAGE 2: ORIENTATION */}
+    <section className="min-h-screen p-12 md:p-24 bg-white flex flex-col justify-center border-b border-gray-300">
+        <div className="max-w-4xl mx-auto w-full">
+            <div className="mb-12">
+                <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#D65A31] mb-4">Orientation</h2>
+                <h3 className="text-3xl font-bold text-[#0A231F] mb-6">HOW TO READ THIS BRIEF</h3>
+                <div className="text-sm leading-relaxed text-gray-600 space-y-6 max-w-2xl">
+                    <p className="text-lg font-light">This document is not a questionnaire, a recap, or a critique.</p>
+                    <p>
+                        It is a strategic market brief designed to align you and Rep. before the kickoff call on:<br />
+                        — how the market currently interprets your profile,<br />
+                        — why certain outcomes tend to occur in searches like yours, and<br />
+                        — what Rep. will do differently to change those outcomes.
+                    </p>
+                    <p>
+                        Throughout this brief, you will see language such as “signal,” “positioning,” and “market read.”
+                        These refer to how the market interprets information on first pass — not to your capability,
+                        intelligence, or potential.
+                    </p>
+                    <p className="font-medium text-[#0A231F]">
+                        Careers rarely stall because professionals lack skill.<br />
+                        They stall because the market misreads where leverage truly sits.
+                    </p>
+                    <p>Our role is to correct that misread — deliberately and systematically.</p>
+                </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-12 mb-16 border-t border-gray-100 pt-8">
+                <div className="space-y-6">
+                    <div className="border-l border-gray-200 pl-6">
+                        <h4 className="font-bold text-sm uppercase tracking-wide mb-4 text-gray-400">WHAT THIS IS NOT
+                        </h4>
+                        <ul className="space-y-3 text-sm text-gray-500 font-medium">
+                            <li className="flex items-center gap-3">
+                                <Minus size={12} className="opacity-30 shrink-0" /><span>A resume critique</span>
+                            </li>
+                            <li className="flex items-center gap-3">
+                                <Minus size={12} className="opacity-30 shrink-0" /><span>A performance evaluation</span>
+                            </li>
+                            <li className="flex items-center gap-3">
+                                <Minus size={12} className="opacity-30 shrink-0" /><span>A scoring report</span>
+                            </li>
+                            <li className="flex items-center gap-3">
+                                <Minus size={12} className="opacity-30 shrink-0" /><span>A list of jobs or
+                                    opportunities</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div className="space-y-6">
+                    <div className="border-l-2 border-[#0A231F] pl-6">
+                        <h4 className="font-bold text-sm uppercase tracking-wide mb-4 text-[#0A231F]">WHAT THIS IS</h4>
+                        <ul className="space-y-3 text-sm text-[#0A231F] font-medium">
+                            <li className="flex items-center gap-3">
+                                <ArrowRight size={12} className="text-[#D65A31] shrink-0" /><span>A market-facing
+                                    interpretation of your current signal</span>
+                            </li>
+                            <li className="flex items-center gap-3">
+                                <ArrowRight size={12} className="text-[#D65A31] shrink-0" /><span>A forward-looking
+                                    strategic brief</span>
+                            </li>
+                            <li className="flex items-center gap-3">
+                                <ArrowRight size={12} className="text-[#D65A31] shrink-0" /><span>The foundation for
+                                    decisions we will make live in the kickoff call</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                className="bg-[#F4F3EF] p-4 rounded-sm border border-gray-200 text-xs text-gray-500 flex items-start gap-3 inline-block">
+                <span className="font-bold uppercase tracking-wider text-[#0A231F] shrink-0">Basis:</span>
+                <span>Intake narrative, current asset review, and Rep. market pattern analysis.</span>
+            </div>
+        </div>
+    </section>
+
+    {/* PAGE 3: EXECUTIVE SNAPSHOT */}
+    <section className="min-h-screen p-12 md:p-20 flex flex-col justify-start bg-[#F4F3EF]">
+        <header className="mb-12 border-b border-[#0A231F] border-opacity-10 pb-6">
+            <h2 className="text-4xl font-bold tracking-tight text-[#0A231F] uppercase">Executive Snapshot</h2>
+            <p className="text-lg font-light mt-4 text-[#0A231F] opacity-80 max-w-2xl">
+                This snapshot captures the strategic thesis that will guide our work together. It is directional by
+                design.
+            </p>
+        </header>
+
+        <div className="flex-1 grid grid-cols-1 gap-8 max-w-5xl">
+            <div className="bg-white p-8 shadow-sm border-t-4 border-gray-300">
+                <div className="flex justify-between items-start mb-4">
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400">A. Current Market Read
+                    </h3>
+                </div>
+                <div className="prose prose-sm max-w-none text-[#0A231F]">
+                    <p className="text-sm font-medium leading-relaxed mb-4 opacity-90">
+                        In most searches, early impressions are shaped by observable signals — and your current
+                        positioning emphasizes reliability and execution within defined scope.
+                    </p>
+                    <p className="text-sm opacity-70 leading-relaxed">
+                        This creates consistency — but can limit perceived authority if ownership, outcomes, and stakes
+                        are not unmistakable on first pass.
+                    </p>
+                </div>
+            </div>
+
+            <div className="bg-white p-8 shadow-sm border-t-4 border-[#0A231F]">
+                <div className="flex justify-between items-start mb-4">
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A231F]">B. Primary Repositioning
+                        Move</h3>
+                </div>
+                <div className="prose prose-sm max-w-none text-[#0A231F]">
+                    <p className="text-sm font-medium leading-relaxed mb-4 opacity-90">
+                        Rep.’s primary objective is to re-anchor your market narrative around <span
+                            className="font-bold">ownership, outcomes, and stakes</span> — not activity or process.
+                    </p>
+                    <p className="text-sm opacity-70 leading-relaxed">
+                        This shift is what enables level-appropriate conversations, access to higher-leverage roles, and
+                        stronger positioning ahead of negotiation.
+                    </p>
+                </div>
+            </div>
+
+            <div className="bg-white p-8 shadow-sm border-t-4 border-[#D65A31]">
+                <div className="flex justify-between items-start mb-4">
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-[#D65A31]">C. 90-Day Focus</h3>
+                </div>
+                <div className="text-[#0A231F]">
+                    <p className="text-sm font-medium mb-4 opacity-90">Over the next 90 days, our work will prioritize:
+                    </p>
+                    <ul className="space-y-3">
+                        <li className="flex items-start gap-3"><span
+                                className="font-mono text-[#D65A31] font-bold text-xs mt-0.5">1.</span><span
+                                className="text-sm opacity-80">Correcting any signal mismatches that affect screening
+                                and leveling</span></li>
+                        <li className="flex items-start gap-3"><span
+                                className="font-mono text-[#D65A31] font-bold text-xs mt-0.5">2.</span><span
+                                className="text-sm opacity-80">Rebuilding assets to support ownership-forward
+                                narratives</span></li>
+                        <li className="flex items-start gap-3"><span
+                                className="font-mono text-[#D65A31] font-bold text-xs mt-0.5">3.</span><span
+                                className="text-sm opacity-80">Sequencing market engagement to restore leverage before
+                                negotiation</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {/* PAGE 4: TRANSITION */}
+    <section
+        className="min-h-screen bg-[#0A231F] text-[#F4F3EF] p-12 md:p-24 flex flex-col justify-center items-center text-center">
+        <div className="max-w-3xl w-full">
+            <div className="w-px h-16 bg-[#D65A31] mx-auto mb-12"></div>
+            <h2 className="text-sm font-bold uppercase tracking-[0.3em] opacity-50 mb-8">Strategic Frame</h2>
+            <p className="text-3xl md:text-5xl font-light leading-tight mb-16">
+                Market leverage is not about what you can do.<br />
+                It is about what the market <span
+                    className="font-bold text-white border-b-2 border-[#D65A31]">believes</span> you can do.
+            </p>
+            <div
+                className="text-base md:text-lg opacity-80 leading-relaxed max-w-xl mx-auto mb-20 font-light space-y-8">
+                <p>Every career outcome follows the same sequence:</p>
+                <div className="space-y-2 font-normal text-white">
+                    <p>Perception determines access.</p>
+                    <p>Access determines leverage.</p>
+                    <p>Leverage determines outcomes.</p>
+                </div>
+                <p>This brief begins where the sequence actually starts — how the market categorizes you before any
+                    conversation occurs.</p>
+            </div>
+
+            <div className="inline-flex flex-col items-center gap-3 mt-8">
+                <span className="text-xs uppercase tracking-widest font-bold opacity-60">Next</span>
+                <div
+                    className="flex items-center gap-3 border border-[#F4F3EF] border-opacity-20 px-8 py-4 rounded-sm hover:bg-[#F4F3EF] hover:bg-opacity-5 transition-all cursor-default">
+                    <span className="font-mono text-sm tracking-wide">PILLAR 1 — IDENTITY & POSITIONING</span>
+                    <ChevronRight size={14} className="text-[#D65A31]" />
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+);
+};
+
+// --- PILLAR 1: IDENTITY & POSITIONING ---
+const Pillar1 = () => {
+const MarketReadCard = ({ number, title, current, rep, interpretation }) => (
+<div className="border border-gray-200 bg-white p-0 mb-8 last:mb-0">
+    <div className="bg-gray-50 border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+        <span className="text-xs font-bold uppercase tracking-widest text-[#D65A31]">Market Read {number}</span>
+        <h4 className="text-sm font-bold uppercase tracking-wide text-[#0A231F]">{title}</h4>
+    </div>
+    <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8 border-b border-gray-100">
+        <div>
+            <div className="text-[10px] uppercase font-bold text-gray-400 mb-2 tracking-wider">First-Pass Read</div>
+            <p className="text-sm leading-relaxed text-[#0A231F] opacity-80">{current}</p>
+        </div>
+        <div>
+            <div className="text-[10px] uppercase font-bold text-[#D65A31] mb-2 tracking-wider">Target Read</div>
+            <p className="text-sm leading-relaxed text-[#0A231F] font-bold">{rep}</p>
+        </div>
+    </div>
+    <div className="px-6 py-4 bg-[#F4F3EF] bg-opacity-50">
+        <div className="flex items-start gap-3">
+            <span className="text-[10px] uppercase font-bold text-[#D65A31] mt-0.5 tracking-wider shrink-0">Why this
+                matters</span>
+            <p className="text-xs text-gray-600 leading-relaxed italic">{interpretation}</p>
+        </div>
+    </div>
+</div>
+);
+
+return (
+<div className="w-full font-sans antialiased text-[#0A231F]" style={{ backgroundColor: colors.bone }}>
+    {/* HEADER (STANDARD) */}
+    <header className="p-10 md:p-14 border-b border-gray-300 bg-[#F4F3EF]">
+        <div className="max-w-5xl mx-auto">
+            <div className="flex flex-col gap-2 mb-8">
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#D65A31]">Pillar 1</span>
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#0A231F] leading-none">IDENTITY
+                    &<br />POSITIONING</h1>
+            </div>
+            <div className="w-24 h-px bg-[#0A231F] mb-6 opacity-20"></div>
+        </div>
+    </header>
+
+    {/* PROCESS GRAPHIC & INTRO */}
+    <section className="px-12 md:px-20 pt-6 pb-20 bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <ProcessGraphic activeStep="Identity & Positioning" />
+            <div className="max-w-3xl mt-12">
+                <h2 className="text-2xl font-light mb-8 text-[#0A231F]">Market Positioning Signals</h2>
+                <div className="text-sm text-gray-600 leading-relaxed space-y-6">
+                    <p>Before the market evaluates scope, compensation, or trajectory, it makes a faster decision:</p>
+                    <p className="font-medium text-[#0A231F] text-lg border-l-2 border-[#D65A31] pl-6 py-2">What
+                        category does this professional belong in?</p>
+                    <p>That decision is made in seconds — based not on capability, but on signal.</p>
+                    <p>This section explains:<br />— how the market is most likely categorizing you today,<br />— why
+                        that categorization occurs, and<br />— how Rep. intends to reposition you deliberately.</p>
+                    <p className="text-xs uppercase tracking-wide font-bold opacity-50 pt-4">This is a signal read, not
+                        a judgment of skill.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section className="p-12 md:p-20 bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <div className="mb-12">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A231F] mb-6">Conceptual Anchor —
+                    Signal vs. Intent</h3>
+                <p className="text-sm text-gray-600 leading-relaxed max-w-3xl mb-8">The market doesn’t build a full
+                    picture at first. It pattern-matches. Titles, language, sequencing, and emphasis cause the market to
+                    assign you to a role category long before nuance is considered.</p>
+                <p className="text-sm text-gray-500">Throughout this section, we distinguish between:</p>
+            </div>
+            <div className="grid md:grid-cols-2 gap-8">
+                <div className="p-8 border border-gray-100 bg-[#F4F3EF] bg-opacity-30">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                        <h4 className="font-bold text-[#0A231F] uppercase tracking-wide">First-Pass Read</h4>
+                    </div>
+                    <p className="text-sm text-gray-600 leading-relaxed">How your existing assets cause the market to
+                        interpret your professional identity on first pass.</p>
+                </div>
+                <div className="p-8 border border-[#0A231F] border-opacity-10 bg-white shadow-sm">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-2 h-2 rounded-full bg-[#D65A31]"></div>
+                        <h4 className="font-bold text-[#0A231F] uppercase tracking-wide">Target Read</h4>
+                    </div>
+                    <p className="text-sm text-gray-600 leading-relaxed">How Rep. will intentionally reposition your
+                        narrative so the market categorizes you differently.</p>
+                </div>
+            </div>
+            <div className="mt-8 text-center"><span
+                    className="text-[10px] font-bold uppercase text-[#D65A31] tracking-widest">The gap between these two
+                    explains most career friction.</span></div>
+        </div>
+    </section>
+
+    <section className="p-12 md:p-20 bg-[#0A231F] text-[#F4F3EF]">
+        <div className="max-w-4xl mx-auto text-center">
+            <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-[#D65A31] mb-8">Rep. Positioning Thesis
+            </h3>
+            <p className="text-2xl md:text-3xl font-light leading-relaxed mb-12">You are best positioned as a
+                professional whose value is created through <span className="font-bold text-white">ownership of
+                    outcomes</span>, not merely execution of tasks.</p>
+            <div className="w-16 h-px bg-[#D65A31] mx-auto mb-12 opacity-50"></div>
+            <p className="text-lg opacity-80 leading-relaxed mb-8">Your differentiation does not come from what you can
+                do —<br />it comes from what you are <span className="text-white border-b border-[#D65A31]">trusted to
+                    own</span>.</p>
+            <p className="text-xs font-bold uppercase tracking-widest opacity-60">Rep.’s positioning objective is to
+                ensure the market reads you accordingly.</p>
+        </div>
+    </section>
+
+    <section className="p-12 md:p-20 bg-[#F4F3EF] border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <div className="mb-16 max-w-2xl">
+                <h3 className="text-2xl font-bold text-[#0A231F] mb-6">How the Market Tends to Read Profiles Like Yours
+                </h3>
+                <p className="text-gray-600 leading-relaxed mb-6">When the market encounters a profile like yours, it
+                    tends to make a few fast calls. Below is how those calls are most likely forming today — and how
+                    Rep. will shift them.</p>
+                <div className="text-sm font-bold uppercase text-[#D65A31] tracking-wide space-y-2">
+                    <p>THESE ARE NOT JUDGEMENTS ABOUT YOU.</p>
+                    <p>THEY REFLECT HOW THE MARKET SORTS PROFILES ON FIRST PASS.</p>
+                </div>
+            </div>
+            <MarketReadCard number="1" title="Execution ↔ Ownership"
+                current="Your assets emphasize reliability and delivery within defined scope. The market reads this as execution strength."
+                rep="Re-anchor your narrative around ownership — where you are accountable for outcomes, not just activity."
+                interpretation="This shift determines whether you are screened as a contributor or evaluated as a decision-maker." />
+            <MarketReadCard number="2" title="Functional Delivery ↔ Business Driver"
+                current="Your experience is framed primarily through functional contribution. The market reads this as support for broader business decisions."
+                rep="Position you as a business driver whose work materially affects commercial outcomes."
+                interpretation="This axis governs access to roles where business judgment is evaluated, not just technical competence." />
+            <MarketReadCard number="3" title="Local Impact ↔ Enterprise Stakes"
+                current="Impact appears localized to specific initiatives or domains. The market reads this as contained influence."
+                rep="Elevate the narrative to enterprise-level stakes — where decisions have downstream consequences."
+                interpretation="This distinction influences perceived seniority more than title alone." />
+            <MarketReadCard number="4" title="Support Role ↔ Direction Setter"
+                current="Language and structure suggest collaboration and contribution. The market reads this as participation in direction-setting rather than ownership of it."
+                rep="Reposition you as a direction setter whose judgment shapes priorities."
+                interpretation="This axis often determines whether leadership potential is assumed or must be proven." />
+        </div>
+    </section>
+
+    <section className="p-12 md:p-20 bg-white">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12">
+            <div className="border-l-4 border-gray-300 pl-8 py-2">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2">
+                    <AlertCircle size={16} />Positioning Risk (If Unchanged)
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">If current signals remain unchanged, the market is likely to:
+                </p>
+                <ul className="space-y-3 text-sm text-[#0A231F] font-medium mb-8">
+                    <li className="flex items-start gap-2"><span className="text-gray-300">—</span><span>Route you into
+                            roles that emphasize execution continuity</span></li>
+                    <li className="flex items-start gap-2"><span className="text-gray-300">—</span><span>Anchor
+                            expectations conservatively during leveling discussions</span></li>
+                    <li className="flex items-start gap-2"><span className="text-gray-300">—</span><span>Require
+                            excessive proof to justify authority or scope expansion</span></li>
+                </ul>
+                <p className="text-[10px] text-gray-500 uppercase tracking-wide">These outcomes are not reflections of
+                    ability. They are consequences of categorization.</p>
+            </div>
+            <div className="border-l-4 border-[#D65A31] pl-8 py-2">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-[#D65A31] mb-6 flex items-center gap-2">
+                    <TrendingUp size={16} />Positioning Upside (After Repositioning)
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">Once signals are corrected, the market gains permission to:
+                </p>
+                <ul className="space-y-3 text-sm text-[#0A231F] font-medium mb-8">
+                    <li className="flex items-start gap-2"><span
+                            className="text-[#D65A31] opacity-50">—</span><span>Evaluate you for higher-leverage
+                            roles</span></li>
+                    <li className="flex items-start gap-2"><span
+                            className="text-[#D65A31] opacity-50">—</span><span>Attribute decision authority earlier in
+                            the process</span></li>
+                    <li className="flex items-start gap-2"><span
+                            className="text-[#D65A31] opacity-50">—</span><span>Engage in leveling and compensation
+                            conversations differently</span></li>
+                </ul>
+                <p className="text-[10px] text-[#0A231F] uppercase tracking-wide font-bold">This is not about
+                    exaggeration. It is about alignment.</p>
+            </div>
+        </div>
+    </section>
+
+    <section className="bg-[#0A231F] text-[#F4F3EF] py-16 px-12 text-center">
+        <div className="max-w-2xl mx-auto">
+            <p className="text-lg font-light leading-relaxed opacity-80 mb-12">Positioning determines which rooms you
+                are invited into.<br />Career capital determines how much leverage you have once you’re inside.</p>
+            <div className="flex flex-col items-center gap-3">
+                <span className="text-[10px] uppercase tracking-widest font-bold opacity-50">Next</span>
+                <div
+                    className="flex items-center gap-3 text-sm tracking-widest font-bold text-white border border-[#D65A31] px-6 py-3 rounded-sm">
+                    PILLAR 2 — CAREER CAPITAL
+                    <ArrowRight size={14} className="text-[#D65A31]" />
+                </div>
+            </div>
+            <div
+                className="mt-16 pt-8 border-t border-white border-opacity-10 text-[10px] uppercase tracking-widest opacity-40">
+                Basis: Intake narrative, current asset signal, and Rep. role-archetype pattern analysis.</div>
+        </div>
+    </section>
+</div>
+);
+};
+
+// --- PILLAR 2: CAREER CAPITAL ---
+const Pillar2 = () => {
+const PatternCallout = ({ pattern, marketCanTell, marketCannotConfirm, repClarification }) => (
+<div className="bg-[#F9F9F9] border border-gray-200 p-6 rounded-sm mb-8 last:mb-0">
+    <div className="mb-4">
+        <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Observed Pattern</h4>
+        <p className="text-sm font-medium text-[#0A231F] leading-relaxed italic">{pattern}</p>
+    </div>
+    <div className="grid md:grid-cols-2 gap-6 mb-6 pb-6 border-b border-gray-200 border-dashed">
+        <div>
+            <h5 className="text-[10px] font-bold uppercase tracking-wide text-[#0A231F] mb-1">What the Market Can Tell
+            </h5>
+            <p className="text-sm text-gray-600 leading-relaxed">{marketCanTell}</p>
+        </div>
+        <div>
+            <h5 className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-1">What Is Left Ambiguous</h5>
+            <p className="text-sm text-gray-500 leading-relaxed">{marketCannotConfirm}</p>
+        </div>
+    </div>
+    <div>
+        <h5 className="text-[10px] font-bold uppercase tracking-wide text-[#D65A31] mb-1">What Rep. Will Clarify</h5>
+        <p className="text-sm font-bold text-[#0A231F] leading-relaxed">{repClarification}</p>
+    </div>
+</div>
+);
+
+return (
+<div className="w-full font-sans antialiased text-[#0A231F]" style={{ backgroundColor: colors.bone }}>
+    {/* HEADER (STANDARD) */}
+    <header className="p-10 md:p-14 border-b border-gray-300 bg-[#F4F3EF]">
+        <div className="max-w-5xl mx-auto">
+            <div className="flex flex-col gap-2 mb-8">
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#D65A31]">Pillar 2</span>
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#0A231F] leading-none">
+                    CAREER<br />CAPITAL</h1>
+            </div>
+            <div className="w-24 h-px bg-[#0A231F] mb-6 opacity-20"></div>
+        </div>
+    </header>
+
+    {/* PROCESS GRAPHIC & INTRO */}
+    <section className="px-12 md:px-20 pt-6 pb-20 bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <ProcessGraphic activeStep="Career Capital" />
+            <div className="mt-8">
+                <h2 className="text-2xl font-light mb-8 text-[#0A231F]">Scope & Leverage Read</h2>
+                <div className="bg-white p-8 border-l-4 border-[#0A231F] shadow-sm mb-12 relative">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Executive Read</h3>
+                    <p className="text-lg text-[#0A231F] leading-relaxed mb-4">The market currently attributes <span
+                            className="font-bold">functional reliability</span> to your profile but <span
+                            className="font-bold">struggles to confirm end-to-end responsibility</span>.</p>
+                    <p className="text-sm text-gray-600 leading-relaxed">This conclusion is driven not by what you have
+                        done, but by what is visible and verifiable in your current materials. The market reads a
+                        capable operator who delivers within a defined lane, rather than a leader who defines it.</p>
+                </div>
+
+                {/* Scope Dial */}
+                <div className="flex flex-col gap-4">
+                    <div
+                        className="flex justify-between items-end text-[10px] font-bold uppercase tracking-widest text-[#0A231F]">
+                        <span>Delivery Focused</span>
+                        <span>Ownership Focused</span>
+                    </div>
+                    <div className="bg-white border border-gray-200 rounded-sm px-6 py-5 shadow-sm">
+                        <div className="relative h-24 w-full">
+                            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 bg-[#F4F3EF] opacity-60">
+                            </div>
+                            <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-gray-300 -translate-y-1/2"></div>
+                            <div
+                                className="absolute top-1/2 left-0 w-1.5 h-1.5 rounded-full bg-gray-300 -translate-y-1/2">
+                            </div>
+                            <div
+                                className="absolute top-1/2 right-0 w-1.5 h-1.5 rounded-full bg-gray-300 -translate-y-1/2">
+                            </div>
+                            <div className="absolute top-1/2 h-[3px] -translate-y-1/2 opacity-25" style={{ left: "30%" ,
+                                width: "60%" , backgroundColor: "#0A231F" }} />
+                            <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 bg-white border border-gray-200 px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-gray-500 shadow-sm"
+                                style={{ left: "60%" }}>Repositioning Distance</div>
+                            <div className="absolute" style={{ left: "90%" , top: "50%" ,
+                                transform: "translate(-50%, calc(-50% - 18px))" }}>
+                                <div className="flex flex-col items-center">
+                                    <div className="mb-2 text-[10px] font-medium whitespace-nowrap" style={{
+                                        color: "#0A231F" }}>Rep Positioning</div>
+                                    <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: "#0A231F"
+                                        }} />
+                                </div>
+                            </div>
+                            <div className="absolute" style={{ left: "30%" , top: "50%" ,
+                                transform: "translate(-50%, calc(-50% + 18px))" }}>
+                                <div className="flex flex-col items-center">
+                                    <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: "#D65A31"
+                                        }} />
+                                    <div className="mt-2 text-[10px] font-medium whitespace-nowrap text-[#D65A31]">
+                                        Current Market Read</div>
+                                </div>
+                            </div>
+                        </div>
+                        <p className="text-[10px] text-gray-500 mt-3 leading-relaxed">This is a directional read of what
+                            your materials make easy to assume on first pass.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section className="p-12 md:p-20 bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <div className="mb-16 max-w-2xl">
+                <h3 className="text-2xl font-bold text-[#0A231F] mb-6">Where the Market Looks for Responsibility</h3>
+                <p className="text-gray-600 leading-relaxed">To estimate how much responsibility you can carry, the
+                    market looks for three things: who relies on you, what you own, and what changes because of your
+                    decisions. Below is how those show up right now.</p>
+            </div>
+            <div className="mb-16">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-[#F4F3EF] rounded-sm text-[#0A231F]">
+                        <Users size={18} />
+                    </div>
+                    <h4 className="text-lg font-bold uppercase tracking-wide text-[#0A231F]">1. Team Responsibility</h4>
+                </div>
+                <p className="text-sm text-gray-600 mb-6 max-w-3xl">Leadership is often inferred from how you describe
+                    your relationship to talent and resources.</p>
+                <PatternCallout
+                    pattern="Collaboration language appears earlier than decision ownership when describing work with engineering and design."
+                    marketCanTell="You work effectively in a cross-functional environment and are a good teammate."
+                    marketCannotConfirm="Whether you direct these resources, allocate their time, or merely coordinate with them."
+                    repClarification="We will describe your cross-functional team you led without formal reporting lines in plain terms — so your role reads as leadership, not coordination." />
+            </div>
+            <div className="mb-16">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-[#F4F3EF] rounded-sm text-[#0A231F]">
+                        <Briefcase size={18} />
+                    </div>
+                    <h4 className="text-lg font-bold uppercase tracking-wide text-[#0A231F]">2. Business Responsibility
+                    </h4>
+                </div>
+                <p className="text-sm text-gray-600 mb-6 max-w-3xl">Business responsibility is inferred from how
+                    directly your work connects to revenue, cost, or risk.</p>
+                <PatternCallout pattern="Execution details appear earlier and more often than business responsibility."
+                    marketCanTell="You manage the software development lifecycle and execution details effectively."
+                    marketCannotConfirm="Whether you are accountable for business outcomes tied to revenue, cost, or risk."
+                    repClarification="We will elevate the implied scope to establish business outcomes tied to revenue, cost, or risk immediately." />
+            </div>
+            <div className="mb-8">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-[#F4F3EF] rounded-sm text-[#0A231F]">
+                        <Target size={18} />
+                    </div>
+                    <h4 className="text-lg font-bold uppercase tracking-wide text-[#0A231F]">3. Outcome Responsibility
+                    </h4>
+                </div>
+                <p className="text-sm text-gray-600 mb-6 max-w-3xl">Seniority is often inferred from the size of
+                    outcomes — and whether you owned them.</p>
+                <PatternCallout
+                    pattern="Outcomes appear as qualitative descriptions or sit at the end of process-heavy bullets."
+                    marketCanTell="You improve processes and ship features reliably."
+                    marketCannotConfirm="The specific consequences of your interventions on the business."
+                    repClarification="We will lead with what would have broken, stalled, or cost the business if results missed — so the stakes are clear." />
+            </div>
+        </div>
+    </section>
+
+    <section className="p-12 md:p-20 bg-[#F4F3EF]">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12">
+            <div>
+                <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A231F] mb-4">Responsibility Gap
+                    Summary</h3>
+                <p className="text-sm text-gray-600 leading-relaxed font-medium">The gap is not in what you have <span
+                        className="italic">done</span>, but in what your materials make <span className="italic">easy to
+                        see</span>.</p>
+                <p className="text-sm text-gray-600 leading-relaxed mt-2">The current narrative systematically
+                    undersells your leverage, allowing the market to undervalue your seat by attributing your wins to
+                    "team effort" or "process" rather than your specific leadership.</p>
+            </div>
+            <div>
+                <h3 className="text-sm font-bold uppercase tracking-widest text-[#D65A31] mb-4">Why This Matters</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">Clear responsibility, stated plainly, negotiates
+                    for you before you enter the room.</p>
+                <p className="text-sm text-gray-600 leading-relaxed mt-2">It determines whether you are evaluated to
+                    repeat what you have already done, or trusted with broader responsibility.</p>
+            </div>
+        </div>
+    </section>
+
+    <section className="bg-[#0A231F] text-[#F4F3EF] py-12 px-12 text-center border-t border-white border-opacity-10">
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+            <div className="text-left"><span
+                    className="text-[10px] uppercase tracking-widest opacity-40 block mb-1">Basis</span>
+                <p className="text-xs opacity-60 max-w-md">Review of role descriptions, outcome framing, team
+                    references, and business language across current materials.</p>
+            </div>
+            <div
+                className="flex items-center gap-3 text-sm tracking-widest font-bold text-white border border-[#D65A31] px-6 py-3 rounded-sm hover:bg-[#D65A31] hover:bg-opacity-10 transition-colors cursor-default">
+                PILLAR 3 — MARKET MAPPING
+                <ArrowRight size={14} className="text-[#D65A31]" />
+            </div>
+        </div>
+    </section>
+</div>
+);
+};
+
+// --- PILLAR 3: MARKET MAPPING ---
+const Pillar3 = () => {
+return (
+<div className="w-full font-sans antialiased text-[#0A231F]" style={{ backgroundColor: colors.bone }}>
+    <header className="p-10 md:p-14 border-b border-gray-300 bg-[#F4F3EF]">
+        <div className="max-w-5xl mx-auto">
+            <div className="flex flex-col gap-2 mb-8">
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#D65A31]">Pillar 3</span>
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#0A231F] leading-none">
+                    MARKET<br />MAPPING</h1>
+            </div>
+            <div className="w-24 h-px bg-[#0A231F] mb-6 opacity-20"></div>
+        </div>
+    </header>
+
+    <section className="px-12 md:px-20 pt-6 pb-20 bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <ProcessGraphic activeStep="Market Mapping" />
+            <h2 className="text-2xl font-light text-[#0A231F] max-w-3xl mt-8">Where Your Profile Wins — and Where It
+                Doesn’t</h2>
+            <div className="bg-white border-l-4 border-[#0A231F] shadow-sm p-8 mb-16 mt-12">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Executive Read</h3>
+                <p className="text-lg text-[#0A231F] leading-relaxed mb-4">Even strong profiles underperform when they
+                    are aimed at the wrong part of the market.</p>
+                <p className="text-sm text-gray-600 leading-relaxed mb-4">This section identifies which hiring
+                    environments are structurally aligned with your repositioned profile — and which are likely to stall
+                    you regardless of quality.</p>
+                <p className="text-sm text-[#0A231F] font-bold uppercase tracking-wide">This is not about ambition. It
+                    is about market mechanics.</p>
+            </div>
+
+            <div className="mb-12 max-w-3xl">
+                <h3 className="text-2xl font-bold text-[#0A231F] mb-6">How Hiring Markets Actually Differ</h3>
+                <p className="text-gray-600 leading-relaxed mb-4">The job market is not a single system. Companies that
+                    use the same titles evaluate candidates very differently based on stage, pressure, and risk
+                    tolerance.</p>
+                <p className="text-gray-600 leading-relaxed">For clarity, Rep. groups hiring environments into four
+                    practical market segments.</p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+                <div className="space-y-3">
+                    <h4
+                        className="text-sm font-bold text-[#0A231F] uppercase tracking-wide border-b border-gray-200 pb-2">
+                        1. Early-Stage / Scrappy Growth</h4>
+                    <p className="text-xs text-gray-500 italic mb-2">(Pre-scale, high ambiguity)</p>
+                    <ul className="text-sm text-gray-600 space-y-1.5">
+                        <li>Fast, informal decision-making</li>
+                        <li>Titles are fluid; scope is assumed</li>
+                        <li>Rewards speed and adaptability</li>
+                    </ul>
+                </div>
+                <div className="space-y-3">
+                    <h4
+                        className="text-sm font-bold text-[#0A231F] uppercase tracking-wide border-b border-gray-200 pb-2">
+                        2. Mid-Market Growth</h4>
+                    <p className="text-xs text-gray-500 italic mb-2">(Scaling, under operational strain)</p>
+                    <ul className="text-sm text-gray-600 space-y-1.5">
+                        <li>Leaders hired to own problems</li>
+                        <li>Outcomes matter immediately</li>
+                        <li>Rewards judgment and accountability</li>
+                    </ul>
+                </div>
+                <div className="space-y-3">
+                    <h4
+                        className="text-sm font-bold text-[#0A231F] uppercase tracking-wide border-b border-gray-200 pb-2">
+                        3. Large / Institutional</h4>
+                    <p className="text-xs text-gray-500 italic mb-2">(Established, risk-managed)</p>
+                    <ul className="text-sm text-gray-600 space-y-1.5">
+                        <li>Hiring is layered and precedent-driven</li>
+                        <li>Scope must be clearly legible</li>
+                        <li>Rewards clarity, penalizes ambiguity</li>
+                    </ul>
+                </div>
+                <div className="space-y-3">
+                    <h4
+                        className="text-sm font-bold text-[#0A231F] uppercase tracking-wide border-b border-gray-200 pb-2">
+                        4. Regulated / Platform</h4>
+                    <p className="text-xs text-gray-500 italic mb-2">(Payments, banking, infrastructure)</p>
+                    <ul className="text-sm text-gray-600 space-y-1.5">
+                        <li>Risk management is central</li>
+                        <li>Credibility tied to trust and discipline</li>
+                        <li>Rewards calm authority and judgment</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section className="p-12 md:p-20 bg-[#F9F9F9] border-b border-gray-200">
+        <div className="max-w-6xl mx-auto">
+            <div className="mb-10">
+                <h3 className="text-2xl font-bold text-[#0A231F] mb-4">Market Fit Diagnostic Matrix</h3>
+                <p className="text-sm text-gray-600 max-w-3xl">This matrix reflects how hiring markets form a First-Pass
+                    Read of your materials — before interviews or explanation.</p>
+            </div>
+            <div className="overflow-x-auto bg-white border border-gray-200 shadow-sm rounded-sm">
+                <table className="w-full text-left border-collapse">
+                    <thead>
+                        <tr
+                            className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-widest text-[#0A231F]">
+                            <th className="p-6 font-bold w-1/4">Market Segment (of the Hiring Company)</th>
+                            <th className="p-6 font-bold w-1/4 border-l border-gray-100">What This Market Rewards</th>
+                            <th className="p-6 font-bold w-1/4 border-l border-gray-100 text-gray-500">How Your Profile
+                                Looks Today</th>
+                            <th className="p-6 font-bold w-1/4 border-l border-gray-100 text-[#D65A31]">How It Looks
+                                After Repositioning</th>
+                        </tr>
+                    </thead>
+                    <tbody className="text-sm text-gray-700 divide-y divide-gray-100">
+                        <tr className="hover:bg-gray-50 transition-colors">
+                            <td className="p-6 font-bold text-[#0A231F]">Early-Stage / Scrappy Growth</td>
+                            <td className="p-6 border-l border-gray-100">Speed, adaptability, willingness to do
+                                everything</td>
+                            <td className="p-6 border-l border-gray-100 text-gray-500">Capable but potentially
+                                over-structured</td>
+                            <td className="p-6 border-l border-gray-100 font-semibold text-[#0A231F] relative pl-6">
+                                <span
+                                    className="absolute left-0 top-0 bottom-0 w-1 bg-[#0A231F] opacity-20"></span>Still
+                                reads as more structured than most early-stage hires</td>
+                        </tr>
+                        <tr className="bg-[#F4F3EF] bg-opacity-30 hover:bg-[#F4F3EF] transition-colors">
+                            <td className="p-6 font-bold text-[#0A231F]">Mid-Market Growth</td>
+                            <td className="p-6 border-l border-gray-100">Ownership, judgment, outcome accountability
+                            </td>
+                            <td className="p-6 border-l border-gray-100 text-gray-500">Execution-strong, ownership not
+                                fully visible</td>
+                            <td
+                                className="p-6 border-l border-gray-100 font-semibold text-[#0A231F] border-r-4 border-r-[#D65A31] relative pl-6">
+                                <span
+                                    className="absolute left-0 top-0 bottom-0 w-1 bg-[#0A231F] opacity-20"></span><span
+                                    className="inline-block text-[9px] uppercase tracking-widest font-bold px-2 py-1 border border-[#D65A31] text-[#D65A31] bg-white rounded-full mb-2">PRIMARY</span>
+                                <div className="block">Reads as a safe owner with leverage</div>
+                            </td>
+                        </tr>
+                        <tr className="hover:bg-gray-50 transition-colors">
+                            <td className="p-6 font-bold text-[#0A231F]">Large / Institutional</td>
+                            <td className="p-6 border-l border-gray-100">Clarity, precedent, defined scope</td>
+                            <td className="p-6 border-l border-gray-100 text-gray-500">Reliable operator, level unclear
+                            </td>
+                            <td className="p-6 border-l border-gray-100 font-semibold text-[#0A231F] relative pl-6">
+                                <span
+                                    className="absolute left-0 top-0 bottom-0 w-1 bg-[#0A231F] opacity-20"></span>Credible
+                                but still gated by structure</td>
+                        </tr>
+                        <tr className="bg-[#F4F3EF] bg-opacity-30 hover:bg-[#F4F3EF] transition-colors">
+                            <td className="p-6 font-bold text-[#0A231F]">Regulated / Platform</td>
+                            <td className="p-6 border-l border-gray-100">Judgment, trust, risk awareness</td>
+                            <td className="p-6 border-l border-gray-100 text-gray-500">Technically credible,
+                                responsibility unclear</td>
+                            <td
+                                className="p-6 border-l border-gray-100 font-semibold text-[#0A231F] border-r-4 border-r-[#D65A31] relative pl-6">
+                                <span
+                                    className="absolute left-0 top-0 bottom-0 w-1 bg-[#0A231F] opacity-20"></span><span
+                                    className="inline-block text-[9px] uppercase tracking-widest font-bold px-2 py-1 border border-[#D65A31] text-[#D65A31] bg-white rounded-full mb-2">SECONDARY</span>
+                                <div className="block">Reads as accountable and trustworthy</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section className="p-12 md:p-20 bg-white">
+        <div className="max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-16 mb-16">
+                <div>
+                    <h3
+                        className="text-sm font-bold uppercase tracking-widest text-[#0A231F] mb-6 flex items-center gap-2">
+                        <Target size={16} className="text-[#D65A31]" />Where Rep. Will Focus
+                    </h3>
+                    <ul className="space-y-4 text-sm text-gray-700">
+                        <li className="flex items-start gap-3">
+                            <CheckCircle2 size={16} className="text-[#D65A31] mt-0.5 shrink-0" /><span><span
+                                    className="font-bold text-[#0A231F]">Primary Focus:</span> Mid-Market Growth
+                                Companies</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <CheckCircle2 size={16} className="text-[#D65A31] mt-0.5 shrink-0" /><span><span
+                                    className="font-bold text-[#0A231F]">Secondary Focus:</span> Regulated / Platform
+                                environments (selectively)</span>
+                        </li>
+                        <li className="flex items-start gap-3">
+                            <div className="w-4 h-4 rounded-full border border-gray-300 mt-0.5 shrink-0"></div><span
+                                className="text-gray-500"><span className="font-medium">Deprioritized:</span>
+                                Early-stage roles and rigid institutional tracks</span>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-6">Why This Matters</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">Concentrating effort where your profile is
+                        structurally advantaged shortens time-to-offer, improves leveling outcomes, and preserves
+                        leverage for negotiation.</p>
+                </div>
+            </div>
+            <div className="bg-[#F4F3EF] border border-gray-200 p-6 rounded-sm flex items-start gap-4">
+                <AlertCircle size={20} className="text-gray-400 shrink-0 mt-0.5" />
+                <div>
+                    <h4 className="text-xs font-bold uppercase tracking-wide text-[#0A231F] mb-1">Risk of Market
+                        Misalignment</h4>
+                    <p className="text-sm text-gray-600 leading-relaxed">When strong profiles are aimed at the wrong
+                        segments, interviews increase but offers stall. These outcomes are structural — not personal.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section className="bg-[#0A231F] text-[#F4F3EF] py-16 px-12 text-center">
+        <div className="max-w-2xl mx-auto">
+            <p className="text-lg font-light leading-relaxed opacity-80 mb-12">With positioning corrected and the right
+                markets identified, the next question becomes execution.</p>
+            <div className="flex flex-col items-center gap-3">
+                <div
+                    className="flex items-center gap-3 text-sm tracking-widest font-bold text-white border border-[#D65A31] px-6 py-3 rounded-sm hover:bg-[#D65A31] hover:bg-opacity-10 transition-colors cursor-default">
+                    PILLAR 4 — BRAND ASSET DIAGNOSTIC
+                    <ArrowRight size={14} className="text-[#D65A31]" />
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+);
+};
+
+// --- PILLAR 4: BRAND ASSET DIAGNOSTIC ---
+const Pillar4 = () => {
+const signalData = [
+{ title: "Strategic Leadership", microcopy: "Target Read: strategy/ownership-forward. First-Pass Read:
+execution-first.", repPos: 85, assetPos: 25, status: "Under-signaled: Leadership" },
+{ title: "Technical Execution", microcopy: "First-Pass Read over-emphasizes tooling/execution; Target Read shifts to
+ownership + leadership.", repPos: 70, assetPos: 10, status: "Over-signaled: Execution" },
+{ title: "Commercial Ownership (P&L)", microcopy: "Gap between actual P&L responsibility and what your assets make
+legible on first pass.", repPos: 90, assetPos: 20, status: "Under-signaled: Commercial" }
+];
+
+const SignalTag = ({ label, status }) => {
+let styleClass;
+if (status === 'present') {
+styleClass = "text-green-800 bg-green-50 border-green-200 opacity-100";
+} else if (status === 'weak') {
+styleClass = "text-[#D65A31] bg-[#D65A31] bg-opacity-5 border-[#D65A31] border-opacity-20 opacity-80";
+} else {
+styleClass = "text-gray-400 bg-gray-50 border-gray-200 opacity-60 grayscale";
+}
+return <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded border ${styleClass} text-[9px] uppercase
+    font-bold tracking-wide`}>{status === 'present' ?
+    <CheckCircle2 size={10} className="text-green-700" /> : status === 'weak' ?
+    <AlertCircle size={10} className="text-[#D65A31]" /> :
+    <XCircle size={10} className="text-gray-400" />}<span>{label}</span>
+</div>;
+};
+
+const EvidenceCard = ({ title, badge, badgeColor, tags, signalText, changeText, before, after }) => (
+<div className="border border-gray-200 rounded-sm overflow-hidden mb-6 last:mb-0 bg-white">
+    <div
+        className="bg-gray-50 px-5 py-3 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+            <h3 className="font-bold text-sm text-[#0A231F] uppercase tracking-wide">{title}</h3><span
+                className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full tracking-wider
+                ${badgeColor}`}>{badge}</span>
+        </div>
+        <div className="flex gap-2">
+            <SignalTag label="Outcomes" status={tags.outcomes} />
+            <SignalTag label="Ownership" status={tags.ownership} />
+            <SignalTag label="Stakes" status={tags.stakes} />
+        </div>
+    </div>
+    <div className="p-5">
+        <div className="grid md:grid-cols-2 gap-8 mb-6">
+            <div>
+                <div className="text-[10px] uppercase font-bold text-gray-400 mb-2 tracking-wider">What it signals today
+                </div>
+                <p className="text-sm leading-relaxed text-gray-700">{signalText}</p>
+            </div>
+            <div>
+                <div className="text-[10px] uppercase font-bold text-[#D65A31] mb-2 tracking-wider">What must change
+                </div>
+                <p className="text-sm leading-relaxed text-gray-700">{changeText}</p>
+            </div>
+        </div>
+        <div className="bg-[#F4F3EF] border border-[#E5E5E5] rounded p-3 font-mono text-[10px] text-gray-600">
+            <div className="flex flex-col sm:flex-row gap-1 sm:gap-3 mb-2 sm:mb-1"><span
+                    className="text-[#D65A31] font-bold shrink-0 w-12">BEFORE:</span><span
+                    className="opacity-70 italic">"{before}"</span></div>
+            <div className="flex flex-col sm:flex-row gap-1 sm:gap-3"><span
+                    className="text-[#0A231F] font-bold shrink-0 w-12">AFTER:</span><span
+                    className="font-bold text-[#0A231F]">"{after}"</span></div>
+        </div>
+    </div>
+</div>
+);
+
+return (
+<div className="w-full font-sans antialiased text-[#0A231F]" style={{ backgroundColor: colors.bone }}>
+    {/* HEADER (STANDARD) */}
+    <header className="p-10 md:p-14 border-b border-gray-300 bg-[#F4F3EF]">
+        <div className="max-w-5xl mx-auto">
+            <div className="flex flex-col gap-2 mb-8">
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#D65A31]">Pillar 4</span>
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#0A231F] leading-none">BRAND
+                    ASSET<br />DIAGNOSTIC</h1>
+            </div>
+            <div className="w-24 h-px bg-[#0A231F] mb-6 opacity-20"></div>
+        </div>
+    </header>
+
+    {/* PROCESS GRAPHIC & INTRO */}
+    <section className="px-12 md:px-20 pt-6 pb-20 bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <ProcessGraphic activeStep="Brand Assets" />
+            <div className="mt-8">
+                <h2 className="text-2xl font-light mb-8 text-[#0A231F]">What Your Resume & LinkedIn Signal — Before You
+                    Say a Word</h2>
+                <div
+                    className="bg-gray-50 border-b border-gray-100 p-6 flex gap-4 items-start text-xs text-gray-600 mb-8">
+                    <Info size={16} className="mt-0.5 text-gray-400 shrink-0" />
+                    <div>
+                        <strong className="block text-gray-700 uppercase tracking-wide text-[10px] mb-1">How to Read
+                            This Diagnostic</strong>
+                        <p className="leading-relaxed opacity-80 text-sm">This audit reflects how your current assets
+                            are likely interpreted on first pass. It is a signal read, not a judgment of capability.
+                            Pillars 2 and 3 set the target; this page shows what must change in the assets to match it.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="grid md:grid-cols-12 gap-8">
+                    <div className="md:col-span-4 flex flex-col justify-between">
+                        <div>
+                            <h2 className="text-lg font-bold uppercase tracking-wide mb-2 flex items-center gap-2">
+                                <Layers size={18} style={{ color: colors.signalOrange }} /> 1. Positioning Signals
+                            </h2>
+                            <p className="text-sm opacity-70 leading-relaxed mb-3">This compares intake positioning
+                                ("Target Read") with what your current assets broadcast ("First-Pass Read").</p>
+                            <div className="mt-4 space-y-3">
+                                <div className="flex items-start gap-2">
+                                    <div className="w-3 h-3 rounded-full mt-0.5 shrink-0" style={{ backgroundColor:
+                                        colors.oxfordGreen }}></div>
+                                    <div>
+                                        <div className="text-[10px] uppercase font-bold tracking-wide leading-none">
+                                            Target Read</div>
+                                        <div className="text-[9px] opacity-70 leading-tight mt-0.5">Where the market is
+                                            intended to read you.</div>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                    <div className="w-3 h-3 rounded-full mt-0.5 shrink-0" style={{ backgroundColor:
+                                        colors.signalOrange }}></div>
+                                    <div>
+                                        <div className="text-[10px] uppercase font-bold tracking-wide leading-none">
+                                            First-Pass Read</div>
+                                        <div className="text-[9px] opacity-70 leading-tight mt-0.5">How your resume and
+                                            LinkedIn are read on first pass.</div>
+                                    </div>
+                                </div>
+                                <p className="text-[9px] opacity-50 leading-relaxed mt-2 border-t border-gray-100 pt-2">
+                                    Green reflects the narrative we are intentionally positioning toward. Orange
+                                    reflects the signals your current assets are sending today.</p>
+                            </div>
+                        </div>
+                        <div
+                            className="mt-4 pt-4 border-t border-gray-100 text-[10px] uppercase tracking-wider opacity-50 flex items-center gap-1">
+                            <Search size={10} />Basis: Intake positioning vs. observable asset signals
+                        </div>
+                    </div>
+
+                    <div className="md:col-span-8 space-y-10">
+                        {signalData.map((item, index) => (
+                        <div key={index} className="relative">
+                            <div className="mb-6">
+                                <div className="text-xs font-bold uppercase tracking-wider mb-1">{item.title}</div>
+                                <p className="text-xs opacity-70 italic max-w-lg">{item.microcopy}</p>
+                            </div>
+                            <div className="relative h-12 w-full">
+                                <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-gray-300 -translate-y-1/2">
+                                </div>
+                                <div
+                                    className="absolute -bottom-2 w-full flex justify-between text-[9px] font-bold uppercase tracking-widest text-gray-400">
+                                    <span>Execution-Heavy</span><span>Ownership / Strategy-Heavy</span></div>
+                                <div className="absolute -bottom-6 w-full text-center text-[8px] italic text-gray-300">
+                                    Distance between markers reflects repositioning required — not capability gaps.
+                                </div>
+                                <div className="absolute top-1/2 h-[2px] -translate-y-1/2 opacity-30" style={{ left:
+                                    `${Math.min(item.repPos, item.assetPos)}%`, width: `${Math.abs(item.repPos -
+                                    item.assetPos)}%`, backgroundColor: colors.oxfordGreen }}></div>
+                                <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 bg-white border border-gray-200 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-gray-500 shadow-sm z-10"
+                                    style={{ left: `${(item.repPos + item.assetPos) / 2}%` }}>{item.status}</div>
+                                <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-20 flex flex-col items-center group"
+                                    style={{ left: `${item.repPos}%`, marginTop: '-12px' }}>
+                                    <div
+                                        className="text-[8px] uppercase tracking-widest text-gray-400 font-medium mb-1">
+                                        REP.</div>
+                                    <div className="w-3 h-3 rounded-full shadow-sm mb-1" style={{ backgroundColor:
+                                        colors.oxfordGreen }}></div>
+                                </div>
+                                <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-20 flex flex-col items-center"
+                                    style={{ left: `${item.assetPos}%`, marginTop: '12px' }}>
+                                    <div className="w-3 h-3 rounded-full shadow-sm mt-1" style={{ backgroundColor:
+                                        colors.signalOrange }}></div>
+                                    <div
+                                        className="text-[8px] uppercase tracking-widest text-gray-400 font-medium mt-1">
+                                        ASSET</div>
+                                </div>
+                            </div>
+                        </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section className="p-12 md:p-20 bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            {/* Header */}
+            <div className="mb-6">
+                <h2 className="text-lg font-bold uppercase tracking-wide flex items-center gap-2">
+                    <TrendingUp size={18} style={{ color: colors.signalOrange }} /> 2. Scope Read
+                </h2>
+            </div>
+            {/* Split Layout */}
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+                {/* Left Column: Gauge */}
+                <div className="flex flex-col items-center justify-center">
+                    <div className="relative w-64 h-32 mb-2">
+                        <svg viewBox="0 0 200 110" className="w-full h-full">
+                            <path d="M 20 100 A 80 80 0 0 1 100 20" fill="none" stroke={colors.signalOrange}
+                                strokeWidth="24" opacity="0.8" />
+                            <path d="M 100 20 A 80 80 0 0 1 180 100" fill="none" stroke={colors.oxfordGreen}
+                                strokeWidth="24" opacity="0.9" />
+                            <circle cx="100" cy="100" r="6" fill={colors.oxfordGreen} />
+                            <g transform="rotate(-45 100 100)">
+                                <path d="M 100 100 L 100 35" stroke={colors.oxfordGreen} strokeWidth="4"
+                                    strokeLinecap="round" />
+                            </g>
+                        </svg>
+                    </div>
+                    <div className="flex justify-between w-64 text-[10px] font-bold uppercase tracking-wider">
+                        <span className="text-[#D65A31]">Execution Signal</span>
+                        <span className="text-[#0A231F]">Ownership Signal</span>
+                    </div>
+                </div>
+                {/* Right Column: Evidence Bands */}
+                <div className="space-y-3 w-full">
+                    <div
+                        className="flex items-start gap-4 p-3 bg-white border border-gray-200 rounded-sm shadow-sm hover:shadow-md transition-shadow">
+                        <Users size={16} className="mt-1 opacity-50 shrink-0 text-[#0A231F]" />
+                        <div>
+                            <div className="text-xs font-bold uppercase mb-1 text-[#0A231F]">Team Signal</div>
+                            <div className="text-sm opacity-80 leading-snug">"Collaborated with engineering..." (Implies
+                                peer, not owner)</div>
+                        </div>
+                    </div>
+                    <div
+                        className="flex items-start gap-4 p-3 bg-white border border-gray-200 rounded-sm shadow-sm hover:shadow-md transition-shadow">
+                        <DollarSign size={16} className="mt-1 opacity-50 shrink-0 text-[#0A231F]" />
+                        <div>
+                            <div className="text-xs font-bold uppercase mb-1 text-[#0A231F]">Budget Signal</div>
+                            <div className="text-sm opacity-80 leading-snug">Implicit. No P&L explicitly claimed.</div>
+                        </div>
+                    </div>
+                    <div
+                        className="flex items-start gap-4 p-3 bg-white border border-gray-200 rounded-sm shadow-sm hover:shadow-md transition-shadow">
+                        <Target size={16} className="mt-1 opacity-50 shrink-0 text-[#0A231F]" />
+                        <div>
+                            <div className="text-xs font-bold uppercase mb-1 text-[#0A231F]">Outcome Accountability
+                                Signal</div>
+                            <div className="text-sm opacity-80 leading-snug">Limited outcome ownership explicitly
+                                claimed.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                className="mt-8 pt-4 border-t border-gray-200 text-[10px] uppercase tracking-wider opacity-50 flex items-center gap-1">
+                <FileText size={10} /> Basis: Semantic analysis of Summary & Bullet Points
+            </div>
+        </div>
+    </section>
+
+    <section className="p-12 md:p-20 bg-[#F4F3EF] border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <div className="mb-8 text-left">
+                <h2 className="text-lg font-bold uppercase tracking-wide mb-1 flex items-center gap-2 justify-start">
+                    <Target size={18} style={{ color: colors.signalOrange }} /> 3. Evidence Map by Resume Section
+                </h2>
+                <p className="text-sm opacity-70">Where your resume proves outcomes and ownership — and where it
+                    currently reads as responsibilities.</p>
+            </div>
+            <div className="space-y-6">
+                <EvidenceCard title="Professional Summary" badge="Proof Thin" badgeColor="bg-[#D65A31] text-white"
+                    tags={{ outcomes: 'missing' , ownership: 'weak' , stakes: 'missing' }}
+                    signalText="This often reads as a high-competence 'Doer'. Automated systems scan for process keywords (Agile, Jira) but miss signals of 'Director' level scope."
+                    changeText="Anchor immediately on true level and business scope you own (revenue, cost, risk). Lead with highest-stakes partnership or business-critical work in the first sentence to establish seniority."
+                    before="Senior PM managing daily operations..."
+                    after="Product leader owning measurable business scope (revenue, cost, risk)..." />
+                <EvidenceCard title="Current Role Bullets" badge="Proof Mixed"
+                    badgeColor="bg-yellow-100 text-yellow-800 border border-yellow-200" tags={{ outcomes: 'weak' ,
+                    ownership: 'weak' , stakes: 'present' }}
+                    signalText="Outcomes exist (a measurable revenue win) but are buried under tactical task lists (User Stories, UAT), making it easy to miss the business impact."
+                    changeText="Front-load revenue impact in every bullet. Quantify the cross-functional team you led without formal reporting lines to prove leadership scale."
+                    before="Improved retention via UI updates." after="Recovered meaningful ARR by reducing churn..." />
+                <EvidenceCard title="Skills Section" badge="Proof Mixed"
+                    badgeColor="bg-yellow-100 text-yellow-800 border border-yellow-200" tags={{ outcomes: 'missing' ,
+                    ownership: 'missing' , stakes: 'missing' }}
+                    signalText="Heavy on execution tools (Jira, SQL). Signals to automated screeners that you are a builder/IC, not a strategic leader."
+                    changeText="Prune tactical tools. Elevate strategic competencies (Roadmapping, P&L Mgmt, GTM Strategy) so the first-pass read matches Director-level screening patterns."
+                    before="Jira, SQL, Python, APIs..." after="P&L Management, GTM Strategy..." />
+            </div>
+            <div
+                className="mt-8 pt-4 border-t border-gray-100 text-[10px] uppercase tracking-wider opacity-50 flex items-center justify-center gap-1">
+                <Search size={10} />Basis: common screening patterns for these roles
+            </div>
+        </div>
+    </section>
+
+    <section className="p-12 md:p-20 bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <div className="flex flex-col md:flex-row gap-8 justify-between">
+                <div className="md:w-1/3">
+                    <h2 className="text-lg font-bold uppercase tracking-wide mb-2 flex items-center gap-2">
+                        <ArrowDown size={18} style={{ color: colors.signalOrange }} /> 4. Role Forecast
+                    </h2>
+                    <p className="text-sm opacity-70 leading-relaxed">Based on current signals, these are the role types
+                        most likely to engage.</p>
+                    <div className="mt-4 pt-4 text-[10px] uppercase tracking-wider opacity-50 flex items-center gap-1">
+                        <Target size={10} />Basis: Rep role archetype library + common screening patterns
+                    </div>
+                </div>
+                <div className="md:w-2/3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="bg-white p-5 shadow-sm border-t-4 border-[#D65A31]">
+                        <div className="flex items-center gap-2 mb-3">
+                            <CheckCircle2 size={16} className="text-green-700" />
+                            <h3 className="font-bold uppercase text-sm">Likely Inbound Roles</h3>
+                        </div>
+                        <ul className="space-y-2 text-sm">
+                            <li className="flex justify-between items-center pb-1 border-b border-gray-50"><span>Senior
+                                    Product Manager</span><span
+                                    className="text-xs bg-gray-100 px-1 py-0.5 rounded text-gray-500">LATERAL</span>
+                            </li>
+                            <li className="flex justify-between items-center pb-1 border-b border-gray-50">
+                                <span>Technical PM</span><span
+                                    className="text-xs bg-gray-100 px-1 py-0.5 rounded text-gray-500">LATERAL</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div className="bg-white p-5 shadow-sm border-t-4 border-gray-300 opacity-70">
+                        <div className="flex items-center gap-2 mb-3">
+                            <AlertCircle size={16} />
+                            <h3 className="font-bold uppercase text-sm">Roles Requiring Repositioning</h3>
+                        </div>
+                        <ul className="space-y-2 text-sm">
+                            <li className="flex justify-between items-center pb-1 border-b border-gray-50"><span>Product
+                                    Director</span><span
+                                    className="text-xs bg-gray-100 px-1 py-0.5 rounded text-gray-500">LEVEL UP</span>
+                            </li>
+                            <li className="flex justify-between items-center pb-1 border-b border-gray-50"><span>Head of
+                                    Product</span><span
+                                    className="text-xs bg-gray-100 px-1 py-0.5 rounded text-gray-500">LEVEL UP</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section className="p-12 md:p-20 bg-[#0A231F] text-white">
+        <div className="max-w-5xl mx-auto">
+            <h2 className="text-lg font-bold uppercase tracking-wide mb-6 flex items-center gap-2 text-[#D65A31]">
+                <FileText size={18} /> 5. What We’ll Fix
+            </h2>
+            <div className="grid md:grid-cols-3 gap-8 text-sm leading-relaxed">
+                <div><strong className="block text-[#D65A31] uppercase text-xs mb-2">Signal Emphasis</strong>
+                    <p className="opacity-80">Current signal emphasizes <em>how</em> you work (Agile, Jira) rather than
+                        <em>what</em> you own. This aligns with execution roles, but may screen out strategic leadership
+                        roles.</p>
+                </div>
+                <div><strong className="block text-[#D65A31] uppercase text-xs mb-2">Hidden Value</strong>
+                    <p className="opacity-80">The highest-stakes partnership or business-critical work in your
+                        experience is a senior-level asset. Elevate it to the Summary to anchor seniority immediately.
+                    </p>
+                </div>
+                <div><strong className="block text-[#D65A31] uppercase text-xs mb-2">Keyword Optimization</strong>
+                    <p className="opacity-80">Shift keywords from process (User Stories, UAT) to outcomes (Revenue
+                        Retention, P&L, Strategy) to attract higher-tier inbound.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section className="bg-[#0A231F] text-[#F4F3EF] py-16 px-12 text-center">
+        <div className="max-w-2xl mx-auto">
+            <p className="text-lg font-light leading-relaxed opacity-80 mb-12">With your assets corrected, access
+                becomes predictable — not random.</p>
+            <div className="flex flex-col items-center gap-3">
+                <div
+                    className="flex items-center gap-3 text-sm tracking-widest font-bold text-white border border-[#D65A31] px-6 py-3 rounded-sm hover:bg-[#D65A31] hover:bg-opacity-10 transition-colors cursor-default">
+                    PILLAR 5 — OPPORTUNITY PIPELINE
+                    <ArrowRight size={14} className="text-[#D65A31]" />
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+);
+};
+
+// --- PILLAR 5: OPPORTUNITY PIPELINE ---
+const Pillar5 = () => {
+// Helper Component: Channel Card
+const ChannelCard = ({ title, bestFor, tradeoffs, status }) => (
+<div className="border border-gray-200 bg-white p-6 rounded-sm">
+    <div className="flex justify-between items-start mb-4">
+        <h4 className="text-sm font-bold uppercase tracking-wide text-[#0A231F]">{title}</h4>
+        <span className={`text-[9px] uppercase font-bold px-2 py-1 rounded-sm ${status==='Primary'
+            ? 'bg-[#D65A31] text-white' : status==='Secondary' ? 'bg-gray-100 text-gray-500'
+            : 'bg-white border border-gray-200 text-gray-400' }`}>{status}</span>
+    </div>
+    <div className="space-y-4">
+        <div><span className="text-[10px] uppercase font-bold text-gray-400 block mb-1">Best For</span>
+            <p className="text-sm text-gray-600 leading-relaxed">{bestFor}</p>
+        </div>
+        <div><span className="text-[10px] uppercase font-bold text-gray-400 block mb-1">Tradeoffs</span>
+            <p className="text-sm text-gray-600 leading-relaxed">{tradeoffs}</p>
+        </div>
+    </div>
+</div>
+);
+
+return (
+<div className="w-full font-sans antialiased text-[#0A231F]" style={{ backgroundColor: colors.bone }}>
+    {/* HEADER */}
+    <header className="p-10 md:p-14 border-b border-gray-300 bg-[#F4F3EF]">
+        <div className="max-w-5xl mx-auto">
+            <div className="flex flex-col gap-2 mb-8">
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#D65A31]">Pillar 5</span>
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#0A231F] leading-none">
+                    OPPORTUNITY<br />PIPELINE</h1>
+            </div>
+            <div className="w-24 h-px bg-[#0A231F] mb-6 opacity-20"></div>
+        </div>
+    </header>
+
+    {/* EXECUTIVE READ */}
+    <section className="px-12 md:px-20 pt-6 pb-20 bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <ProcessGraphic activeStep="Opportunity Pipeline" />
+            <div className="bg-white border-l-4 border-[#0A231F] shadow-sm p-8 mb-16">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Executive Read</h3>
+                <p className="text-lg text-[#0A231F] leading-relaxed mb-4">Searches stall when applications are the only
+                    engine. This section prepares multiple access paths to decision-makers now that assets signal
+                    ownership.</p>
+                <p className="text-sm text-gray-600 leading-relaxed mb-4">Now that your assets are corrected to generate
+                    a Target Read of ownership (Pillar 4), we can creates access to decision-makers before the process
+                    is crowded.</p>
+                <p className="text-[10px] text-[#0A231F] font-bold uppercase tracking-wide">This section prepares a
+                    working session to finalize your channel mix, not a mandate.</p>
+            </div>
+
+            {/* Current Search State */}
+            <div className="mb-12">
+                <h3 className="text-2xl font-bold text-[#0A231F] mb-6">Current Search State</h3>
+                <div className="grid md:grid-cols-2 gap-8">
+                    <div className="p-6 bg-[#F9F9F9] border border-gray-200">
+                        <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Momentum Blockers
+                        </h4>
+                        <ul className="space-y-3 text-sm text-gray-600">
+                            <li className="flex items-start gap-2">
+                                <XCircle size={14} className="text-[#D65A31] mt-1 shrink-0" /><span>Applications for
+                                    "Director" roles often yield no response.</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <XCircle size={14} className="text-[#D65A31] mt-1 shrink-0" /><span>Recruiter outreach
+                                    feels lateral ("Senior PM") rather than vertical.</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div className="p-6 bg-[#F9F9F9] border border-gray-200">
+                        <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Current Motion
+                        </h4>
+                        <ul className="space-y-3 text-sm text-gray-600">
+                            <li className="flex items-start gap-2">
+                                <CheckCircle2 size={14} className="text-[#0A231F] mt-1 shrink-0" /><span>Active
+                                    exploration of FinTech / Payments ecosystem.</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                                <CheckCircle2 size={14} className="text-[#0A231F] mt-1 shrink-0" /><span>Willingness to
+                                    leverage network but hesitant to "ask for favors."</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <p className="text-[10px] text-gray-400 mt-4 italic">*Based on intake signals. We will refine this
+                    understanding live.</p>
+            </div>
+        </div>
+    </section>
+
+    {/* STRUCTURAL DIMENSIONS */}
+    <section className="p-12 md:p-20 bg-[#F4F3EF] border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <div className="mb-12">
+                <h3 className="text-2xl font-bold text-[#0A231F] mb-6">Structural Dimensions That Shape Strategy</h3>
+                <p className="text-gray-600 leading-relaxed mb-8">We don't optimize for volume. We optimize for
+                    alignment across three key dimensions.</p>
+
+                <div className="space-y-8">
+                    {/* Dimension 1 */}
+                    <div
+                        className="flex flex-col md:flex-row gap-6 items-start border-b border-gray-300 pb-8 border-opacity-30">
+                        <div className="w-full md:w-1/4">
+                            <h4 className="text-sm font-bold uppercase tracking-wide text-[#0A231F]">Search Intensity
+                            </h4>
+                            <p className="text-[10px] text-gray-500 mt-1">Active vs. Passive</p>
+                        </div>
+                        <div className="w-full md:w-3/4">
+                            <div className="relative h-2 bg-gray-200 rounded-full mb-2">
+                                <div className="absolute left-[70%] top-0 h-full w-2 bg-[#D65A31] rounded-full"></div>
+                            </div>
+                            <div
+                                className="flex justify-between text-[10px] text-gray-400 uppercase tracking-widest mb-2">
+                                <span>Passive Monitoring</span><span>High Velocity</span></div>
+                            <p className="text-sm text-gray-600 mb-2"><span className="font-bold text-[#0A231F]">Working
+                                    Assumption:</span> You are ready to move for the right role but employed, allowing
+                                us to prioritize quality over speed.</p>
+                            <p className="text-[10px] text-[#D65A31] font-bold uppercase tracking-wide">What we will
+                                decide on the kickoff call: cadence, weekly activity levels</p>
+                        </div>
+                    </div>
+                    {/* Dimension 2 */}
+                    <div
+                        className="flex flex-col md:flex-row gap-6 items-start border-b border-gray-300 pb-8 border-opacity-30">
+                        <div className="w-full md:w-1/4">
+                            <h4 className="text-sm font-bold uppercase tracking-wide text-[#0A231F]">Urgency–Fit
+                                Tradeoff</h4>
+                            <p className="text-[10px] text-gray-500 mt-1">Speed required vs. selectivity available</p>
+                        </div>
+                        <div className="w-full md:w-3/4">
+                            <div className="relative h-2 bg-gray-200 rounded-full mb-2">
+                                <div className="absolute left-[60%] top-0 h-full w-2 bg-[#D65A31] rounded-full"></div>
+                            </div>
+                            <div
+                                className="flex justify-between text-[10px] text-gray-400 uppercase tracking-widest mb-2">
+                                <span>Need Role Now</span><span>Highly Selective</span></div>
+                            <p className="text-sm text-gray-600 mb-2"><span className="font-bold text-[#0A231F]">Working
+                                    Assumption:</span> selectivity may be available; we will confirm constraints live;
+                                this determines minimum acceptable role and walk-away criteria.</p>
+                            <p className="text-[10px] text-[#D65A31] font-bold uppercase tracking-wide">What we will
+                                decide on the kickoff call: minimum acceptable role, walk-away criteria</p>
+                        </div>
+                    </div>
+                    {/* Dimension 3 */}
+                    <div className="flex flex-col md:flex-row gap-6 items-start">
+                        <div className="w-full md:w-1/4">
+                            <h4 className="text-sm font-bold uppercase tracking-wide text-[#0A231F]">Access Paths to
+                                Opportunities</h4>
+                            <p className="text-[10px] text-gray-500 mt-1">Where roles are likely to come from</p>
+                        </div>
+                        <div className="w-full md:w-3/4">
+                            <div className="relative h-2 bg-gray-200 rounded-full mb-2">
+                                <div className="absolute left-[40%] top-0 h-full w-2 bg-[#D65A31] rounded-full"></div>
+                            </div>
+                            <div
+                                className="flex justify-between text-[10px] text-gray-400 uppercase tracking-widest mb-2">
+                                <span>Primarily Through Your Existing Network</span><span>Requires Creating New
+                                    Conversations</span></div>
+                            <p className="text-sm text-gray-600 mb-2"><span className="font-bold text-[#0A231F]">Working
+                                    Assumption:</span> You have a strong network, but it largely reflects your previous
+                                roles. To move into your next level, we will likely need to create new conversations
+                                beyond your existing circle.</p>
+                            <p className="text-[10px] text-[#D65A31] font-bold uppercase tracking-wide">WHAT WE WILL
+                                DECIDE ON THE KICKOFF CALL: Where we rely on your network — and where we proactively
+                                create new opportunities</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {/* SHARED OPPORTUNITY FLOW */}
+    <section className="p-12 md:p-20 bg-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-6 md:px-10">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A231F] mb-12 text-center lg:text-left">
+                Shared Opportunity Flow</h3>
+            <div
+                className="flex flex-col gap-8 lg:gap-0 lg:grid lg:grid-cols-[200px_40px_minmax(380px,1fr)_40px_220px] lg:items-center lg:justify-center mb-10">
+                {/* Left: Inputs */}
+                <div className="flex flex-col gap-2 w-full min-w-0 opacity-80">
+                    <div
+                        className="bg-[#F9F9F9] px-3 py-3 border border-gray-100 text-[10px] font-medium text-gray-500 uppercase tracking-wide text-center rounded-sm">
+                        Rep. Outbound</div>
+                    <div
+                        className="bg-[#F9F9F9] px-3 py-3 border border-gray-100 text-[10px] font-medium text-gray-500 uppercase tracking-wide text-center rounded-sm">
+                        Warm Introductions</div>
+                    <div
+                        className="bg-[#F9F9F9] px-3 py-3 border border-gray-100 text-[10px] font-medium text-gray-500 uppercase tracking-wide text-center rounded-sm">
+                        Recruiter Outreach</div>
+                    <div
+                        className="bg-[#F9F9F9] px-3 py-3 border border-gray-100 text-[10px] font-medium text-gray-500 uppercase tracking-wide text-center rounded-sm">
+                        Direct Applications</div>
+                    <div
+                        className="bg-[#F9F9F9] px-3 py-3 border border-gray-100 text-[10px] font-medium text-gray-500 uppercase tracking-wide text-center rounded-sm">
+                        Your Inbound Opportunities</div>
+                </div>
+                {/* Arrow 1 */}
+                <div className="hidden lg:flex justify-center items-center text-gray-300 opacity-50">
+                    <ArrowRight size={24} strokeWidth={1} />
+                </div>
+                {/* Center: Evaluation */}
+                <div
+                    className="w-full max-w-[520px] mx-auto min-w-0 flex flex-col gap-0 shadow-xl border border-gray-200 bg-[#FDFDFD] rounded-sm relative z-10">
+                    <div className="bg-[#F4F3EF] px-4 py-5 text-center border-b border-gray-100">
+                        <span className="text-sm font-bold text-[#0A231F] uppercase tracking-wider block">Shared
+                            Evaluation of Opportunities</span>
+                    </div>
+                    <div className="p-6 md:p-8 space-y-4">
+                        <div className="flex items-start gap-4 text-xs text-gray-600 leading-snug">
+                            <CheckCircle2 size={16} className="text-[#D65A31] mt-0.5 shrink-0 opacity-80" />
+                            <span>Does this move your career forward?</span>
+                        </div>
+                        <div className="flex items-start gap-4 text-xs text-gray-600 leading-snug">
+                            <CheckCircle2 size={16} className="text-[#D65A31] mt-0.5 shrink-0 opacity-80" />
+                            <span>Is this the kind of role you actually want next?</span>
+                        </div>
+                        <div className="flex items-start gap-4 text-xs text-gray-600 leading-snug">
+                            <CheckCircle2 size={16} className="text-[#D65A31] mt-0.5 shrink-0 opacity-80" />
+                            <span>Is the level and responsibility right — or a step sideways/back?</span>
+                        </div>
+                        <div className="flex items-start gap-4 text-xs text-gray-600 leading-snug">
+                            <CheckCircle2 size={16} className="text-[#D65A31] mt-0.5 shrink-0 opacity-80" />
+                            <span>Are expectations clear on both sides?</span>
+                        </div>
+                        <div className="flex items-start gap-4 text-xs text-gray-600 leading-snug">
+                            <CheckCircle2 size={16} className="text-[#D65A31] mt-0.5 shrink-0 opacity-80" />
+                            <span>Is this opportunity worth your time and energy right now?</span>
+                        </div>
+                    </div>
+                    <div className="pb-4 text-center">
+                        <span className="text-[10px] text-gray-400 font-medium">Decision criteria applied to every
+                            opportunity</span>
+                    </div>
+                </div>
+                {/* Arrow 2 */}
+                <div className="hidden lg:flex justify-center items-center text-gray-300 opacity-50">
+                    <ArrowRight size={24} strokeWidth={1} />
+                </div>
+                {/* Right: Output */}
+                <div className="w-full min-w-0 lg:w-auto border-l-2 border-[#0A231F] pl-6 py-2">
+                    <span className="text-sm font-bold text-[#0A231F] uppercase tracking-wider block mb-6">Strategy &
+                        Execution</span>
+                    <div className="space-y-4">
+                        <div className="flex items-start gap-3 text-xs text-gray-600 leading-snug">
+                            <ArrowRight size={14} className="text-[#0A231F] mt-0.5 shrink-0 opacity-60" />
+                            <span>How do we position you for this role?</span>
+                        </div>
+                        <div className="flex items-start gap-3 text-xs text-gray-600 leading-snug">
+                            <ArrowRight size={14} className="text-[#0A231F] mt-0.5 shrink-0 opacity-60" />
+                            <span>Who needs to be engaged — and how?</span>
+                        </div>
+                        <div className="flex items-start gap-3 text-xs text-gray-600 leading-snug">
+                            <ArrowRight size={14} className="text-[#0A231F] mt-0.5 shrink-0 opacity-60" />
+                            <span>What’s the best path into the process?</span>
+                        </div>
+                        <div className="flex items-start gap-3 text-xs text-gray-600 leading-snug">
+                            <ArrowRight size={14} className="text-[#0A231F] mt-0.5 shrink-0 opacity-60" />
+                            <span>How do we win the interview?</span>
+                        </div>
+                        <div className="flex items-start gap-3 text-xs text-gray-600 leading-snug">
+                            <ArrowRight size={14} className="text-[#0A231F] mt-0.5 shrink-0 opacity-60" />
+                            <span>How do we protect and improve the offer?</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p className="text-[10px] text-gray-400 text-center max-w-2xl mx-auto leading-relaxed italic mt-16">
+                Opportunities can enter the search from many sources. Regardless of origin, we evaluate each against
+                your Career Trajectory Map to ensure it advances your long-term goals.
+            </p>
+        </div>
+    </section>
+
+    {/* --- CHANNEL MIX OPTIONS --- */}
+    <section className="p-12 md:p-20 bg-white">
+        <div className="max-w-6xl mx-auto">
+            <div className="mb-12 flex justify-between items-end">
+                <div>
+                    <h3 className="text-2xl font-bold text-[#0A231F] mb-4">Channel Mix Options</h3>
+                    <p className="text-gray-600 text-sm max-w-2xl">We do not use every channel equally. We allocate
+                        effort based on where your "Director" narrative will be read most clearly.</p>
+                </div>
+                <span
+                    className="text-xs font-bold uppercase text-[#D65A31] tracking-widest hidden md:block">Illustrative
+                    Mix</span>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6">
+                <ChannelCard title="Targeted Outbound" status="Primary"
+                    bestFor="Mid-Market Growth companies where you can solve a specific, expensive problem (e.g., Scaling Payments Infrastructure)."
+                    tradeoffs="Requires research and precision; lower volume, higher conversion." />
+                <ChannelCard title="Warm Introductions" status="Primary"
+                    bestFor="Accessing Regulated/Platform roles where trust is the primary currency."
+                    tradeoffs="Dependent on network reach; risks 'friend zone' chats unless framed with a clear ask + role thesis." />
+                <ChannelCard title="Recruiter-Led Processes" status="Secondary"
+                    bestFor="Large Institutional roles where process is rigid and standardized."
+                    tradeoffs="High competition; often screened by non-experts; prone to leveling down based on keywords." />
+                <ChannelCard title="Direct Applications" status="Monitor"
+                    bestFor="Market monitoring and 'lottery ticket' access to perfect-fit job descriptions."
+                    tradeoffs="High noise, low signal unless the JD is unusually specific to your Target Read." />
+                <ChannelCard title="Opportunistic Inbound" status="Monitor"
+                    bestFor="Letting the market come to you once LinkedIn assets are optimized."
+                    tradeoffs="Unpredictable; often lags your true seniority until the market catches up." />
+            </div>
+            <p className="text-[10px] text-gray-400 mt-8 text-center italic">*These are options we will prioritize or
+                deprioritize together in our session.</p>
+        </div>
+    </section>
+
+    {/* --- INITIAL OPERATING RHYTHM (DRAFT) --- */}
+    <section className="p-12 md:p-20 bg-[#F9F9F9] border-t border-gray-200">
+        <div className="max-w-4xl mx-auto">
+            <div className="flex items-center gap-3 mb-6">
+                <Activity size={20} className="text-[#D65A31]" />
+                <h3 className="text-xl font-bold text-[#0A231F]">What a Productive Search Rhythm Can Look Like</h3>
+            </div>
+            <div className="grid md:grid-cols-2 gap-8">
+                <div className="bg-white p-6 border border-gray-200 rounded-sm">
+                    <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Weekly Targets
+                        (Illustrative)</h4>
+                    <ul className="space-y-2 text-sm text-[#0A231F]">
+                        <li className="flex justify-between border-b border-gray-100 pb-1"><span>New Target
+                                Companies</span><span className="font-mono text-[#D65A31]">5-10</span></li>
+                        <li className="flex justify-between border-b border-gray-100 pb-1"><span>Outbound
+                                Sent</span><span className="font-mono text-[#D65A31]">3-5</span></li>
+                        <li className="flex justify-between"><span>Network Activations</span><span
+                                className="font-mono text-[#D65A31]">2-3</span></li>
+                    </ul>
+                </div>
+                <div className="bg-white p-6 border border-gray-200 rounded-sm">
+                    <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">How do we know this
+                        is working — or not?</h4>
+                    <ul className="space-y-2 text-sm text-[#0A231F]">
+                        <li className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#D65A31]"></div><span>Response rate to new
+                                narrative</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#D65A31]"></div><span>Level of initial screen
+                                (Recruiter vs Hiring Mgr)</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#D65A31]"></div><span>Speed of conversion to
+                                onsite</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <p className="text-[10px] text-gray-400 mt-4 italic text-center">*We will finalize these targets live to
+                match your schedule and urgency.</p>
+        </div>
+    </section>
+
+    {/* --- KICKOFF FRAMING & FOOTER --- */}
+    <section className="bg-[#0A231F] text-[#F4F3EF] py-16 px-12 text-center">
+        <div className="max-w-3xl mx-auto">
+            <h3 className="text-lg font-bold uppercase tracking-widest text-[#D65A31] mb-6">How We Will Decide This
+                Together</h3>
+            <p className="text-lg font-light leading-relaxed opacity-80 mb-12">Rep. brings pattern data and
+                structure.<br />You bring constraints, preferences, risk tolerance, and timing.</p>
+            <div className="flex flex-col items-center gap-6">
+                <p className="text-sm font-medium">In our kickoff, we will finalize:</p>
+                <div className="flex flex-wrap justify-center gap-4 text-xs font-mono opacity-70"><span
+                        className="border border-[#D65A31] px-3 py-1 rounded-full">Target List Criteria</span><span
+                        className="border border-[#D65A31] px-3 py-1 rounded-full">Outbound Volume</span><span
+                        className="border border-[#D65A31] px-3 py-1 rounded-full">Network Activation Plan</span></div>
+            </div>
+            <div className="mt-16 pt-8 border-t border-white border-opacity-10">
+                <p className="text-sm font-bold uppercase tracking-widest mb-6">Next Step</p>
+                <div
+                    className="inline-flex items-center gap-3 text-sm tracking-widest font-bold text-white border border-[#D65A31] px-6 py-3 rounded-sm hover:bg-[#D65A31] hover:bg-opacity-10 transition-colors cursor-default">
+                    PILLAR 6 — COMPENSATION STRATEGY
+                    <ArrowRight size={14} className="text-[#D65A31]" />
+                </div>
+                <p className="text-[10px] uppercase tracking-widest opacity-40 mt-6">Pillar 5 is the bridge between
+                    insight and execution.</p>
+            </div>
+        </div>
+    </section>
+</div>
+);
+};
+
+// --- PILLAR 6: COMPENSATION STRATEGY ---
+const Pillar6 = () => {
+const trajectoryData = [
+{ period: "Current State", range: "$228,000", level: "Senior PM (Terminal Band)", focus: "Execution / Base Heavy" },
+{ period: "Next Role Target", range: "$260K – $310K", level: "Director (Ownership Level)", focus: "Total Comp /
+Leverage" },
+{ period: "3-Year Horizon", range: "$325K – $375K", level: "Senior Director / Head of", focus: "Equity / Value Capture"
+},
+{ period: "5-Year Horizon", range: "$400K – $475K", level: "VP / Functional Leader", focus: "Authority / Multiplier" },
+{ period: "10-Year Vision", range: "$600K+", level: "Executive / C-Suite", focus: "Wealth Architecture" }
+];
+
+const tradeoffData = [
+{
+criterion: "Remote / Location Posture",
+icon:
+<MapPin size={18} className="text-[#D65A31]" />,
+preference: "Flexibility preferred; not optimizing for relocation.",
+interaction: "Certain Director-level roles (especially in payments/platform orgs) price leadership premiums around
+in-person ownership and internal trust loops.",
+flag: "Compression Risk",
+flagStyle: "bg-amber-50 text-amber-700 border-amber-200"
+},
+{
+criterion: "Market Segment Selectivity",
+icon:
+<Compass size={18} className="text-[#D65A31]" />,
+preference: "Exclusive focus on FinTech / Payments / Platform environments.",
+interaction: "These specific markets often trade headline cash for stability, equity structure, or long-term scope,
+narrowing the range of outlier offers.",
+flag: "Selective Market Premium",
+flagStyle: "bg-[#0A231F] bg-opacity-5 text-[#0A231F] border-[#0A231F] border-opacity-20"
+},
+{
+criterion: "Level Integrity Over Cash",
+icon:
+<ShieldCheck size={18} className="text-[#D65A31]" />,
+preference: "Strong aversion to down-leveling; prioritizing Director-level ownership.",
+interaction: "Preserving level integrity improves 3–5 year earnings power but may require passing on lateral roles with
+higher immediate cash incentives.",
+flag: "Trajectory-Positive",
+flagStyle: "bg-green-50 text-green-700 border-green-200"
+},
+{
+criterion: "Current Employment Posture",
+icon:
+<Zap size={18} className="text-[#D65A31]" />,
+preference: "Employed; no immediate financial urgency forcing a move.",
+interaction: "Provides maximum leverage in final-stage negotiations, though it requires high discipline in filtering out
+suboptimal opportunities early.",
+flag: "Leverage-Positive",
+flagStyle: "bg-[#D65A31] bg-opacity-10 text-[#D65A31] border-[#D65A31] border-opacity-20"
+}
+];
+
+return (
+<div className="w-full font-sans antialiased text-[#0A231F]" style={{ backgroundColor: colors.bone }}>
+    {/* HEADER */}
+    <header className="p-10 md:p-14 border-b border-gray-300 bg-[#F4F3EF]">
+        <div className="max-w-5xl mx-auto">
+            <div className="flex flex-col gap-2 mb-8">
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#D65A31]">Pillar 6</span>
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#0A231F] leading-none">
+                    COMPENSATION<br />STRATEGY</h1>
+            </div>
+            <div className="w-24 h-px bg-[#0A231F] mb-6 opacity-20"></div>
+        </div>
+    </header>
+
+    {/* PROCESS GRAPHIC & INTRO */}
+    <section className="px-12 md:px-20 pt-6 pb-20 bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <ProcessGraphic activeStep="Compensation Strategy"
+                subtitle="This section translates level strategy into a defensible compensation plan." />
+
+            <div className="mt-8">
+                <h2 className="text-2xl font-light mb-8 text-[#0A231F]">Market Value & Trajectory Optimization</h2>
+
+                <div className="bg-white p-8 border-l-4 border-[#0A231F] shadow-sm mb-12 relative">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Executive Read</h3>
+                    <p className="text-lg text-[#0A231F] leading-relaxed mb-4">
+                        Your current compensation reflects a <span className="font-bold">terminal Senior PM band</span>.
+                        Moving to the <span className="font-bold">$260K+ bracket</span> is a function of
+                        level-validation, not incremental negotiation.
+                    </p>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                        The market currently reads your value through a functional execution lens. Rep.’s strategy is to
+                        decouple your compensation from "years of experience" and re-anchor it to "scope of ownership."
+                        This shift is what enables the jump into the Director-level financial tier.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {/* CONCEPTUAL ANCHOR */}
+    <section className="p-12 md:p-20 bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <div className="mb-12">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A231F] mb-6">Conceptual Anchor —
+                    Compensation as a System</h3>
+                <p className="text-sm text-gray-600 leading-relaxed max-w-3xl mb-8">
+                    Compensation is not a reward for hard work; it is an output of four market variables. We optimize
+                    the narrative (Positioning) and the target list (Market Mapping) to force the compensation outcome.
+                </p>
+            </div>
+
+            <div className="grid md:grid-cols-4 gap-4">
+                {[
+                { label: "Level", desc: "The 'Seat' you occupy (Individual Contributor vs. Owner of Outcomes)." },
+                { label: "Segment", desc: "The margin profile of the industry (e.g. FinTech)." },
+                { label: "Scope", desc: "The business stakes you are trusted to own." },
+                { label: "Timing", desc: "The scarcity of your archetype at the moment of hire." }
+                ].map((item, i) => (
+                <div key={i} className="p-6 border border-gray-100 bg-[#F4F3EF] bg-opacity-30">
+                    <div className="text-[10px] font-bold uppercase text-[#D65A31] mb-2">{item.label}</div>
+                    <p className="text-xs text-gray-600 leading-tight">{item.desc}</p>
+                </div>
+                ))}
+            </div>
+        </div>
+    </section>
+
+    {/* ALEX MERCER SNAPSHOT */}
+    <section className="p-12 md:p-20 bg-[#F4F3EF] border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <div className="mb-12">
+                <h3 className="text-2xl font-bold text-[#0A231F] mb-4">Alex Mercer — Compensation Snapshot</h3>
+                <p className="text-sm text-gray-600 max-w-3xl">
+                    This trajectory maps the transition from your current Senior PM anchor toward executive-level wealth
+                    architecture.
+                </p>
+            </div>
+
+            <div className="overflow-x-auto bg-white border border-gray-200 shadow-sm rounded-sm mb-8">
+                <table className="w-full text-left border-collapse">
+                    <thead>
+                        <tr
+                            className="bg-gray-50 border-b border-gray-200 text-[10px] uppercase tracking-widest text-[#0A231F]">
+                            <th className="p-6 font-bold">Horizon</th>
+                            <th className="p-6 font-bold border-l border-gray-100">Target Range (Total Comp)</th>
+                            <th className="p-6 font-bold border-l border-gray-100">Target Level</th>
+                            <th className="p-6 font-bold border-l border-gray-100">Strategic Focus</th>
+                        </tr>
+                    </thead>
+                    <tbody className="text-sm text-gray-700 divide-y divide-gray-100">
+                        {trajectoryData.map((row, i) => (
+                        <tr key={i} className={`${i===1 ? 'bg-[#0A231F] bg-opacity-5' : '' } hover:bg-gray-50
+                            transition-colors`}>
+                            <td className="p-6 font-bold text-[#0A231F]">{row.period}</td>
+                            <td className={`p-6 border-l border-gray-100 ${i===1 ? 'text-[#D65A31] font-bold' : '' }`}>
+                                {row.range}</td>
+                            <td className="p-6 border-l border-gray-100">{row.level}</td>
+                            <td className="p-6 border-l border-gray-100 text-xs text-gray-500 italic">{row.focus}</td>
+                        </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            <div className="mt-4 text-[10px] text-gray-400 uppercase tracking-widest text-center">
+                *This is directional context based on intake inputs and Rep. market synthesis.
+            </div>
+        </div>
+    </section>
+
+    {/* --- ADDITION: COMPETING CRITERIA & TRADEOFF FLAGS --- */}
+    <section className="p-12 md:p-20 bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <div className="mb-12">
+                <h3 className="text-2xl font-bold text-[#0A231F] mb-6">Constraints That Shape Compensation Outcomes</h3>
+                <p className="text-sm text-gray-600 leading-relaxed max-w-3xl">
+                    Compensation outcomes do not exist in isolation. They are shaped by how multiple priorities interact
+                    — sometimes reinforcing one another, and sometimes creating tension. Based on your intake, the
+                    following criteria materially influence compensation outcomes in your search.
+                </p>
+            </div>
+
+            <div className="space-y-4">
+                {tradeoffData.map((item, index) => (
+                <div key={index}
+                    className="border border-gray-200 bg-white p-6 rounded-sm flex flex-col md:flex-row gap-6 items-start">
+                    <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-3">
+                            {item.icon}
+                            <h4 className="font-bold text-sm text-[#0A231F] uppercase tracking-wide">{item.criterion}
+                            </h4>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <span className="text-[10px] uppercase font-bold text-gray-400 block mb-1">Stated
+                                    Preference</span>
+                                <p className="text-xs text-gray-600 italic leading-relaxed">{item.preference}</p>
+                            </div>
+                            <div>
+                                <span className="text-[10px] uppercase font-bold text-gray-400 block mb-1">Compensation
+                                    Interaction</span>
+                                <p className="text-xs text-gray-600 leading-relaxed">{item.interaction}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className={`mt-4 md:mt-0 px-3 py-1.5 rounded border text-[10px] font-bold uppercase
+                        tracking-widest whitespace-nowrap self-start ${item.flagStyle}`}>
+                        {item.flag}
+                    </div>
+                </div>
+                ))}
+            </div>
+
+            <div className="mt-12 bg-[#F4F3EF] border border-gray-200 p-8 rounded-sm">
+                <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#0A231F] mb-6">What We Will Align on
+                    in the Kickoff Call</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                    <ul className="space-y-3">
+                        <li className="flex items-center gap-3 text-xs text-gray-600">
+                            <ArrowRight size={12} className="text-[#D65A31] shrink-0" />
+                            <span>Which criteria are non-negotiable</span>
+                        </li>
+                        <li className="flex items-center gap-3 text-xs text-gray-600">
+                            <ArrowRight size={12} className="text-[#D65A31] shrink-0" />
+                            <span>Where flexibility may unlock compensation upside</span>
+                        </li>
+                    </ul>
+                    <ul className="space-y-3">
+                        <li className="flex items-center gap-3 text-xs text-gray-600">
+                            <ArrowRight size={12} className="text-[#D65A31] shrink-0" />
+                            <span>How we interpret early signals to adjust expectations</span>
+                        </li>
+                        <li className="flex items-center gap-3 text-xs text-gray-600">
+                            <ArrowRight size={12} className="text-[#D65A31] shrink-0" />
+                            <span>What constitutes a true tradeoff vs. a false one</span>
+                        </li>
+                    </ul>
+                </div>
+                <p className="mt-6 text-[10px] text-gray-400 italic">No tradeoff decisions are finalized today; these
+                    serve as analytical starting points for our live session.</p>
+            </div>
+        </div>
+    </section>
+
+    {/* DECISIONS LIVE */}
+    <section className="p-12 md:p-20 bg-[#F9F9F9]">
+        <div className="max-w-4xl mx-auto">
+            <div className="flex items-center gap-3 mb-8">
+                <Activity size={20} className="text-[#D65A31]" />
+                <h3 className="text-xl font-bold text-[#0A231F]">What We Will Decide Together</h3>
+            </div>
+
+            <div className="bg-white p-8 border border-gray-200 rounded-sm">
+                <ul className="space-y-4">
+                    {[
+                    { q: "Acceptable Compensation Floors", a: "Minimum total compensation that justifies a move given
+                    your current employed posture ($228k base)." },
+                    { q: "Equity vs. Base Preference", a: "Your risk tolerance for stock options/RSUs specifically
+                    within FinTech/Platform growth environments." },
+                    { q: "The 'Level Up' Premium", a: "The minimum financial delta required to validate the
+                    Director-level jump versus a high-paying lateral move." },
+                    { q: "Market Feedback Triggers", a: "When we adjust target ranges based on real-time recruiter data
+                    for your specific niche." }
+                    ].map((item, i) => (
+                    <li key={i} className="flex items-start gap-4 pb-4 border-b border-gray-50 last:border-0 last:pb-0">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#D65A31] mt-1.5 shrink-0" />
+                        <div>
+                            <div className="text-sm font-bold text-[#0A231F]">{item.q}</div>
+                            <div className="text-xs text-gray-500">{item.a}</div>
+                        </div>
+                    </li>
+                    ))}
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    {/* FOOTER / TRANSITION */}
+    <section className="bg-[#0A231F] text-[#F4F3EF] py-16 px-12 text-center">
+        <div className="max-w-3xl mx-auto">
+            <p className="text-lg font-light leading-relaxed opacity-80 mb-12">
+                Compensation validates your seat in the short term.<br />
+                Architecture ensures that seat is a multiplier for your long-term wealth.
+            </p>
+            <div className="mt-16 pt-8 border-t border-white border-opacity-10">
+                <p className="text-sm font-bold uppercase tracking-widest mb-6 text-gray-400">Final Pillar</p>
+                <div
+                    className="inline-flex items-center gap-3 text-sm tracking-widest font-bold text-white border border-[#D65A31] px-6 py-3 rounded-sm hover:bg-[#D65A31] hover:bg-opacity-10 transition-colors cursor-default">
+                    PILLAR 7 — LONG-TERM ARCHITECTURE
+                    <ArrowRight size={14} className="text-[#D65A31]" />
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+);
+};
+
+// --- PILLAR 7: LONG-TERM ARCHITECTURE ---
+const Pillar7 = () => {
+const dashboardData = [
+{
+title: "Ownership Scope",
+current: "Partial Outcomes",
+target: "Business P&L",
+status: "Active Build",
+statusColor: "bg-orange-50 text-orange-700 border-orange-200",
+icon:
+<Layers size={18} className="text-[#D65A31]" />,
+desc: "Moving from functional execution to full financial accountability.",
+metrics: ["Revenue or cost scope owned ($)", "Business KPIs directly accountable for", "Initiatives owned end-to-end"],
+nextMoves: ["Negotiate explicit KPI ownership in next role", "Anchor 90-day plan around owned business outcome"],
+progress: 45
+},
+{
+title: "Decision Authority",
+current: "Recommender",
+target: "Allocator",
+status: "Structural Constraint",
+statusColor: "bg-red-50 text-red-700 border-red-200",
+icon:
+<Lock size={18} className="text-[#D65A31]" />,
+desc: "Gaining the right to allocate budget and set strategic priorities.",
+metrics: ["Budget owned ($)", "Headcount influence (#)", "Decisions made without approval (#)"],
+nextMoves: ["Secure hiring or budget authority in Director seat", "Move from recommender → final approver"],
+progress: 30
+},
+{
+title: "Compensation Architecture",
+current: "Cash-Heavy",
+target: "Equity-Leveraged",
+status: "Active Build",
+statusColor: "bg-orange-50 text-orange-700 border-orange-200",
+icon:
+<DollarSign size={18} className="text-[#D65A31]" />,
+desc: "Shifting focus from base salary to wealth accumulation via equity.",
+metrics: ["Base vs variable mix (%)", "Equity participation (yes/no + structure)", "Refresh / promotion mechanics
+clarity"],
+nextMoves: ["Prioritize equity-bearing Director roles", "Avoid cash-only comp traps"],
+progress: 55
+},
+{
+title: "Market Identity",
+current: "Emerging Leader",
+target: "Trusted Executive",
+status: "Active Build",
+statusColor: "bg-orange-50 text-orange-700 border-orange-200",
+icon:
+<Flag size={18} className="text-[#D65A31]" />,
+desc: "Establishing a reputation for owning outcomes, not just processes.",
+metrics: ["Inbound role level (Director+ vs PM)", "Narrative consistency across assets", "External recognition
+(speaking, advisory, etc.)"],
+nextMoves: ["Normalize Director-level language in public assets", "Reinforce ownership narrative via interviews and
+content"],
+progress: 40
+}
+];
+
+return (
+<div className="w-full font-sans antialiased text-[#0A231F]" style={{ backgroundColor: colors.bone }}>
+    {/* HEADER */}
+    <header className="p-10 md:p-14 border-b border-gray-300 bg-[#F4F3EF]">
+        <div className="max-w-5xl mx-auto">
+            <div className="flex flex-col gap-2 mb-8">
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#D65A31]">Pillar 7</span>
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#0A231F] leading-none">
+                    LONG-TERM<br />ARCHITECTURE</h1>
+            </div>
+            <div className="w-24 h-px bg-[#0A231F] mb-6 opacity-20"></div>
+        </div>
+    </header>
+
+    {/* PROCESS GRAPHIC & INTRO */}
+    <section className="px-12 md:px-20 pt-6 pb-20 bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <ProcessGraphic activeStep="Long-Term Architecture"
+                subtitle="We are not just solving for a job. We are solving for a trajectory." />
+
+            <div className="mt-8">
+                <h2 className="text-2xl font-light mb-8 text-[#0A231F]">Beyond the Immediate Search</h2>
+
+                <div className="bg-white p-8 border-l-4 border-[#0A231F] shadow-sm mb-12 relative">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Executive Read</h3>
+                    <p className="text-lg text-[#0A231F] leading-relaxed mb-4">
+                        The current search is <span className="font-bold">Step 1</span> in a multi-stage architecture.
+                        Your goal is not just to land a Director title, but to use that seat to systematically acquire
+                        the assets required for executive leadership.
+                    </p>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                        Rep. views your career as an asset class. This section outlines how we will track and optimize
+                        that asset over the next 5–10 years, ensuring today's move creates leverage for tomorrow's
+                        wealth.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {/* CAREER ARCHITECTURE THESIS */}
+    <section className="p-12 md:p-20 bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <div className="mb-12">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-[#0A231F] mb-6">Career Architecture
+                    Thesis</h3>
+                <p className="text-lg font-light leading-relaxed max-w-3xl mb-8">
+                    Your trajectory is defined by the <span className="font-bold border-b-2 border-[#D65A31]">expansion
+                        of ownership</span>.
+                </p>
+                <p className="text-sm text-gray-600 leading-relaxed max-w-3xl">
+                    Currently, you are valued for execution. The architectural goal is to shift that valuation to <span
+                        className="font-medium text-[#0A231F]">economic participation</span> and <span
+                        className="font-medium text-[#0A231F]">strategic direction</span>. This requires a deliberate
+                    sequence of roles that grant you P&L authority and equity leverage.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    {/* CAREER HORIZON MAP */}
+    <section className="p-12 md:p-20 bg-[#F4F3EF] border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <h3 className="text-2xl font-bold text-[#0A231F] mb-10">Career Horizon Map</h3>
+
+            <div className="grid md:grid-cols-3 gap-8">
+                <div className="bg-white p-6 border-t-4 border-[#D65A31] shadow-sm">
+                    <h4 className="text-sm font-bold uppercase tracking-wide text-[#0A231F] mb-2">H1: Current Search
+                    </h4>
+                    <p className="text-[10px] uppercase font-bold text-gray-400 mb-4">Timeline: Now</p>
+                    <ul className="space-y-3 text-sm text-gray-600">
+                        <li className="flex items-start gap-2">
+                            <CheckCircle2 size={14} className="text-[#D65A31] mt-1 shrink-0" /><span>Secure "Director"
+                                title validation.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <CheckCircle2 size={14} className="text-[#D65A31] mt-1 shrink-0" /><span>Establish hiring
+                                authority.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <CheckCircle2 size={14} className="text-[#D65A31] mt-1 shrink-0" /><span>Enter
+                                equity-participation tier.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div className="bg-white p-6 border-t-4 border-gray-300 shadow-sm opacity-90">
+                    <h4 className="text-sm font-bold uppercase tracking-wide text-[#0A231F] mb-2">H2: Expansion Phase
+                    </h4>
+                    <p className="text-[10px] uppercase font-bold text-gray-400 mb-4">Timeline: 2–3 Years</p>
+                    <ul className="space-y-3 text-sm text-gray-600">
+                        <li className="flex items-start gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-gray-300 mt-2 shrink-0" /><span>Expand scope to
+                                full P&L.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-gray-300 mt-2 shrink-0" /><span>Demonstrate
+                                strategic turnaround or scaling.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-gray-300 mt-2 shrink-0" /><span>Build platform
+                                credibility.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div className="bg-white p-6 border-t-4 border-gray-300 shadow-sm opacity-70">
+                    <h4 className="text-sm font-bold uppercase tracking-wide text-[#0A231F] mb-2">H3: Architecture Phase
+                    </h4>
+                    <p className="text-[10px] uppercase font-bold text-gray-400 mb-4">Timeline: 5–10 Years</p>
+                    <ul className="space-y-3 text-sm text-gray-600">
+                        <li className="flex items-start gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-gray-300 mt-2 shrink-0" /><span>VP / Executive
+                                functional leadership.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-gray-300 mt-2 shrink-0" /><span>Board advisory
+                                optionality.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-gray-300 mt-2 shrink-0" /><span>Wealth
+                                architecture maturity.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {/* GRAPHICAL ELEMENT: CAREER ARCHITECTURE DASHBOARD */}
+    <section className="p-12 md:p-20 bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <div className="mb-12 flex justify-between items-end">
+                <div>
+                    <h3 className="text-2xl font-bold text-[#0A231F] mb-4">Career Architecture Dashboard</h3>
+                    <p className="text-sm text-gray-600 max-w-2xl">
+                        This dashboard tracks the structural health of your career asset. We update this quarterly to
+                        ensure every move advances your long-term value.
+                    </p>
+                </div>
+                <div
+                    className="hidden md:flex items-center gap-2 text-[10px] uppercase font-bold tracking-widest text-gray-400">
+                    <Activity size={14} />
+                    <span>Live Tracking System</span>
+                </div>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-6">
+                {dashboardData.map((panel, index) => (
+                <div key={index}
+                    className="border border-gray-200 rounded-sm p-6 hover:shadow-md transition-shadow bg-white">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-[#F4F3EF] rounded-full">{panel.icon}</div>
+                            <h4 className="font-bold text-sm text-[#0A231F] uppercase tracking-wide">{panel.title}</h4>
+                        </div>
+                        <span className={`text-[9px] font-bold uppercase px-2 py-1 rounded-sm border
+                            ${panel.statusColor}`}>{panel.status}</span>
+                    </div>
+
+                    <div className="space-y-4">
+                        <p className="text-xs text-gray-600 italic pb-2 border-b border-gray-100">{panel.desc}</p>
+
+                        {/* Progress Bar */}
+                        <div className="space-y-2">
+                            <div
+                                className="flex justify-between items-center text-[10px] uppercase font-bold tracking-wider text-gray-400">
+                                <span>Progress</span>
+                                <span>{panel.progress}%</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-[#D65A31]" style={{ width: `${panel.progress}%` }}></div>
+                            </div>
+                        </div>
+
+                        {/* Metrics & Plays Grid */}
+                        <div className="grid grid-cols-2 gap-4 pt-2">
+                            <div>
+                                <h5 className="text-[10px] font-bold text-[#0A231F] uppercase mb-2">Key Metrics</h5>
+                                <ul className="space-y-1">
+                                    {panel.metrics.map((m, i) => (
+                                    <li key={i} className="text-[10px] text-gray-500 leading-tight">• {m}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                            <div>
+                                <h5 className="text-[10px] font-bold text-[#D65A31] uppercase mb-2">Rep. Next Moves</h5>
+                                <ul className="space-y-1">
+                                    {panel.nextMoves.map((m, i) => (
+                                    <li key={i} className="text-[10px] text-gray-500 leading-tight">• {m}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ))}
+            </div>
+        </div>
+    </section>
+
+    {/* HOW REP. USES THIS ARCHITECTURE */}
+    <section className="p-12 md:p-20 bg-[#F4F3EF] border-b border-gray-200">
+        <div className="max-w-4xl mx-auto">
+            <div className="mb-10 flex items-center gap-3">
+                <Layout size={20} className="text-[#D65A31]" />
+                <h3 className="text-xl font-bold text-[#0A231F]">How Rep. Uses This System</h3>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-12">
+                <div className="space-y-6">
+                    <div>
+                        <h4 className="text-sm font-bold text-[#0A231F] uppercase tracking-wide mb-2">Evaluation Filter
+                        </h4>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                            We score every opportunity against this architecture. A high-paying role that reduces
+                            decision authority (e.g., "Golden Handcuffs") is flagged as a trajectory risk.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-bold text-[#0A231F] uppercase tracking-wide mb-2">Negotiation
+                            Posture</h4>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                            We trade short-term variables (e.g., signing bonus) for long-term structural wins (e.g.,
+                            title, reporting line, equity class) when they advance the H2/H3 goals.
+                        </p>
+                    </div>
+                </div>
+                <div className="space-y-6">
+                    <div>
+                        <h4 className="text-sm font-bold text-[#0A231F] uppercase tracking-wide mb-2">Push vs. Pass</h4>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                            We advise you to pass on roles that offer safety but stall ownership progression. We push
+                            for roles that carry higher ambiguity but offer step-function growth in scope.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-bold text-[#0A231F] uppercase tracking-wide mb-2">Ongoing
+                            Stewardship</h4>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                            Post-placement, we review this dashboard quarterly to ensure you are extracting the intended
+                            value from the seat.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {/* --- QUARTERLY TRAJECTORY REVIEW GRAPHIC --- */}
+    <section className="p-12 md:p-20 bg-white border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <div className="mb-10 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <RefreshCw size={20} className="text-[#D65A31]" />
+                    <h3 className="text-xl font-bold text-[#0A231F]">Quarterly Career Trajectory Review</h3>
+                </div>
+                <span
+                    className="text-[10px] uppercase font-bold text-gray-400 tracking-widest hidden md:inline-block">Recurring
+                    Stewardship Event</span>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-px bg-gray-200 border border-gray-200 rounded-sm overflow-hidden">
+                {/* Panel 1 */}
+                <div className="bg-white p-8 hover:bg-gray-50 transition-colors">
+                    <div className="flex justify-between items-start mb-4">
+                        <h4 className="text-sm font-bold text-[#0A231F] uppercase tracking-wide">Seat & Scope Progress
+                        </h4>
+                        <span
+                            className="text-[9px] font-bold text-green-700 bg-green-50 border border-green-200 px-2 py-1 rounded-sm uppercase tracking-widest">Accelerating</span>
+                    </div>
+                    <p className="text-sm font-medium text-[#0A231F] mb-2 leading-relaxed">Ownership expanded to full
+                        product lifecycle.</p>
+                    <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
+                        <ArrowRight size={12} className="text-[#D65A31]" />
+                        <span className="text-[10px] font-bold uppercase text-gray-500 tracking-wide">Next Q Focus:
+                            Formalize budget authority</span>
+                    </div>
+                </div>
+
+                {/* Panel 2 */}
+                <div className="bg-white p-8 hover:bg-gray-50 transition-colors">
+                    <div className="flex justify-between items-start mb-4">
+                        <h4 className="text-sm font-bold text-[#0A231F] uppercase tracking-wide">Market Signal Health
+                        </h4>
+                        <span
+                            className="text-[9px] font-bold text-green-700 bg-green-50 border border-green-200 px-2 py-1 rounded-sm uppercase tracking-widest">Strength</span>
+                    </div>
+                    <p className="text-sm font-medium text-[#0A231F] mb-2 leading-relaxed">Inbound consistently
+                        Director-level.</p>
+                    <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
+                        <ArrowRight size={12} className="text-[#D65A31]" />
+                        <span className="text-[10px] font-bold uppercase text-gray-500 tracking-wide">Next Q Focus:
+                            Refresh public case studies</span>
+                    </div>
+                </div>
+
+                {/* Panel 3 */}
+                <div className="bg-white p-8 hover:bg-gray-50 transition-colors">
+                    <div className="flex justify-between items-start mb-4">
+                        <h4 className="text-sm font-bold text-[#0A231F] uppercase tracking-wide">Compensation Trajectory
+                        </h4>
+                        <span
+                            className="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-sm uppercase tracking-widest">Monitor</span>
+                    </div>
+                    <p className="text-sm font-medium text-[#0A231F] mb-2 leading-relaxed">Cash strong, equity dilution
+                        concerns.</p>
+                    <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
+                        <ArrowRight size={12} className="text-[#D65A31]" />
+                        <span className="text-[10px] font-bold uppercase text-gray-500 tracking-wide">Next Q Focus:
+                            Audit refresh grant mechanics</span>
+                    </div>
+                </div>
+
+                {/* Panel 4 */}
+                <div className="bg-white p-8 hover:bg-gray-50 transition-colors">
+                    <div className="flex justify-between items-start mb-4">
+                        <h4 className="text-sm font-bold text-[#0A231F] uppercase tracking-wide">Architecture Alignment
+                        </h4>
+                        <span
+                            className="text-[9px] font-bold text-green-700 bg-green-50 border border-green-200 px-2 py-1 rounded-sm uppercase tracking-widest">On
+                            Track</span>
+                    </div>
+                    <p className="text-sm font-medium text-[#0A231F] mb-2 leading-relaxed">Role aligns H2 goals; scope
+                        drift noted.</p>
+                    <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
+                        <ArrowRight size={12} className="text-[#D65A31]" />
+                        <span className="text-[10px] font-bold uppercase text-gray-500 tracking-wide">Next Q Focus:
+                            Re-anchor strategic priorities</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {/* --- ANNUAL REVIEW STRATEGY GRAPHIC --- */}
+    <section className="p-12 md:p-20 bg-[#F4F3EF] border-b border-gray-200">
+        <div className="max-w-5xl mx-auto">
+            <div className="mb-10 flex items-center gap-3">
+                <Calendar size={20} className="text-[#D65A31]" />
+                <h3 className="text-xl font-bold text-[#0A231F]">Annual Employer Review & Promotion Strategy</h3>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6 relative">
+                {/* Connector Line (Desktop) */}
+                <div
+                    className="hidden md:block absolute top-12 left-0 w-full h-0.5 bg-gray-300 -z-10 transform -translate-y-1/2">
+                </div>
+
+                {/* Stage 1 */}
+                <div className="bg-white border border-gray-200 p-6 rounded-sm shadow-sm flex flex-col h-full">
+                    <div
+                        className="w-8 h-8 rounded-full bg-[#0A231F] text-white flex items-center justify-center font-bold text-xs mb-4 shadow-sm z-10">
+                        1</div>
+                    <h4 className="text-sm font-bold text-[#0A231F] uppercase tracking-wide mb-4">Positioning the
+                        Narrative<br /><span className="text-[10px] text-gray-400 font-normal normal-case">(Pre-Review
+                            Work)</span></h4>
+                    <ul className="space-y-3 mb-4 flex-1">
+                        <li className="flex items-start gap-2 text-xs text-gray-600 leading-snug">
+                            <CheckCircle2 size={14} className="text-[#D65A31] mt-0.5 shrink-0" />
+                            <span><strong>Role-Level Framing:</strong> Defining how you should be evaluated before the
+                                criteria are set.</span>
+                        </li>
+                        <li className="flex items-start gap-2 text-xs text-gray-600 leading-snug">
+                            <CheckCircle2 size={14} className="text-[#D65A31] mt-0.5 shrink-0" />
+                            <span><strong>Scope Calibration:</strong> Documenting what you already own vs. what you are
+                                ready to own.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                {/* Stage 2 */}
+                <div className="bg-white border border-gray-200 p-6 rounded-sm shadow-sm flex flex-col h-full relative">
+                    <div
+                        className="w-8 h-8 rounded-full bg-[#D65A31] text-white flex items-center justify-center font-bold text-xs mb-4 shadow-sm z-10">
+                        2</div>
+                    <h4 className="text-sm font-bold text-[#0A231F] uppercase tracking-wide mb-4">Evidence & Leverage
+                        Pack<br /><span
+                            className="text-[10px] text-gray-400 font-normal normal-case">(Deliverables)</span></h4>
+                    <div className="bg-[#F9F9F9] p-3 rounded-sm border border-gray-100 space-y-2 mb-2">
+                        <div
+                            className="flex items-center gap-2 text-[10px] font-bold text-[#0A231F] uppercase tracking-wider">
+                            <MessageSquare size={12} className="text-gray-400" /> Talking Points Script
+                        </div>
+                        <div
+                            className="flex items-center gap-2 text-[10px] font-bold text-[#0A231F] uppercase tracking-wider">
+                            <BarChart3 size={12} className="text-gray-400" /> Impact Summary
+                        </div>
+                        <div
+                            className="flex items-center gap-2 text-[10px] font-bold text-[#0A231F] uppercase tracking-wider">
+                            <DollarSign size={12} className="text-gray-400" /> Market Benchmarks
+                        </div>
+                    </div>
+                    <p className="text-[10px] text-gray-500 italic mt-2">Rep. prepares these assets for you to carry
+                        into the room.</p>
+                </div>
+
+                {/* Stage 3 */}
+                <div className="bg-white border border-gray-200 p-6 rounded-sm shadow-sm flex flex-col h-full">
+                    <div
+                        className="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-xs mb-4 shadow-sm z-10">
+                        3</div>
+                    <h4 className="text-sm font-bold text-[#0A231F] uppercase tracking-wide mb-4">Advancement
+                        Strategy<br /><span className="text-[10px] text-gray-400 font-normal normal-case">(If
+                            Deferred)</span></h4>
+                    <ul className="space-y-3 mb-4 flex-1">
+                        <li className="flex items-start gap-2 text-xs text-gray-600 leading-snug">
+                            <ArrowRight size={14} className="text-[#D65A31] mt-0.5 shrink-0" />
+                            <span><strong>Promotion Pathing:</strong> Clarifying exactly what must be true, by
+                                when.</span>
+                        </li>
+                        <li className="flex items-start gap-2 text-xs text-gray-600 leading-snug">
+                            <ArrowRight size={14} className="text-[#D65A31] mt-0.5 shrink-0" />
+                            <span><strong>Interim Expansion:</strong> Securing title or scope wins now to bank political
+                                capital.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {/* WHAT WE WILL DECIDE LIVE */}
+    <section className="p-12 md:p-20 bg-white">
+        <div className="max-w-4xl mx-auto">
+            <h3
+                className="text-sm font-bold uppercase tracking-widest text-[#0A231F] mb-8 border-b border-gray-100 pb-4">
+                Decisions for the Kickoff Call</h3>
+            <ul className="grid md:grid-cols-2 gap-6">
+                <li className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#D65A31] mt-1.5 shrink-0" />
+                    <span className="text-sm text-gray-600">Which architectural pillars are non-negotiable for this
+                        search?</span>
+                </li>
+                <li className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#D65A31] mt-1.5 shrink-0" />
+                    <span className="text-sm text-gray-600">Acceptable deviations for high-upside opportunities.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#D65A31] mt-1.5 shrink-0" />
+                    <span className="text-sm text-gray-600">Specific metrics that will trigger a strategy
+                        adjustment.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#D65A31] mt-1.5 shrink-0" />
+                    <span className="text-sm text-gray-600">Desired cadence for post-placement strategic
+                        check-ins.</span>
+                </li>
+            </ul>
+        </div>
+    </section>
+
+    {/* CLOSING FRAME */}
+    <section className="bg-[#0A231F] text-[#F4F3EF] py-24 px-12 text-center">
+        <div className="max-w-3xl mx-auto">
+            <div className="w-16 h-px bg-[#D65A31] mx-auto mb-12 opacity-50"></div>
+            <h2 className="text-3xl md:text-4xl font-light leading-tight mb-8">
+                The market sees a job search.<br />
+                We see a career architecture.
+            </h2>
+            <p className="text-lg opacity-70 leading-relaxed mb-16 max-w-2xl mx-auto">
+                This brief has outlined the terrain. Our kickoff call will define the path.
+                <br /><br />
+                Your Rep. team is ready to execute.
+            </p>
+
+            <div
+                className="inline-block border border-[#D65A31] px-8 py-4 rounded-sm text-sm font-bold tracking-widest text-[#D65A31] uppercase">
+                Briefing Complete
+            </div>
+
+            <div className="mt-20 text-[10px] uppercase tracking-widest opacity-30">
+                Rep. Career Agency • Confidential Client Artifact • 2025
+            </div>
+        </div>
+    </section>
+</div>
+);
+};
+
+// --- MAIN COMPONENT: STRATEGY BRIEF ---
+const RepKickoffStrategyBrief = () => {
+return (
+<div className="w-full">
+    <FrontMatter />
+    <Pillar1 />
+    <Pillar2 />
+    <Pillar3 />
+    <Pillar4 />
+    <Pillar5 />
+    <Pillar6 />
+    <Pillar7 />
+</div>
+);
+};
+
+export default RepKickoffStrategyBrief;

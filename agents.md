@@ -42,3 +42,26 @@ When code fails or a script crashes:
 * **Error Handling:** `governance/debugging.md`
 * **Tech Constraints:** `governance/tech_stack.md`
 * **Output Formats:** `governance/artifacts.md`
+
+## 4. Autonomy & "Ring-Fencing" Protocol
+
+> **System Context:** The user has enabled "Auto-Run" permissions. You are trusted to execute "Routine" tasks immediately. You MUST pause and request explicit confirmation for "Critical" tasks.
+
+### A. Routine Tasks (Execute Immediately)
+* **Creation:** Creating new files in `src/components/`, `src/pages/`, or `_plans/`.
+* **Edits:** Modifying UI logic, CSS/Tailwind, or text content.
+* **Analysis:** Running read-only commands (`ls`, `cat`, `grep`) or running tests.
+* **Safe Ops:** Installing standard npm packages (`npm install [package]`).
+
+### B. Critical Tasks (STOP and Ask Permission)
+* **Destruction:** Using `rm` to delete non-empty files or directories.
+* **Core Config:** Modifying `firebase.json`, `package.json` (scripts), `tsconfig.json`, or any file in `governance/`.
+* **Secrets:** Reading or writing to `.env` files.
+* **Deployment:** Running `firebase deploy` to the Production target.
+* **Mass Refactor:** Any change affecting >5 files simultaneously.
+
+### C. The "Pause" Syntax
+When a Critical Task is required:
+1.  **Stop.** Do not generate the command yet.
+2.  **Ask:** "I need to perform a CRITICAL ACTION: [Action Name]. Reason: [Why]. Proceed?"
+3.  **Wait:** Do not proceed until the user types "y" or "proceed".
