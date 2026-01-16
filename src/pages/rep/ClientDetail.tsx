@@ -195,83 +195,94 @@ export default function ClientDetail() {
                 </button>
             </div >
 
-            {/* Quick Metrics */}
-            <div className="grid grid-cols-4 gap-4">
-                <MetricTile
-                    label="Time in Process"
-                    value="12 Days"
-                    icon={<Calendar className="h-5 w-5" />}
-                />
-                <MetricTile
-                    label="Avg Deal Size (Est)"
-                    value="$245k"
-                    icon={<DollarSign className="h-5 w-5" />}
-                />
-                <MetricTile
-                    label="Process Velocity"
-                    value="High"
-                    icon={<Briefcase className="h-5 w-5" />}
-                />
-                <MetricTile
-                    label="Last Touch"
-                    value="2h Ago"
-                    icon={<Calendar className="h-5 w-5" />}
-                />
-            </div>
+            <div className="grid grid-cols-4 gap-6">
+                {/* Left Column: Metrics & Assets (3 cols wide) */}
+                <div className="col-span-3 grid grid-cols-3 gap-4">
+                    {/* Row 1 */}
+                    <MetricTile
+                        label="Time in Process"
+                        value="12 Days"
+                        icon={<Calendar className="h-5 w-5" />}
+                    />
+                    <MetricTile
+                        label="Avg Deal Size (Est)"
+                        value="$245k"
+                        icon={<DollarSign className="h-5 w-5" />}
+                    />
+                    <MetricTile
+                        label="Projected ISA Value"
+                        value="$36.7k"
+                        icon={<DollarSign className="h-5 w-5" />}
+                    />
 
-            <div className="space-y-6">
-                {/* Deal Parameters Card */}
-                <DealCard engagement={engagement} onEdit={() => setIsDealParamsModalOpen(true)} />
+                    {/* Row 2 */}
+                    <MetricTile
+                        label="Last Touch"
+                        value="2h Ago"
+                        icon={<Calendar className="h-5 w-5" />}
+                    />
 
-                {/* Deal Params Edit Modal */}
-                <ErrorBoundary>
-                    <Suspense fallback={null}>
-                        <DealParamsModal
-                            isOpen={isDealParamsModalOpen}
-                            onClose={() => setIsDealParamsModalOpen(false)}
-                            engagement={engagement}
-                        />
-                    </Suspense>
-                </ErrorBoundary>
+                    {/* Client Assets (Spanning 2 cols) */}
+                    <div className="col-span-2 bg-slate-50 border border-slate-200 rounded-sm p-4 h-full flex flex-col justify-between">
+                        <div>
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 flex items-center justify-between">
+                                <span>Client Assets</span>
+                                <span className="text-[10px] bg-slate-200 px-1.5 rounded text-slate-500">{engagement.assets?.length || 0}</span>
+                            </h3>
+                            <div className="space-y-1">
+                                {engagement.assets && engagement.assets.length > 0 ? (
+                                    engagement.assets.slice(0, 2).map((asset: any, idx: number) => (
+                                        <AssetRow key={idx} name={asset.name} type={asset.type} url={asset.url} />
+                                    ))
+                                ) : (
+                                    <div className="text-xs text-slate-400 italic">No assets uploaded.</div>
+                                )}
+                                {engagement.assets && engagement.assets.length > 2 && (
+                                    <div className="text-[10px] text-slate-400 pl-2">+{engagement.assets.length - 2} more</div>
+                                )}
+                            </div>
 
-                {/* Client Assets Section */}
-                <div className="bg-slate-50 border border-slate-200 rounded-sm p-4 h-fit">
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 flex items-center justify-between">
-                        <span>Client Assets</span>
-                        <span className="text-[10px] bg-slate-200 px-1.5 rounded text-slate-500">{engagement.assets?.length || 0}</span>
-                    </h3>
-                    <div className="space-y-2">
-                        {engagement.assets && engagement.assets.length > 0 ? (
-                            engagement.assets.map((asset: any, idx: number) => (
-                                <AssetRow key={idx} name={asset.name} type={asset.type} url={asset.url} />
-                            ))
-                        ) : (
-                            <div className="text-xs text-slate-400 italic text-center py-4">No assets uploaded.</div>
-                        )}
-                        {/* Hidden File Input */}
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleFileUpload}
-                            className="hidden"
-                            accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
-                        />
+                            {/* Hidden File Input */}
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileUpload}
+                                className="hidden"
+                                accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+                            />
+                        </div>
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading}
+                            className="w-full mt-2 py-1.5 border border-dashed border-slate-300 rounded text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:bg-white hover:text-slate-600 transition-colors flex items-center justify-center gap-2"
+                        >
+                            {isUploading ? (
+                                <>
+                                    <Loader2 className="h-3 w-3 animate-spin" /> Uploading...
+                                </>
+                            ) : (
+                                "+ Upload Asset"
+                            )}
+                        </button>
                     </div>
-                    <button
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
-                        className="w-full mt-4 py-2 border border-dashed border-slate-300 rounded text-xs text-slate-400 hover:bg-white hover:text-slate-600 transition-colors flex items-center justify-center gap-2"
-                    >
-                        {isUploading ? (
-                            <>
-                                <Loader2 className="h-3 w-3 animate-spin" /> Uploading...
-                            </>
-                        ) : (
-                            "+ Upload Asset"
-                        )}
-                    </button>
+                </div>
+
+                {/* Right Column: Deal Parameters (1 col wide, full height) */}
+                <div className="col-span-1 h-full">
+                    <DealCard engagement={engagement} onEdit={() => setIsDealParamsModalOpen(true)} />
                 </div>
             </div>
+
+            {/* Deal Params Edit Modal (Hidden Logic) */}
+            <ErrorBoundary>
+                <Suspense fallback={null}>
+                    <DealParamsModal
+                        isOpen={isDealParamsModalOpen}
+                        onClose={() => setIsDealParamsModalOpen(false)}
+                        engagement={engagement}
+                    />
+                </Suspense>
+            </ErrorBoundary>
 
             {/* Mandate Opportunities Section */}
             <div className="border-t border-slate-200 pt-8">
