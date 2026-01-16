@@ -195,6 +195,30 @@ export default function ClientDetail() {
                 </button>
             </div >
 
+            {/* Quick Metrics */}
+            <div className="grid grid-cols-4 gap-4">
+                <MetricTile
+                    label="Time in Process"
+                    value="12 Days"
+                    icon={<Calendar className="h-5 w-5" />}
+                />
+                <MetricTile
+                    label="Avg Deal Size (Est)"
+                    value="$245k"
+                    icon={<DollarSign className="h-5 w-5" />}
+                />
+                <MetricTile
+                    label="Process Velocity"
+                    value="High"
+                    icon={<Briefcase className="h-5 w-5" />}
+                />
+                <MetricTile
+                    label="Last Touch"
+                    value="2h Ago"
+                    icon={<Calendar className="h-5 w-5" />}
+                />
+            </div>
+
             <div className="space-y-6">
                 {/* Deal Parameters Card */}
                 <DealCard engagement={engagement} onEdit={() => setIsDealParamsModalOpen(true)} />
