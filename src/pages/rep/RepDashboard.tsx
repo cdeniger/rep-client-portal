@@ -44,6 +44,49 @@ export default function RepDashboard() {
         return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
     };
 
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [newEngagement, setNewEngagement] = useState({
+        headline: '',
+        pod: 'FinTech',
+        isaPercentage: 0.15,
+        status: 'active'
+    });
+    const [isCreating, setIsCreating] = useState(false);
+
+    const handleCreateEngagement = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!user) return;
+        setIsCreating(true);
+        try {
+            await addDoc(collection(db, 'engagements'), {
+                repId: user.uid,
+                status: newEngagement.status,
+                isaPercentage: Number(newEngagement.isaPercentage),
+                startDate: new Date().toISOString(),
+                lastActivity: new Date().toISOString(),
+                profile: {
+                    headline: newEngagement.headline,
+                    pod: newEngagement.pod,
+                    bio_short: "New client engagement.",
+                    firstName: "New", // Placeholder until contact linking
+                    lastName: "Client"
+                },
+                financials: {
+                    ltv: 0,
+                    cac: 0,
+                    margin: 0
+                }
+            });
+            setIsAddModalOpen(false);
+            setNewEngagement({ headline: '', pod: 'FinTech', isaPercentage: 0.15, status: 'active' });
+        } catch (err) {
+            console.error("Failed to create engagement", err);
+            alert("Failed to create engagement.");
+        } finally {
+            setIsCreating(false);
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-end border-b border-slate-700 pb-4">
@@ -52,7 +95,10 @@ export default function RepDashboard() {
                     <p className="text-slate-400 text-xs uppercase tracking-wider">Portfolio Overview | Q1 2026</p>
                 </div>
                 <div className="flex gap-2">
-                    <button className="px-4 py-2 bg-signal-orange text-white text-xs font-bold uppercase tracking-widest rounded-sm hover:bg-opacity-90">
+                    <button
+                        onClick={() => setIsAddModalOpen(true)}
+                        className="px-4 py-2 bg-signal-orange text-white text-xs font-bold uppercase tracking-widest rounded-sm hover:bg-opacity-90"
+                    >
                         + Add Engagement
                     </button>
                 </div>
@@ -100,14 +146,72 @@ export default function RepDashboard() {
                     </div>
                 </div>
             </div>
+
+            <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="New Engagement">
+                <form onSubmit={handleCreateEngagement} className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Client Title / Headline</label>
+                        <input
+                            required
+                            placeholder="e.g. Senior Engineer @ stealth"
+                            className="w-full p-2 border border-slate-300 rounded-sm text-sm"
+                            value={newEngagement.headline}
+                            onChange={e => setNewEngagement({ ...newEngagement, headline: e.target.value })}
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Pod</label>
+                            <select
+                                className="w-full p-2 border border-slate-300 rounded-sm text-sm bg-white"
+                                value={newEngagement.pod}
+                                onChange={e => setNewEngagement({ ...newEngagement, pod: e.target.value })}
+                            >
+                                <option value="FinTech">FinTech</option>
+                                <option value="Crypto">Crypto</option>
+                                <option value="Consumer">Consumer</option>
+                                <option value="Enterprise">Enterprise</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">ISA %</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                className="w-full p-2 border border-slate-300 rounded-sm text-sm"
+                                value={newEngagement.isaPercentage}
+                                onChange={e => setNewEngagement({ ...newEngagement, isaPercentage: Number(e.target.value) })}
+                            />
+                        </div>
+                    </div>
+                    <div className="pt-4 flex gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setIsAddModalOpen(false)}
+                            className="flex-1 py-2 border border-slate-300 text-slate-500 font-bold text-xs uppercase tracking-widest rounded-sm"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isCreating}
+                            className="flex-1 py-2 bg-signal-orange text-white font-bold text-xs uppercase tracking-widest rounded-sm hover:bg-opacity-90"
+                        >
+                            {isCreating ? 'Creating...' : 'Create Engagement'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
         </div>
     );
 }
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useCollection } from '../../hooks/useCollection';
-import { where } from 'firebase/firestore';
+import { where, addDoc, collection } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
+import Modal from '../../components/ui/Modal';
 
 // ... RepDashboard component ... 
 
