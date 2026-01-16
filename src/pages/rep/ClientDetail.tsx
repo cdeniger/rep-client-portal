@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef, Component, ReactNode, ErrorInfo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDocument } from '../../hooks/useDocument';
 import { useCollection } from '../../hooks/useCollection';
@@ -8,6 +8,41 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../lib/firebase';
 import { ChevronLeft, Edit, Calendar, DollarSign, Briefcase, FileText, Download, ExternalLink, Loader2 } from 'lucide-react';
 import Modal from '../../components/ui/Modal';
+import DealCard from '../../components/rep/DealCard';
+import { lazy, Suspense } from 'react';
+
+// Lazy load to prevent circular dependency crashes
+const DealParamsModal = lazy(() => import('../../components/rep/DealParamsModal'));
+
+// Simple Error Boundary for debugging
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean, error: any }> {
+    constructor(props: any) {
+        super(props);
+        this.state = { hasError: false, error: null };
+    }
+
+    static getDerivedStateFromError(error: any) {
+        return { hasError: true, error };
+    }
+
+    componentDidCatch(error: any, errorInfo: ErrorInfo) {
+        console.error("DealParamsModal Error:", error, errorInfo);
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <p className="font-bold">DealParamsModal Failed to Load</p>
+                    <pre className="text-xs mt-2 overflow-auto max-h-40">
+                        {this.state.error?.toString()}
+                    </pre>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
 
 export default function ClientDetail() {
     const { id } = useParams();
@@ -24,6 +59,7 @@ export default function ClientDetail() {
 
     // Edit State
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDealParamsModalOpen, setIsDealParamsModalOpen] = useState(false);
     const [editForm, setEditForm] = useState({
         headline: '',
         pod: '',
@@ -157,27 +193,22 @@ export default function ClientDetail() {
                     <Edit className="h-4 w-4" />
                     <span>Edit Client File</span>
                 </button>
-            </div>
+            </div >
 
-            {/* Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="grid grid-cols-3 gap-4">
-                        <MetricTile label="ISA Rate" value={`${(engagement.isaPercentage * 100).toFixed(0)}%`} icon={<DollarSign className="h-4 w-4" />} />
-                        <MetricTile label="Start Date" value={startDate} icon={<Calendar className="h-4 w-4" />} />
-                        <MetricTile label="Pipeline" value={`${opportunities?.length || 0} Open`} icon={<Briefcase className="h-4 w-4" />} />
-                    </div>
+            <div className="space-y-6">
+                {/* Deal Parameters Card */}
+                <DealCard engagement={engagement} onEdit={() => setIsDealParamsModalOpen(true)} />
 
-                    <div className="bg-white border border-slate-200 rounded-sm p-4 shadow-sm min-h-[300px]">
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 border-b border-slate-100 pb-2">
-                            Internal Notes
-                        </h3>
-                        <textarea
-                            placeholder="Add internal notes about this client strategy..."
-                            className="w-full h-full min-h-[200px] bg-transparent border-0 focus:ring-0 text-sm text-slate-700 placeholder:text-slate-400 resize-none"
+                {/* Deal Params Edit Modal */}
+                <ErrorBoundary>
+                    <Suspense fallback={null}>
+                        <DealParamsModal
+                            isOpen={isDealParamsModalOpen}
+                            onClose={() => setIsDealParamsModalOpen(false)}
+                            engagement={engagement}
                         />
-                    </div>
-                </div>
+                    </Suspense>
+                </ErrorBoundary>
 
                 {/* Client Assets Section */}
                 <div className="bg-slate-50 border border-slate-200 rounded-sm p-4 h-fit">
@@ -381,7 +412,7 @@ export default function ClientDetail() {
                     </div>
                 </form>
             </Modal>
-        </div>
+        </div >
     );
 }
 

@@ -134,3 +134,36 @@ export interface Opportunity {
         rep_net_value: number;
     };
 }
+
+export interface Engagement {
+    id: string;
+    userId: string;
+    repId?: string;
+    status: 'active' | 'searching' | 'negotiating' | 'placed' | 'paused' | 'alumni';
+    startDate?: string;
+    isaPercentage?: number;
+    profile?: {
+        firstName?: string;
+        lastName?: string;
+        headline?: string;
+        pod?: string;
+        bio_short?: string;
+    };
+    assets?: Array<{
+        name: string;
+        url: string;
+        type: 'pdf' | 'other';
+        uploadedAt: string;
+    }>;
+    searchCriteria?: {
+        minBase?: number;
+        targetTotal?: number;
+        minLevel?: number;
+        primaryFunction?: string;
+        locationType?: string;
+        targetLocations?: string[];
+        excludedIndustries?: string[];
+        minEquity?: string;
+        dealStructure?: string;
+    };
+}
