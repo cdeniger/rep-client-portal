@@ -17,6 +17,7 @@ export default function Roster() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [sortField, setSortField] = useState<'name' | 'status' | 'pod'>('name');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -24,34 +25,21 @@ export default function Roster() {
     const ITEMS_PER_PAGE = 15;
 
     // Fetch ONLY Active Engagements for this Rep (RBAC)
-    // DEBUG: Check user and query params
-    console.log('Roster: Current User:', user?.uid);
-
     const { data: engagements, loading, error } = useCollection<any>(
         'engagements',
-        where('repId', '==', user?.uid),
-        // orderBy('profile.headline') // Sorting might need composite index, keep simple filter for now
+        where('repId', '==', user?.uid)
     );
 
     if (error) console.error("Roster Query Error:", error);
-    if (engagements) console.log("Roster Clients Fetched:", engagements.length);
 
     // Filter & Sort Logic
-    // Note: engagement.contactId is the link, but we display engagement.profile info
     const filteredClients = useMemo(() => {
         if (!engagements) return [];
-        let result = engagements.filter(e =>
-            // Generic search on headline for now since Name is on Contact record (not joined here yet)
-            // TODO: Denormalize Contact Name onto Engagement for easier search, or fetch Contacts.
-            // For MVP: We rely on the fact that profile.headline is searchable.
-            // WAIT - Seeds have 'headline' not Name. Contact name is missing from Engagement.
-            // Real fix: I need to fetch Contacts or add Name to Engagement snapshot.
-            // Let's assume for this step I'm displaying "Client ID" or "Headline" until I add Name denormalization.
-            // Actually, in seed.ts, I didn't add Name to Engagement profile.
-            // I should update seed.ts or Roster will look empty of names.
-            // Let's rely on Headline for now.
-            (e.profile?.headline || '').toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        let result = engagements.filter(e => {
+            const matchesSearch = (e.profile?.headline || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesStatus = statusFilter === 'all' || e.status?.toLowerCase() === statusFilter.toLowerCase();
+            return matchesSearch && matchesStatus;
+        });
 
         result.sort((a, b) => {
             const valA = (a.profile?.[sortField] || '').toLowerCase();
@@ -62,7 +50,7 @@ export default function Roster() {
         });
 
         return result;
-    }, [engagements, searchTerm, sortField, sortDir]);
+    }, [engagements, searchTerm, statusFilter, sortField, sortDir]);
 
     // Pagination
     const totalPages = Math.ceil(filteredClients.length / ITEMS_PER_PAGE);
@@ -81,6 +69,15 @@ export default function Roster() {
     };
 
     if (loading) return <div className="p-8 text-slate-500 font-mono">Loading Roster...</div>;
+
+    const filters = [
+        { id: 'all', label: 'All' },
+        { id: 'active', label: 'Active' },
+        { id: 'searching', label: 'Searching' },
+        { id: 'negotiating', label: 'Negotiating' },
+        { id: 'placed', label: 'Placed' },
+        { id: 'paused', label: 'Paused' },
+    ];
 
     return (
         <div className="space-y-4">
@@ -104,10 +101,23 @@ export default function Roster() {
                             className="w-full bg-slate-800 border border-slate-700 rounded-sm py-2 pl-9 pr-4 text-xs text-white focus:border-signal-orange focus:outline-none placeholder:text-slate-600"
                         />
                     </div>
-                    <button className="bg-slate-800 border border-slate-700 p-2 rounded-sm text-slate-400 hover:text-white">
-                        <Filter className="h-4 w-4" />
-                    </button>
                 </div>
+            </div>
+
+            {/* Quick Filters */}
+            <div className="flex flex-wrap gap-2 pb-2">
+                {filters.map(f => (
+                    <button
+                        key={f.id}
+                        onClick={() => setStatusFilter(f.id)}
+                        className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all ${statusFilter === f.id
+                                ? 'bg-oxford-green text-white border-oxford-green'
+                                : 'bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-500'
+                            }`}
+                    >
+                        {f.label}
+                    </button>
+                ))}
             </div>
 
             {/* Data Table */}
