@@ -30,7 +30,7 @@ export default function Sidebar() {
     return (
         <div className="flex w-64 flex-col bg-oxford-green text-bone min-h-screen border-r border-oxford-green/10">
             <div className="flex h-16 shrink-0 items-center px-6 border-b border-white/10 justify-between">
-                <Logo subtitle="Portal" />
+                <Logo subtitle="Client Portal" />
                 {isRep && (
                     <span className="bg-signal-orange text-white text-[10px] uppercase font-bold px-2 py-1 rounded-sm flex items-center gap-1">
                         <ShieldAlert className="w-3 h-3" /> Internal
