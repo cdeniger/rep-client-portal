@@ -74,3 +74,16 @@ When a Critical Task is required:
 `git add . && git commit -m "auto: pre-task snapshot"`
 
 **Exception:** You do not need to do this for read-only tasks (analysis) or simple creating of a new file that doesn't overwrite anything.
+
+## 6. The "Architect's Handshake" (Plan Approval Protocol)
+> **System Context:** You must separate "Thinking" (Layer 2) from "Doing" (Layer 3).
+
+**The Rule:**
+Whenever you generate an Implementation Plan (a file in `_plans/`):
+1.  **Write** the plan file.
+2.  **STOP.** Do not write any code, do not install packages, do not run commands.
+3.  **Present** the plan link to the user in the chat.
+4.  **Ask:** "Plan ready at [link]. Review and type 'Approved' to proceed."
+5.  **Wait** for explicit user approval.
+
+**Why:** The user must verify the logic before you burn tokens writing code.

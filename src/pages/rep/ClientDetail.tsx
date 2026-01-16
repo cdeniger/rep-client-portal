@@ -1,20 +1,64 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDocument } from '../../hooks/useDocument';
 import { useAuth } from '../../context/AuthContext';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
 import { ChevronLeft, Edit, Calendar, DollarSign, Briefcase } from 'lucide-react';
+import Modal from '../../components/ui/Modal';
 
 export default function ClientDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
-
-    // We expect 'id' to be the Engagement ID (eng_...)
     const { document: engagement, loading, error } = useDocument('engagements', id);
+
+    // Edit State
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editForm, setEditForm] = useState({
+        headline: '',
+        pod: '',
+        status: '',
+        bio_short: ''
+    });
+    const [isSaving, setIsSaving] = useState(false);
+
+    // Initialize form when opening
+    const handleOpenEdit = () => {
+        if (!engagement) return;
+        setEditForm({
+            headline: engagement.profile?.headline || '',
+            pod: engagement.profile?.pod || '',
+            status: engagement.status || 'active',
+            bio_short: engagement.profile?.bio_short || ''
+        });
+        setIsEditModalOpen(true);
+    };
+
+    const handleSaveProfile = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!id) return;
+        setIsSaving(true);
+        try {
+            const engRef = doc(db, 'engagements', id);
+            await updateDoc(engRef, {
+                status: editForm.status,
+                'profile.headline': editForm.headline,
+                'profile.pod': editForm.pod,
+                'profile.bio_short': editForm.bio_short
+            });
+            setIsEditModalOpen(false);
+        } catch (err) {
+            console.error("Failed to update profile", err);
+            alert("Failed to save changes.");
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     if (loading) return <div className="p-8 text-slate-500 font-mono">Loading Engagement...</div>;
     if (error || !engagement) return <div className="p-8 text-red-400 font-mono">Engagement not found.</div>;
 
-    // RBAC check
     if (engagement.repId !== user?.uid) {
         return <div className="p-8 text-red-500 font-bold">Unauthorized Access</div>;
     }
@@ -42,7 +86,10 @@ export default function ClientDetail() {
                         </span>
                     </div>
                 </div>
-                <button className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-300 hover:text-white border border-slate-700 rounded-sm text-xs font-bold uppercase tracking-widest transition-colors">
+                <button
+                    onClick={handleOpenEdit}
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-300 hover:text-white border border-slate-700 rounded-sm text-xs font-bold uppercase tracking-widest transition-colors"
+                >
                     <Edit className="h-4 w-4" />
                     <span>Edit Profile</span>
                 </button>
@@ -50,16 +97,13 @@ export default function ClientDetail() {
 
             {/* Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main: Metrics & Notes */}
                 <div className="lg:col-span-2 space-y-6">
-                    {/* Key Metrics */}
                     <div className="grid grid-cols-3 gap-4">
                         <MetricTile label="ISA Rate" value={`${(engagement.isaPercentage * 100).toFixed(0)}%`} icon={<DollarSign className="h-4 w-4" />} />
                         <MetricTile label="Start Date" value={new Date(engagement.startDate).toLocaleDateString()} icon={<Calendar className="h-4 w-4" />} />
                         <MetricTile label="Pipeline" value="3 Active" icon={<Briefcase className="h-4 w-4" />} />
                     </div>
 
-                    {/* Internal Notes Stub */}
                     <div className="bg-white border border-slate-200 rounded-sm p-4 shadow-sm min-h-[300px]">
                         <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 border-b border-slate-100 pb-2">
                             Internal Notes
@@ -71,7 +115,6 @@ export default function ClientDetail() {
                     </div>
                 </div>
 
-                {/* Sidebar: Activity */}
                 <div className="bg-slate-50 border border-slate-200 rounded-sm p-4">
                     <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">
                         Recent Activity
@@ -81,6 +124,75 @@ export default function ClientDetail() {
                     </div>
                 </div>
             </div>
+
+            {/* Edit Modal */}
+            <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Client Engagement">
+                <form onSubmit={handleSaveProfile} className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Headline / Title</label>
+                        <input
+                            className="w-full p-2 border border-slate-300 rounded-sm text-sm"
+                            value={editForm.headline}
+                            onChange={e => setEditForm({ ...editForm, headline: e.target.value })}
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Pod / Industry</label>
+                            <select
+                                className="w-full p-2 border border-slate-300 rounded-sm text-sm bg-white"
+                                value={editForm.pod}
+                                onChange={e => setEditForm({ ...editForm, pod: e.target.value })}
+                            >
+                                <option value="FinTech">FinTech</option>
+                                <option value="Crypto">Crypto</option>
+                                <option value="Consumer">Consumer</option>
+                                <option value="Enterprise">Enterprise</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Status</label>
+                            <select
+                                className="w-full p-2 border border-slate-300 rounded-sm text-sm bg-white"
+                                value={editForm.status}
+                                onChange={e => setEditForm({ ...editForm, status: e.target.value })}
+                            >
+                                <option value="active">Active</option>
+                                <option value="searching">Searching</option>
+                                <option value="negotiating">Negotiating</option>
+                                <option value="placed">Placed</option>
+                                <option value="paused">Paused</option>
+                                <option value="alumni">Alumni</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Bio / Notes Stub</label>
+                        <textarea
+                            rows={3}
+                            className="w-full p-2 border border-slate-300 rounded-sm text-sm resize-none"
+                            value={editForm.bio_short}
+                            onChange={e => setEditForm({ ...editForm, bio_short: e.target.value })}
+                        />
+                    </div>
+                    <div className="pt-4 flex gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setIsEditModalOpen(false)}
+                            className="flex-1 py-2 border border-slate-300 text-slate-500 font-bold text-xs uppercase tracking-widest rounded-sm"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isSaving}
+                            className="flex-1 py-2 bg-oxford-green text-white font-bold text-xs uppercase tracking-widest rounded-sm hover:bg-opacity-90"
+                        >
+                            {isSaving ? 'Saving...' : 'Save Changes'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
         </div>
     );
 }
