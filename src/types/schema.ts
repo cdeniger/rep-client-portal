@@ -1,4 +1,5 @@
 import { Timestamp } from 'firebase/firestore';
+// Force HMR refresh
 
 export type UserRole = 'client' | 'rep' | 'admin';
 
@@ -8,6 +9,8 @@ export interface UserProfile {
     role: UserRole;
     profile: {
         name: string;
+        firstName?: string;
+        lastName?: string;
         status: 'searching' | 'negotiating' | 'placed';
         pod: string;
         headline: string;
@@ -15,7 +18,18 @@ export interface UserProfile {
         bio_short: string;
         pitch: string;
         repId?: string; // Link to the Rep who manages this client
+        contactId?: string; // Link to the Golden Source Contact Record
     };
+}
+
+export interface Contact {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email?: string;
+    phone?: string;
+    linkedInUrl?: string;
+    createdAt: Timestamp;
 }
 
 export interface IntakeResponse {
@@ -107,7 +121,7 @@ export interface DiagnosticReport {
 
 export interface Opportunity {
     id: string;
-    userId: string;
+    userId?: string; // Optional: If null/undefined, it is "Unassigned" (Inventory)
     company: string;
     role: string;
     status: 'outreach' | 'interviewing' | 'offer' | 'negotiating';

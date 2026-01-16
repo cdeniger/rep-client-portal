@@ -46,6 +46,8 @@ export default function RepDashboard() {
 
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [newEngagement, setNewEngagement] = useState({
+        firstName: '',
+        lastName: '',
         headline: '',
         pod: 'FinTech',
         isaPercentage: 0.15,
@@ -67,11 +69,12 @@ export default function RepDashboard() {
                 startDate: new Date(newEngagement.startDate).toISOString(),
                 lastActivity: new Date().toISOString(),
                 profile: {
+                    firstName: newEngagement.firstName,
+                    lastName: newEngagement.lastName,
                     headline: newEngagement.headline,
                     pod: newEngagement.pod,
                     bio_short: newEngagement.bio_short || "New client engagement.",
-                    firstName: "New", // Placeholder until contact linking
-                    lastName: "Client"
+                    name: `${newEngagement.firstName} ${newEngagement.lastName}`,
                 },
                 financials: {
                     ltv: 0,
@@ -81,6 +84,8 @@ export default function RepDashboard() {
             });
             setIsAddModalOpen(false);
             setNewEngagement({
+                firstName: '',
+                lastName: '',
                 headline: '',
                 pod: 'FinTech',
                 isaPercentage: 0.15,
@@ -158,6 +163,28 @@ export default function RepDashboard() {
 
             <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="New Engagement">
                 <form onSubmit={handleCreateEngagement} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">First Name</label>
+                            <input
+                                required
+                                placeholder="e.g. Jordan"
+                                className="w-full p-2 border border-slate-300 rounded-sm text-sm"
+                                value={newEngagement.firstName}
+                                onChange={e => setNewEngagement({ ...newEngagement, firstName: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Last Name</label>
+                            <input
+                                required
+                                placeholder="e.g. Wolf"
+                                className="w-full p-2 border border-slate-300 rounded-sm text-sm"
+                                value={newEngagement.lastName}
+                                onChange={e => setNewEngagement({ ...newEngagement, lastName: e.target.value })}
+                            />
+                        </div>
+                    </div>
                     <div>
                         <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Client Title / Headline</label>
                         <input

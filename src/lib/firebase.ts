@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 // Safe environment variable access for Vite (Browser) and Node (Seed Script)
 const getEnv = (key: string) => {
@@ -29,13 +30,15 @@ const firebaseConfig = {
 let app;
 let auth;
 let db;
+let storage;
 
 try {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
+    storage = getStorage(app);
 } catch (error) {
     console.error('Error initializing Firebase. Check your .env file.', error);
 }
 
-export { app, auth, db };
+export { app, auth, db, storage };

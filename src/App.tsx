@@ -13,6 +13,7 @@ import RepLayout from './layouts/RepLayout';
 import RepDashboard from './pages/rep/RepDashboard';
 import Roster from './pages/rep/Roster';
 import ClientDetail from './pages/rep/ClientDetail';
+import GlobalPipeline from './pages/rep/GlobalPipeline';
 
 function App() {
   return (
@@ -35,7 +36,7 @@ function App() {
             <Route index element={<RepDashboard />} />
             <Route path="roster" element={<Roster />} />
             <Route path="client/:id" element={<ClientDetail />} />
-            <Route path="pipeline" element={<div className="p-8 text-slate-500">Global Pipeline Placeholder</div>} />
+            <Route path="pipeline" element={<GlobalPipeline />} />
             <Route path="deals" element={<div className="p-8 text-slate-500">Deal Desk Placeholder</div>} />
             <Route path="invoices" element={<div className="p-8 text-slate-500">Invoices Placeholder</div>} />
           </Route>

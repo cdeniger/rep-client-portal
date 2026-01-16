@@ -269,7 +269,9 @@ export const seedRepData = async (uid: string) => {
             profile: { // Denormalized for Roster speed
                 headline: `Engineering Leader @ ${companyName}`,
                 pod: pod,
-                bio_short: `Mock Client ${i}`
+                bio_short: `Mock Client ${i}`,
+                firstName: `Client`,
+                lastName: `${i}`
             }
         });
 
@@ -294,9 +296,48 @@ export const seedRepData = async (uid: string) => {
         }
     }
 
+    // 4. Seed Inventory (Unassigned Opportunities)
+    console.log("Seeding Inventory (Unassigned Opportunities)...");
+    const inventoryCompanies = ["Stripe", "Airbnb", "Netflix", "Databricks", "OpenAI", "Anthropic", "Rippling", "Linear", "Retool", "Notion"];
+    const inventoryRoles = ["Staff Engineer", "Senior EM", "Product Lead", "Head of Engineering", "Principal PM", "Founding Engineer"];
+
+    for (let j = 0; j < 50; j++) {
+        const invId = `inventory_${uid}_${j}`;
+        const company = inventoryCompanies[Math.floor(Math.random() * inventoryCompanies.length)];
+        const role = inventoryRoles[Math.floor(Math.random() * inventoryRoles.length)];
+
+        const invRef = doc(db, 'opportunities', invId);
+        batch.set(invRef, {
+            id: invId,
+            company: company,
+            role: role,
+            status: 'outreach', // Default for inventory
+            stage_detail: 'Headcount Identified',
+            source: 'radar',
+            financials: {
+                base: 200000 + Math.floor(Math.random() * 100000),
+                bonus: 20000 + Math.floor(Math.random() * 50000),
+                equity: "0.1%",
+                rep_net_value: 15000
+            },
+            // No userId = Unassigned
+        });
+    }
+    console.log("Seeded 50 Inventory items.");
+
     await batch.commit();
     console.log(`Seeded 50 mock Engagements for Rep ${uid}`);
 };
 
 // Default export for backward compatibility if needed, but preferred to be explicit
 export const seedDatabase = seedClientData;
+
+// Execute Seeding for Rep Jordan Only if running as script
+if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+    seedRepData('rep_jordan')
+        .then(() => process.exit(0))
+        .catch((error) => {
+            console.error("Seeding Failed:", error);
+            process.exit(1);
+        });
+}

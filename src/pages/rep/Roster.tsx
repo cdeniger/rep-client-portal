@@ -36,7 +36,18 @@ export default function Roster() {
     const filteredClients = useMemo(() => {
         if (!engagements) return [];
         let result = engagements.filter(e => {
-            const matchesSearch = (e.profile?.headline || '').toLowerCase().includes(searchTerm.toLowerCase());
+            const term = searchTerm.toLowerCase();
+            const firstName = (e.profile?.firstName || '').toLowerCase();
+            const lastName = (e.profile?.lastName || '').toLowerCase();
+            const fullName = `${firstName} ${lastName}`;
+            const headline = (e.profile?.headline || '').toLowerCase();
+
+            const matchesSearch =
+                firstName.includes(term) ||
+                lastName.includes(term) ||
+                fullName.includes(term) ||
+                headline.includes(term);
+
             const matchesStatus = statusFilter === 'all' || e.status?.toLowerCase() === statusFilter.toLowerCase();
             return matchesSearch && matchesStatus;
         });
@@ -156,16 +167,24 @@ export default function Roster() {
                             >
                                 <td className="p-5">
                                     <div className="flex items-center gap-3">
-                                        {/* Avatar Placeholder */}
                                         <div className="h-10 w-10 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 font-bold text-xs border border-slate-600">
-                                            {client.profile?.headline?.substring(0, 2).toUpperCase() || 'CL'}
+                                            {client.profile?.firstName
+                                                ? (client.profile.firstName[0] + (client.profile.lastName?.[0] || '')).toUpperCase()
+                                                : (client.profile?.headline?.substring(0, 2).toUpperCase() || 'CL')
+                                            }
                                         </div>
                                         <div>
                                             <div className="font-bold text-white text-sm group-hover:text-signal-orange transition-colors">
-                                                {client.profile?.headline || 'Unknown Client'}
+                                                {client.profile?.firstName
+                                                    ? `${client.profile.firstName} ${client.profile.lastName}`
+                                                    : (client.profile?.headline || 'Unknown Client')
+                                                }
                                             </div>
                                             <div className="text-xs text-slate-500 font-mono mt-0.5">
-                                                Contract #{client.id.slice(-6)}
+                                                {client.profile?.firstName
+                                                    ? client.profile.headline
+                                                    : `Contract #${client.id.slice(-6)}`
+                                                }
                                             </div>
                                         </div>
                                     </div>
