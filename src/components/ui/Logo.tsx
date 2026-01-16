@@ -1,4 +1,4 @@
-import { Hexagon } from 'lucide-react';
+// Hexagon icon removed in favor of typographic logo
 
 interface LogoProps {
     className?: string;
@@ -8,19 +8,29 @@ interface LogoProps {
 
 export default function Logo({ className = "", subtitle, collapsed = false }: LogoProps) {
     return (
-        <div className={`flex items-center gap-3 ${className}`}>
-            <div className="h-8 w-8 bg-signal-orange rounded-sm flex items-center justify-center flex-shrink-0 shadow-sm border border-white/10">
-                <Hexagon className="h-5 w-5 text-white" fill="currentColor" strokeWidth={2.5} />
-            </div>
-            {!collapsed && (
-                <div>
-                    <h1 className="font-bold text-sm uppercase tracking-widest text-white leading-none mb-0.5">Rep.</h1>
-                    {subtitle && (
-                        <span className="text-[10px] text-slate-400 uppercase tracking-wider font-medium block leading-none">
-                            {subtitle}
-                        </span>
-                    )}
+        <div className={`flex items-baseline gap-2 ${className}`}>
+            {/* Main Wordmark "Rep." */}
+            {!collapsed ? (
+                <div className="flex flex-col">
+                    <h1
+                        className="font-inter font-black text-2xl tracking-tighter text-white leading-none relative"
+                        style={{ letterSpacing: '-0.05em' }}
+                    >
+                        Rep<span className="text-signal-orange">.</span>
+                    </h1>
                 </div>
+            ) : (
+                // Collapsed state: just the "R."
+                <h1 className="font-inter font-black text-2xl tracking-tighter text-white leading-none">
+                    R<span className="text-signal-orange">.</span>
+                </h1>
+            )}
+
+            {/* Subtitle (Portal / Internal) */}
+            {!collapsed && subtitle && (
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest self-center pt-1 border-l border-white/20 pl-2 ml-1">
+                    {subtitle}
+                </span>
             )}
         </div>
     );
