@@ -13,7 +13,7 @@ export default function Logo({ className = "", subtitle, collapsed = false }: Lo
             {!collapsed ? (
                 <div className="flex flex-col">
                     <h1
-                        className="font-inter font-black text-2xl tracking-tighter text-white leading-none relative"
+                        className="font-sans font-black text-2xl tracking-tighter text-white leading-none relative"
                         style={{ letterSpacing: '-0.05em' }}
                     >
                         Rep<span className="text-signal-orange">.</span>
@@ -21,7 +21,7 @@ export default function Logo({ className = "", subtitle, collapsed = false }: Lo
                 </div>
             ) : (
                 // Collapsed state: just the "R."
-                <h1 className="font-inter font-black text-2xl tracking-tighter text-white leading-none">
+                <h1 className="font-sans font-black text-2xl tracking-tighter text-white leading-none">
                     R<span className="text-signal-orange">.</span>
                 </h1>
             )}
