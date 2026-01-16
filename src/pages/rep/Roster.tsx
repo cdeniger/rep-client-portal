@@ -84,7 +84,7 @@ export default function Roster() {
             {/* Header / Controls */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-700 pb-4">
                 <div>
-                    <h2 className="text-xl font-bold text-white mb-1">Client Roster</h2>
+                    <h2 className="text-xl font-bold text-oxford-green mb-1">Client Roster</h2>
                     <p className="text-slate-400 text-xs uppercase tracking-wider">
                         Total Assets: {filteredClients.length}
                     </p>
