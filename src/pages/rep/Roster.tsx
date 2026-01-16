@@ -17,7 +17,7 @@ export default function Roster() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
+    const [statusFilter, setStatusFilter] = useState('active');
     const [currentPage, setCurrentPage] = useState(1);
     const [sortField, setSortField] = useState<'name' | 'status' | 'pod'>('name');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -111,8 +111,8 @@ export default function Roster() {
                         key={f.id}
                         onClick={() => setStatusFilter(f.id)}
                         className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all ${statusFilter === f.id
-                                ? 'bg-oxford-green text-white border-oxford-green'
-                                : 'bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-500'
+                            ? 'bg-oxford-green text-white border-oxford-green'
+                            : 'bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-500'
                             }`}
                     >
                         {f.label}
