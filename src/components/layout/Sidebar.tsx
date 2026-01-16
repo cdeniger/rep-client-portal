@@ -1,4 +1,5 @@
 import { LayoutDashboard, Target, Radio, DollarSign, FileText, LogOut, ShieldAlert } from 'lucide-react';
+import Logo from '../ui/Logo';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { auth } from '../../lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -29,7 +30,7 @@ export default function Sidebar() {
     return (
         <div className="flex w-64 flex-col bg-oxford-green text-bone min-h-screen border-r border-oxford-green/10">
             <div className="flex h-16 shrink-0 items-center px-6 border-b border-white/10 justify-between">
-                <h1 className="text-xl font-bold tracking-tight text-white mb-0">Rep.</h1>
+                <Logo subtitle="Portal" />
                 {isRep && (
                     <span className="bg-signal-orange text-white text-[10px] uppercase font-bold px-2 py-1 rounded-sm flex items-center gap-1">
                         <ShieldAlert className="w-3 h-3" /> Internal

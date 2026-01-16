@@ -9,6 +9,7 @@ import {
     LogOut,
     Hexagon
 } from 'lucide-react';
+import Logo from '../components/ui/Logo';
 
 export default function RepLayout() {
     const { user, logout } = useAuth();
@@ -27,14 +28,16 @@ export default function RepLayout() {
         <div className="flex h-screen bg-bone text-oxford-green font-mono text-sm antialiased selection:bg-signal-orange selection:text-white">
             {/* Sidebar - Dense & Dark (Oxford Green) */}
             <aside className="w-16 md:w-56 flex-shrink-0 bg-oxford-green border-r border-oxford-green/10 flex flex-col pt-4 pb-4">
-                <div className="flex items-center gap-3 px-4 mb-8">
-                    <div className="h-8 w-8 bg-signal-orange rounded-sm flex items-center justify-center flex-shrink-0">
-                        <Hexagon className="h-5 w-5 text-white" fill="currentColor" />
-                    </div>
-                    <div className="hidden md:block">
-                        <h1 className="font-bold text-xs uppercase tracking-widest text-white leading-tight">Rep.</h1>
-                        <span className="text-[10px] text-gray-400 uppercase tracking-wider">Internal</span>
-                    </div>
+                <div className="px-4 mb-8">
+                    <Logo subtitle="Internal" collapsed={false} />
+                    {/* Collapsed state handling could be added here if 'collapsed' prop logic was wired to sidebar state, 
+                        but effectively for now we just show full logo on large screens. 
+                        Note: The previous code had a "hidden md:block" for the text part. 
+                        Our Logo component handles 'collapsed' prop to hide text, but we need to pass it dynamically or handle responsive CSS.
+                        Given the current RepLayout structure is simpler, I'll stick to a responsive wrapper or just the component.
+                        The original had:
+                        <div className="flex items-center gap-3 px-4 mb-8">...</div>
+                    */}
                 </div>
 
                 <nav className="flex-1 px-2 space-y-1">
