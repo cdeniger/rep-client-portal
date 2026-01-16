@@ -58,66 +58,75 @@ export default function DealCard({ engagement, onEdit }: DealCardProps) {
                         <div>
                             <div className="text-gray-400 text-[10px] uppercase tracking-wider mb-1">Base Floor</div>
                             <div className="text-white font-mono font-bold text-lg">
-                                {criteria.minBase > 0 ? formatCurrency(criteria.minBase) : <span className="text-gray-500 text-sm">--</span>}
+                                {(criteria.minBase ?? 0) > 0 ? formatCurrency(criteria.minBase ?? 0) : <span className="text-gray-500 text-sm">--</span>}
                             </div>
                         </div>
                         <div>
                             <div className="text-gray-400 text-[10px] uppercase tracking-wider mb-1">Target TC</div>
                             <div className="text-emerald-400 font-mono font-bold text-lg">
-                                {criteria.targetTotal > 0 ? formatCurrency(criteria.targetTotal) : <span className="text-gray-500 text-sm">--</span>}
+                                {(criteria.targetTotal ?? 0) > 0 ? formatCurrency(criteria.targetTotal ?? 0) : <span className="text-gray-500 text-sm">--</span>}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* 2. Logistics */}
-                <div className="flex items-start gap-3">
-                    <MapPin className="h-4 w-4 text-gray-400 mt-1 flex-shrink-0" />
-                    <div>
-                        <div className="text-gray-400 text-[10px] uppercase tracking-wider mb-0.5">Logistics</div>
-                        <div className="text-white text-sm font-medium">
-                            <span className="capitalize">{criteria.locationType}</span>
-                            {criteria.targetLocations && criteria.targetLocations.length > 0 && (
-                                <div className="text-gray-400 text-xs mt-0.5">
-                                    {criteria.targetLocations.join(', ')}
+                {/* 2. Logistics & Scope Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-start gap-3">
+                        <MapPin className="h-4 w-4 text-gray-400 mt-1 flex-shrink-0" />
+                        <div>
+                            <div className="text-gray-400 text-[10px] uppercase tracking-wider mb-0.5">Logistics</div>
+                            <div className="text-white text-sm font-medium">
+                                <span className="capitalize">{criteria.locationType}</span>
+                                {criteria.targetLocations && criteria.targetLocations.length > 0 && (
+                                    <div className="text-gray-400 text-xs mt-0.5">
+                                        {criteria.targetLocations.join(', ')}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                        <Briefcase className="h-4 w-4 text-gray-400 mt-1 flex-shrink-0" />
+                        <div>
+                            <div className="text-gray-400 text-[10px] uppercase tracking-wider mb-0.5">Target Scope</div>
+                            <div className="text-white text-sm font-medium capitalize">
+                                {criteria.primaryFunction} &bull; L{criteria.minLevel}+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 3. Exclusions & Edit Action */}
+                <div className="pt-4 border-t border-white/5 flex items-end justify-between gap-4">
+                    {/* Exclusions Left */}
+                    <div className="flex-1">
+                        {criteria.excludedIndustries && criteria.excludedIndustries.length > 0 ? (
+                            <div>
+                                <div className="text-red-400 text-[10px] uppercase tracking-wider mb-1">Exclusions</div>
+                                <div className="flex flex-wrap gap-1">
+                                    {criteria.excludedIndustries.map((ex, i) => (
+                                        <span key={i} className="text-[10px] text-red-300 bg-red-900/20 px-1.5 py-0.5 rounded border border-red-900/30">
+                                            {ex}
+                                        </span>
+                                    ))}
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        ) : (
+                            // Placeholder if no exclusions, to keep layout stable or empty
+                            <div className="text-gray-500 text-[10px] italic">No exclusions</div>
+                        )}
                     </div>
+
+                    {/* Edit Right */}
+                    <button
+                        onClick={onEdit}
+                        className="flex-shrink-0 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-white border border-slate-700 hover:bg-slate-800 rounded-sm transition-all"
+                    >
+                        Edit Parameters
+                    </button>
                 </div>
-
-                {/* 3. Role Function */}
-                <div className="flex items-start gap-3">
-                    <Briefcase className="h-4 w-4 text-gray-400 mt-1 flex-shrink-0" />
-                    <div>
-                        <div className="text-gray-400 text-[10px] uppercase tracking-wider mb-0.5">Target Scope</div>
-                        <div className="text-white text-sm font-medium capitalize">
-                            {criteria.primaryFunction} &bull; L{criteria.minLevel}+
-                        </div>
-                    </div>
-                </div>
-
-                {/* 4. Exclusions (New Field) */}
-                {criteria.excludedIndustries && criteria.excludedIndustries.length > 0 && (
-                    <div className="pt-2 border-t border-white/5">
-                        <div className="text-red-400 text-[10px] uppercase tracking-wider mb-1">Exclusions</div>
-                        <div className="flex flex-wrap gap-1">
-                            {criteria.excludedIndustries.map((ex, i) => (
-                                <span key={i} className="text-[10px] text-red-300 bg-red-900/20 px-1.5 py-0.5 rounded border border-red-900/30">
-                                    {ex}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Edit Action */}
-                <button
-                    onClick={onEdit}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-white border border-slate-700 hover:bg-slate-800 rounded-sm transition-all"
-                >
-                    Edit Parameters
-                </button>
             </div>
         </div>
     );
