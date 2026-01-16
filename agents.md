@@ -65,3 +65,12 @@ When a Critical Task is required:
 1.  **Stop.** Do not generate the command yet.
 2.  **Ask:** "I need to perform a CRITICAL ACTION: [Action Name]. Reason: [Why]. Proceed?"
 3.  **Wait:** Do not proceed until the user types "y" or "proceed".
+
+## 5. The "Safety Snap" Protocol
+> **System Context:** You have full terminal access. Use it to protect the user's work.
+
+**Rule:** Before starting any task that involves modifying code (Refactoring, New Features, or Bug Fixes), you MUST execute this terminal command first:
+
+`git add . && git commit -m "auto: pre-task snapshot"`
+
+**Exception:** You do not need to do this for read-only tasks (analysis) or simple creating of a new file that doesn't overwrite anything.
