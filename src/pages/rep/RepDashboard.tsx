@@ -49,7 +49,9 @@ export default function RepDashboard() {
         headline: '',
         pod: 'FinTech',
         isaPercentage: 0.15,
-        status: 'active'
+        status: 'active',
+        startDate: new Date().toISOString().split('T')[0], // Default to today YYYY-MM-DD
+        bio_short: ''
     });
     const [isCreating, setIsCreating] = useState(false);
 
@@ -62,12 +64,12 @@ export default function RepDashboard() {
                 repId: user.uid,
                 status: newEngagement.status,
                 isaPercentage: Number(newEngagement.isaPercentage),
-                startDate: new Date().toISOString(),
+                startDate: new Date(newEngagement.startDate).toISOString(),
                 lastActivity: new Date().toISOString(),
                 profile: {
                     headline: newEngagement.headline,
                     pod: newEngagement.pod,
-                    bio_short: "New client engagement.",
+                    bio_short: newEngagement.bio_short || "New client engagement.",
                     firstName: "New", // Placeholder until contact linking
                     lastName: "Client"
                 },
@@ -78,7 +80,14 @@ export default function RepDashboard() {
                 }
             });
             setIsAddModalOpen(false);
-            setNewEngagement({ headline: '', pod: 'FinTech', isaPercentage: 0.15, status: 'active' });
+            setNewEngagement({
+                headline: '',
+                pod: 'FinTech',
+                isaPercentage: 0.15,
+                status: 'active',
+                startDate: new Date().toISOString().split('T')[0],
+                bio_short: ''
+            });
         } catch (err) {
             console.error("Failed to create engagement", err);
             alert("Failed to create engagement.");
@@ -159,6 +168,34 @@ export default function RepDashboard() {
                             onChange={e => setNewEngagement({ ...newEngagement, headline: e.target.value })}
                         />
                     </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Status</label>
+                            <select
+                                className="w-full p-2 border border-slate-300 rounded-sm text-sm bg-white"
+                                value={newEngagement.status}
+                                onChange={e => setNewEngagement({ ...newEngagement, status: e.target.value })}
+                            >
+                                <option value="active">Active</option>
+                                <option value="searching">Searching</option>
+                                <option value="negotiating">Negotiating</option>
+                                <option value="placed">Placed</option>
+                                <option value="paused">Paused</option>
+                                <option value="prospect">Prospect</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Start Date</label>
+                            <input
+                                type="date"
+                                className="w-full p-2 border border-slate-300 rounded-sm text-sm"
+                                value={newEngagement.startDate}
+                                onChange={e => setNewEngagement({ ...newEngagement, startDate: e.target.value })}
+                            />
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Pod</label>
@@ -184,6 +221,18 @@ export default function RepDashboard() {
                             />
                         </div>
                     </div>
+
+                    <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Short Bio / Notes</label>
+                        <textarea
+                            rows={3}
+                            placeholder="Brief context..."
+                            className="w-full p-2 border border-slate-300 rounded-sm text-sm resize-none"
+                            value={newEngagement.bio_short}
+                            onChange={e => setNewEngagement({ ...newEngagement, bio_short: e.target.value })}
+                        />
+                    </div>
+
                     <div className="pt-4 flex gap-2">
                         <button
                             type="button"
