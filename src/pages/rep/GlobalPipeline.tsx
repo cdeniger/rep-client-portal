@@ -121,7 +121,7 @@ export default function GlobalPipeline() {
                         >
                             <option value="">-- Choose a Client --</option>
                             {clients.map(client => (
-                                <option key={client.id} value={client.id?.replace?.('eng_', '').replace?.('mock_client_', '') || client.id}>
+                                <option key={client.id} value={client.id}>
                                     {/* Using firstName/lastName from denormalized profile */}
                                     {client.profile?.firstName ? `${client.profile.firstName} ${client.profile.lastName}` : client.profile?.headline || 'Unknown Client'}
                                 </option>
