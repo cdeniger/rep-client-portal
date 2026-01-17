@@ -29,6 +29,9 @@ export interface Contact {
     email?: string;
     phone?: string;
     linkedInUrl?: string;
+    type: 'client' | 'hiring_manager' | 'vendor' | 'influencer';
+    avatar?: string;
+    companyId?: string; // Link to the 'companies' collection
     createdAt: Timestamp;
 }
 
@@ -121,9 +124,34 @@ export interface DiagnosticReport {
 
 
 
+export interface CompanyLocation {
+    id: string; // UUID
+    nickname: string; // "NYC Midtown"
+    address?: {
+        street?: string;
+        city: string;
+        state?: string;
+        zip?: string;
+        country?: string;
+    };
+    mainPhone?: string;
+    notes?: string;
+}
+
+export interface Company {
+    id: string; // Auto-generated
+    name: string; // "Stripe"
+    name_lower: string; // "stripe" for case-insensitive search
+    domain?: string; // "stripe.com" (future proofing)
+    logoUrl?: string; // (future proofing)
+    createdAt: string;
+    locations?: CompanyLocation[];
+}
+
 export interface JobTarget {
     id: string;
     company: string;
+    locationId?: string; // Links to Company.locations[].id
     role: string;
     status: 'OPEN' | 'CLOSED';
     source: 'radar' | 'manual' | 'network';
@@ -143,6 +171,7 @@ export interface JobPursuit {
     targetId: string;
     userId: string;
     engagementId?: string;
+    companyId?: string; // Link to the 'companies' collection
     company: string; // Denormalized for easy display
     role: string;    // Denormalized for easy display
     status: 'outreach' | 'interviewing' | 'offer' | 'negotiating' | 'closed_lost' | 'closed_by_market';

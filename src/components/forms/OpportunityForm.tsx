@@ -1,5 +1,10 @@
 import { useState, useEffect } from 'react';
-import type { JobPursuit } from '../../types/schema';
+import { v4 as uuidv4 } from 'uuid';
+import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
+import type { JobPursuit, Company, CompanyLocation } from '../../types/schema';
+import { findOrCreateCompany } from '../../lib/companies';
+import { Search, Plus, MapPin } from 'lucide-react';
 
 interface OpportunityFormProps {
     initialData?: Partial<JobPursuit>;
@@ -7,7 +12,7 @@ interface OpportunityFormProps {
     onCancel: () => void;
     isSubmitting: boolean;
     hideStatus?: boolean;
-    clients?: any[]; // Optional list of clients for assignment
+    clients?: any[];
 }
 
 export default function OpportunityForm({ initialData, onSubmit, onCancel, isSubmitting, hideStatus, clients }: OpportunityFormProps) {
@@ -15,36 +20,203 @@ export default function OpportunityForm({ initialData, onSubmit, onCancel, isSub
         company: '',
         role: '',
         stage_detail: '',
-        status: 'outreach', // Default
+        status: 'outreach',
         financials: { base: 0, bonus: 0, equity: '', rep_net_value: 0 },
+        locationId: '', // New field
         ...initialData
     });
 
     const [assignClientId, setAssignClientId] = useState('');
 
+    // Company Search State
+    const [companySearch, setCompanySearch] = useState('');
+    const [searchResults, setSearchResults] = useState<Company[]>([]);
+    const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
+    // New Location State
+    const [isAddingLocation, setIsAddingLocation] = useState(false);
+    const [newLocationName, setNewLocationName] = useState('');
+
+
     useEffect(() => {
         if (initialData) {
             setFormData(prev => ({ ...prev, ...initialData }));
+            if (initialData.company) {
+                setCompanySearch(initialData.company);
+                // Try to find the company object if possible, to load locations
+                // In a real app we might fetch it. For now, we rely on search.
+                lookupCompany(initialData.company);
+            }
         }
     }, [initialData]);
 
+    // Simple search debounce could be added here
+    useEffect(() => {
+        if (companySearch.length > 1 && !selectedCompany) {
+            searchCompanies(companySearch);
+        } else {
+            setSearchResults([]);
+        }
+    }, [companySearch]);
+
+    const searchCompanies = async (term: string) => {
+        // Simple case-insensitive prefix search (simulated with standard query for now)
+        // In production, use a proper search index like Algolia or Typesense
+        // Here we just fetch matching names by lowercase
+        // Optimization: just use the simple query we have in other parts
+        const q = query(
+            collection(db, 'companies'),
+            where('name_lower', '>=', term.toLowerCase()),
+            where('name_lower', '<=', term.toLowerCase() + '\uf8ff')
+        );
+        const snaps = await getDocs(q);
+        const results = snaps.docs.map(d => ({ id: d.id, ...d.data() } as Company));
+        setSearchResults(results.slice(0, 5));
+        setShowSuggestions(true);
+    };
+
+    const lookupCompany = async (name: string) => {
+        const q = query(collection(db, 'companies'), where('name_lower', '==', name.toLowerCase()));
+        const snaps = await getDocs(q);
+        if (!snps.empty) {
+            setSelectedCompany({ id: snaps.docs[0].id, ...snaps.docs[0].data() } as Company);
+        }
+    }
+
+
+    const handleCompanySelect = (company: Company) => {
+        setFormData(prev => ({ ...prev, company: company.name, companyId: company.id }));
+        setCompanySearch(company.name);
+        setSelectedCompany(company);
+        setShowSuggestions(false);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && showSuggestions && searchResults.length > 0) {
+            e.preventDefault();
+            handleCompanySelect(searchResults[0]);
+        }
+    };
+
+    const handleAddNewLocation = async () => {
+        if (!selectedCompany || !newLocationName) return;
+
+        const newLoc: CompanyLocation = {
+            id: uuidv4(),
+            nickname: newLocationName,
+            address: { city: newLocationName } // Approximation
+        };
+
+        const updatedLocations = [...(selectedCompany.locations || []), newLoc];
+
+        // Optimistic Update
+        setSelectedCompany({ ...selectedCompany, locations: updatedLocations });
+        setFormData(prev => ({ ...prev, locationId: newLoc.id }));
+        setIsAddingLocation(false);
+        setNewLocationName('');
+
+        // Persist
+        try {
+            await updateDoc(doc(db, 'companies', selectedCompany.id), {
+                locations: updatedLocations
+            });
+        } catch (err) {
+            console.error(err);
+            alert('Failed to save location.');
+        }
+    }
+
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSubmit({ ...formData, assignClientId });
+        onSubmit({ ...formData, company: companySearch, assignClientId });
     };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
+
+            {/* Company Field with Typeahead */}
+            <div className="relative">
                 <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Company</label>
-                <input
-                    required
-                    className="w-full p-2 border border-gray-200 rounded-sm text-sm focus:border-signal-orange outline-none"
-                    placeholder="e.g. Acme Corp"
-                    value={formData.company}
-                    onChange={e => setFormData({ ...formData, company: e.target.value })}
-                />
+                <div className="relative">
+                    <input
+                        required
+                        className="w-full p-2 border border-gray-200 rounded-sm text-sm focus:border-signal-orange outline-none"
+                        placeholder="e.g. Acme Corp"
+                        value={companySearch}
+                        onChange={e => {
+                            setCompanySearch(e.target.value);
+                            if (selectedCompany && e.target.value !== selectedCompany.name) {
+                                setSelectedCompany(null); // Reset selection if edited
+                            }
+                        }}
+                        onFocus={() => setShowSuggestions(true)}
+                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                        onKeyDown={handleKeyDown}
+                    />
+                    {showSuggestions && searchResults.length > 0 && (
+                        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 shadow-lg z-10 rounded-sm mt-1">
+                            {searchResults.map(c => (
+                                <div
+                                    key={c.id}
+                                    className="p-2 hover:bg-gray-50 cursor-pointer text-sm font-medium flex items-center justify-between group"
+                                    onClick={() => handleCompanySelect(c)}
+                                >
+                                    <span>{c.name}</span>
+                                    {c.locations && c.locations.length > 0 && (
+                                        <span className="text-xs text-gray-400 font-normal">{c.locations.length} locs</span>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
+
+            {/* Location Select - Only if Company Selected */}
+            {selectedCompany && (
+                <div className="bg-gray-50 p-3 rounded-sm border border-gray-100">
+                    <div className="flex items-center justify-between mb-2">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-gray-500 flex items-center gap-1">
+                            <MapPin className="h-3 w-3" /> Location
+                        </label>
+                        {!isAddingLocation && (
+                            <button type="button" onClick={() => setIsAddingLocation(true)} className="text-[10px] text-oxford-green font-bold hover:underline flex items-center gap-1">
+                                <Plus className="h-3 w-3" /> New
+                            </button>
+                        )}
+                    </div>
+
+                    {isAddingLocation ? (
+                        <div className="flex items-center gap-2">
+                            <input
+                                className="flex-1 p-1.5 text-xs border border-gray-300 rounded-sm outline-none"
+                                placeholder="City or Office (e.g. London)"
+                                value={newLocationName}
+                                onChange={e => setNewLocationName(e.target.value)}
+                                autoFocus
+                            />
+                            <button type="button" onClick={handleAddNewLocation} className="text-xs font-bold text-white bg-oxford-green px-2 py-1.5 rounded-sm">Add</button>
+                            <button type="button" onClick={() => setIsAddingLocation(false)} className="text-xs text-gray-500 hover:text-gray-700 px-1">Cancel</button>
+                        </div>
+                    ) : (
+                        <select
+                            className="w-full p-2 text-sm border border-gray-200 rounded-sm outline-none bg-white"
+                            value={formData.locationId || ''}
+                            onChange={e => setFormData({ ...formData, locationId: e.target.value })}
+                        >
+                            <option value="">-- No Specific Location --</option>
+                            {selectedCompany.locations?.map(loc => (
+                                <option key={loc.id} value={loc.id}>
+                                    {loc.nickname} {loc.address?.city && `(${loc.address.city})`}
+                                </option>
+                            ))}
+                        </select>
+                    )}
+                </div>
+            )}
+
             <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Role Title</label>
                 <input

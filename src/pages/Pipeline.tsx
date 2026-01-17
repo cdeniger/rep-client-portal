@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCollection } from '../hooks/useCollection';
 import { where, addDoc, collection, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { findOrCreateCompany } from '../lib/companies';
 import type { JobPursuit } from '../types/schema';
 import { Plus, Building, Briefcase, DollarSign, Edit2 } from 'lucide-react';
 import Modal from '../components/ui/Modal';
@@ -41,7 +42,10 @@ export default function Pipeline() {
             } else {
                 // Create Mode - Dual Creation Pattern
 
-                // 1. Create Job Target (Market Inventory)
+                // 1. Find or Create Company
+                const companyId = await findOrCreateCompany(data.company || 'Unknown');
+
+                // 2. Create Job Target (Market Inventory)
                 const targetRef = await addDoc(collection(db, 'job_targets'), {
                     company: data.company,
                     role: data.role,
@@ -52,7 +56,7 @@ export default function Pipeline() {
                     createdAt: new Date().toISOString(),
                 });
 
-                // 2. Create Job Pursuit (Client Application)
+                // 3. Create Job Pursuit (Client Application)
                 await addDoc(collection(db, 'job_pursuits'), {
                     targetId: targetRef.id,
                     userId: user.uid,
@@ -62,6 +66,7 @@ export default function Pipeline() {
                     // However, for the "My Pipeline" view, userId is sufficient for visibility.
                     // To follow strict schema, we should try to find the engagementId.
 
+                    companyId: companyId, // Linked Company Record
                     company: data.company,
                     role: data.role,
                     status: data.status || 'outreach',

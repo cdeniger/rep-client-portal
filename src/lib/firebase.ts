@@ -1,7 +1,7 @@
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { initializeApp, type FirebaseApp } from "firebase/app";
+import { getAuth, type Auth } from "firebase/auth";
+import { getFirestore, type Firestore } from "firebase/firestore";
+import { getStorage, type FirebaseStorage } from "firebase/storage";
 
 // Safe environment variable access for Vite (Browser) and Node (Seed Script)
 const getEnv = (key: string) => {
@@ -27,10 +27,10 @@ const firebaseConfig = {
     appId: getEnv('VITE_FIREBASE_APP_ID'),
 };
 
-let app;
-let auth;
-let db;
-let storage;
+let app: FirebaseApp;
+let auth: Auth;
+let db: Firestore;
+let storage: FirebaseStorage;
 
 try {
     app = initializeApp(firebaseConfig);

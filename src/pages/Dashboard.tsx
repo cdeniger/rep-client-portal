@@ -9,6 +9,7 @@ import { ArrowRight, Trophy, Target, Calendar, Edit2, Sparkles } from 'lucide-re
 import { Link } from 'react-router-dom';
 import Modal from '../components/ui/Modal';
 import ProfileForm from '../components/forms/ProfileForm';
+import { findOrCreateCompany } from '../lib/companies';
 
 export default function Dashboard() {
     const { user } = useAuth();
@@ -40,6 +41,10 @@ export default function Dashboard() {
     // Fetch Targets (to resolve details)
     const { data: targets } = useCollection<JobTarget>('job_targets');
 
+    if (profileLoading || oppsLoading) {
+        return <div className="text-gray-400 text-sm animate-pulse">Loading Dashboard...</div>;
+    }
+
     const handleUpdateProfile = async (data: Partial<UserProfile['profile']>) => {
         if (!user || !userProfile) return;
         setUpdating(true);
@@ -69,11 +74,15 @@ export default function Dashboard() {
 
         try {
             if (action === 'pursue') {
-                // 1. Create Pursuit
+                // 1. Resolve Company ID (Deduplication)
+                const companyId = await findOrCreateCompany(target.company || 'Unknown');
+
+                // 2. Create Pursuit
                 await addDoc(collection(db, 'job_pursuits'), {
                     targetId: target.id,
                     userId: user.uid,
                     engagementId: activeEngagement.id,
+                    companyId: companyId,
                     company: target.company,
                     role: target.role,
                     status: 'outreach',
@@ -82,7 +91,7 @@ export default function Dashboard() {
                     updatedAt: new Date().toISOString(),
                     financials: target.financials || {}
                 });
-                // 2. Update Rec Status
+                // 3. Update Rec Status
                 await updateDoc(doc(db, 'job_recommendations', recId), { status: 'converted' });
             } else if (action === 'reject') {
                 await updateDoc(doc(db, 'job_recommendations', recId), { status: 'rejected' });
@@ -98,9 +107,7 @@ export default function Dashboard() {
     const pendingRecs = recommendations.filter(r => r.status === 'pending_client');
     const deferredRecs = recommendations.filter(r => r.status === 'deferred');
 
-    if (profileLoading || oppsLoading) {
-        return <div className="text-gray-400 text-sm animate-pulse">Loading Dashboard...</div>;
-    }
+
 
     return (
         <div className="max-w-5xl mx-auto space-y-8">

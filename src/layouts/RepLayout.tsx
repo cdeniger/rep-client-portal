@@ -7,12 +7,14 @@ import {
     DollarSign,
     FileText,
     LogOut,
-    Hexagon
+    Hexagon,
+    Contact,
+    Building2
 } from 'lucide-react';
 import Logo from '../components/ui/Logo';
 
 export default function RepLayout() {
-    const { user, logout } = useAuth();
+    const { logout } = useAuth();
     const navigate = useNavigate();
 
     const handleLogout = async () => {
@@ -30,14 +32,6 @@ export default function RepLayout() {
             <aside className="w-16 md:w-56 flex-shrink-0 bg-oxford-green border-r border-oxford-green/10 flex flex-col pt-4 pb-4">
                 <div className="px-4 mb-8">
                     <Logo subtitle="Internal" collapsed={false} />
-                    {/* Collapsed state handling could be added here if 'collapsed' prop logic was wired to sidebar state, 
-                        but effectively for now we just show full logo on large screens. 
-                        Note: The previous code had a "hidden md:block" for the text part. 
-                        Our Logo component handles 'collapsed' prop to hide text, but we need to pass it dynamically or handle responsive CSS.
-                        Given the current RepLayout structure is simpler, I'll stick to a responsive wrapper or just the component.
-                        The original had:
-                        <div className="flex items-center gap-3 px-4 mb-8">...</div>
-                    */}
                 </div>
 
                 <nav className="flex-1 px-2 space-y-1">
@@ -47,6 +41,14 @@ export default function RepLayout() {
                     <NavItem to="/rep/pipeline" icon={List} label="Job Targets" />
                     <NavItem to="/rep/deals" icon={DollarSign} label="Deal Desk" />
                     <NavItem to="/rep/invoices" icon={FileText} label="Invoices" />
+
+                    <div className="pt-4 mt-4 border-t border-white/10">
+                        <div className="px-3 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest hidden md:block">
+                            CRM Tools
+                        </div>
+                        <NavItem to="/rep/contacts" icon={Contact} label="Contacts" />
+                        <NavItem to="/rep/companies" icon={Building2} label="Companies" />
+                    </div>
                 </nav>
 
                 <div className="px-4 mt-auto">
@@ -97,12 +99,12 @@ function NavItem({ to, icon: Icon, label, end = false }: { to: string, icon: any
         <NavLink
             to={to}
             end={end}
-            className={({ isActive }) => `
-        flex items-center gap-3 px-3 py-2 rounded-sm transition-all
-        ${isActive
+            className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2 rounded-sm transition-all ${isActive
                     ? 'bg-signal-orange text-white border-r-2 border-white'
-                    : 'text-gray-400 hover:bg-white/5 hover:text-white'}
-      `}
+                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                }`
+            }
         >
             <Icon className="h-4 w-4" />
             <span className="hidden md:block text-xs font-bold uppercase tracking-widest">{label}</span>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { collection, query, getDocs, addDoc, writeBatch, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { findOrCreateCompany } from '../../lib/companies';
 import { Search, Filter, Briefcase, List as ListIcon, Kanban, Loader2, CheckSquare, Square } from 'lucide-react';
 import Modal from '../../components/ui/Modal';
 import OpportunityForm from '../../components/forms/OpportunityForm';
@@ -62,10 +63,15 @@ export default function GlobalPipeline() {
 
             // New Logic: Create a Job Pursuit linked to the Target
             // The Target remains OPEN in the inventory (shared market data)
+
+            // Find/Create Company
+            const companyId = await findOrCreateCompany(selectedOpp.company || 'Unknown');
+
             await addDoc(collection(db, 'job_pursuits'), {
                 targetId: selectedOpp.id,
                 userId: realUserId, // The Auth/User Profile ID
                 engagementId: assignClientId, // The Business Engagement ID (Critical for ClientDetail views)
+                companyId: companyId,
                 company: selectedOpp.company,
                 role: selectedOpp.role,
                 status: 'interviewing', // Default start status for assignment
@@ -158,10 +164,13 @@ export default function GlobalPipeline() {
                 const realUserId = assignedClient?.userId;
 
                 if (realUserId) {
+                    const companyId = await findOrCreateCompany(data.company || 'Unknown');
+
                     await addDoc(collection(db, 'job_pursuits'), {
                         targetId: targetRef.id,
                         userId: realUserId,
                         engagementId: data.assignClientId,
+                        companyId: companyId,
                         company: data.company,
                         role: data.role,
                         status: 'outreach',
