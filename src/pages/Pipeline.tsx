@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCollection } from '../hooks/useCollection';
 import { where, addDoc, collection, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import type { Opportunity } from '../types/schema';
+import type { JobPursuit } from '../types/schema';
 import { Plus, Building, Briefcase, DollarSign, Edit2 } from 'lucide-react';
 import Modal from '../components/ui/Modal';
 import OpportunityForm from '../components/forms/OpportunityForm';
@@ -11,12 +11,12 @@ import OpportunityForm from '../components/forms/OpportunityForm';
 export default function Pipeline() {
     const { user } = useAuth();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingOpp, setEditingOpp] = useState<Opportunity | undefined>(undefined);
+    const [editingOpp, setEditingOpp] = useState<JobPursuit | undefined>(undefined);
     const [processing, setProcessing] = useState(false);
 
-    // Fetch Opportunities
-    const { data: opportunities, loading } = useCollection<Opportunity>(
-        'opportunities',
+    // Fetch Job Pursuits (Active Pipeline)
+    const { data: opportunities, loading } = useCollection<any>(
+        'job_pursuits',
         where('userId', '==', user?.uid || '')
     );
 
@@ -25,25 +25,49 @@ export default function Pipeline() {
         setIsModalOpen(true);
     };
 
-    const handleOpenEdit = (opp: Opportunity) => {
+    const handleOpenEdit = (opp: JobPursuit) => {
         setEditingOpp(opp);
         setIsModalOpen(true);
     };
 
-    const handleSave = async (data: Partial<Opportunity>) => {
+    const handleSave = async (data: Partial<JobPursuit>) => {
         if (!user) return;
         setProcessing(true);
         try {
             if (editingOpp) {
-                // Edit Mode
-                const oppRef = doc(db, 'opportunities', editingOpp.id);
+                // Edit Mode - Update the Pursuit
+                const oppRef = doc(db, 'job_pursuits', editingOpp.id);
                 await updateDoc(oppRef, data);
             } else {
-                // Create Mode
-                await addDoc(collection(db, 'opportunities'), {
-                    userId: user.uid,
-                    ...data,
+                // Create Mode - Dual Creation Pattern
+
+                // 1. Create Job Target (Market Inventory)
+                const targetRef = await addDoc(collection(db, 'job_targets'), {
+                    company: data.company,
+                    role: data.role,
+                    stage_detail: data.stage_detail,
+                    financials: data.financials,
                     source: 'manual',
+                    status: 'OPEN',
+                    createdAt: new Date().toISOString(),
+                });
+
+                // 2. Create Job Pursuit (Client Application)
+                await addDoc(collection(db, 'job_pursuits'), {
+                    targetId: targetRef.id,
+                    userId: user.uid,
+                    // Note: We don't have engagementId easily available here in the Client view 
+                    // without fetching it first. For now, we rely on the Rep to "claim" or "link" it later,
+                    // OR we should ideally fetch the client's generic engagement ID. 
+                    // However, for the "My Pipeline" view, userId is sufficient for visibility.
+                    // To follow strict schema, we should try to find the engagementId.
+
+                    company: data.company,
+                    role: data.role,
+                    status: data.status || 'outreach',
+                    stage_detail: data.stage_detail,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
                     financials: data.financials || { base: 0, bonus: 0, equity: '', rep_net_value: 0 }
                 });
             }

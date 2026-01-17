@@ -19,7 +19,7 @@ export default function Financials() {
         status: subData.status,
         amount: subData.amount || 0,
         nextBilling: subData.currentPeriodEnd ? new Date(subData.currentPeriodEnd.seconds * 1000).toLocaleDateString() : 'N/A',
-        paymentMethod: 'Visa ending in 4242' // Mock for now until Stripe
+        paymentMethod: subData.paymentMethod || 'N/A'
     } : null;
 
     const invoices = (invoicesData || []).map(inv => ({

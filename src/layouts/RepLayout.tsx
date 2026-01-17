@@ -43,7 +43,8 @@ export default function RepLayout() {
                 <nav className="flex-1 px-2 space-y-1">
                     <NavItem to="/rep" icon={Frame} label="Command Ctr" end />
                     <NavItem to="/rep/roster" icon={Users} label="Roster" />
-                    <NavItem to="/rep/pipeline" icon={List} label="Global Pipe" />
+                    <NavItem to="/rep/pending-recs" icon={Hexagon} label="Pending Recs" />
+                    <NavItem to="/rep/pipeline" icon={List} label="Job Targets" />
                     <NavItem to="/rep/deals" icon={DollarSign} label="Deal Desk" />
                     <NavItem to="/rep/invoices" icon={FileText} label="Invoices" />
                 </nav>

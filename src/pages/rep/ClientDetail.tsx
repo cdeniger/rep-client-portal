@@ -19,31 +19,31 @@ export default function ClientDetail() {
     const { document: engagement, loading, error } = useDocument('engagements', id);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Fetch Opportunities for this client
-    const { data: opportunities, loading: loadingOpps } = useCollection<any>(
-        'opportunities',
-        where('userId', '==', id)
+    // Fetch Job Pursuits (Active Pipeline) for this Engagement
+    const { data: pursuits, loading: loadingPursuits } = useCollection<any>(
+        'job_pursuits',
+        where('engagementId', '==', id)
     );
 
     // Calculations
     const avgComp = useMemo(() => {
-        if (!opportunities || opportunities.length === 0) return 0;
-        const totalBase = opportunities.reduce((acc: number, opp: any) => acc + (opp.financials?.base || 0), 0);
-        return totalBase / opportunities.length;
-    }, [opportunities]);
+        if (!pursuits || pursuits.length === 0) return 0;
+        const totalBase = pursuits.reduce((acc: number, pursuit: any) => acc + (pursuit.financials?.base || 0), 0);
+        return totalBase / pursuits.length;
+    }, [pursuits]);
 
     const projectedISA = useMemo(() => {
-        if (!opportunities || !engagement) return 0;
-        return opportunities.reduce((acc: number, opp: any) => {
-            // Only count active opps
-            if (['offer', 'negotiating', 'interviewing'].includes(opp.status)) {
-                const base = opp.financials?.base || 0;
+        if (!pursuits || !engagement) return 0;
+        return pursuits.reduce((acc: number, pursuit: any) => {
+            // Only count active pursuits
+            if (['offer', 'negotiating', 'interviewing'].includes(pursuit.status)) {
+                const base = pursuit.financials?.base || 0;
                 const isaPct = engagement.isaPercentage || 0;
                 return acc + (base * isaPct);
             }
             return acc;
         }, 0);
-    }, [opportunities, engagement]);
+    }, [pursuits, engagement]);
 
     const lastTouch = useMemo(() => {
         if (!engagement?.lastActivity) return 'N/A';
@@ -300,13 +300,13 @@ export default function ClientDetail() {
                 engagement={engagement}
             />
 
-            {/* Job Opportunities Section */}
+            {/* Job Pursuits Section */}
             <div className="border-t border-slate-200 pt-8">
-                <h3 className="text-lg font-bold text-oxford-green mb-4">Job Opportunities</h3>
+                <h3 className="text-lg font-bold text-oxford-green mb-4">Job Pursuits</h3>
                 <div className="bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
-                    {loadingOpps ? (
-                        <div className="p-8 text-center text-slate-400 text-sm">Loading opportunities...</div>
-                    ) : (opportunities && opportunities.length > 0) ? (
+                    {loadingPursuits ? (
+                        <div className="p-8 text-center text-slate-400 text-sm">Loading pursuits...</div>
+                    ) : (pursuits && pursuits.length > 0) ? (
                         <table className="w-full text-left">
                             <thead className="bg-slate-50 border-b border-slate-100 text-xs uppercase text-slate-500">
                                 <tr>
@@ -317,20 +317,20 @@ export default function ClientDetail() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
-                                {opportunities.map((opp: any) => (
-                                    <tr key={opp.id} className="hover:bg-slate-50 transition-colors group">
-                                        <td className="p-4 font-bold text-slate-800">{opp.company}</td>
-                                        <td className="p-4 text-sm text-slate-600">{opp.role}</td>
+                                {pursuits.map((pursuit: any) => (
+                                    <tr key={pursuit.id} className="hover:bg-slate-50 transition-colors group">
+                                        <td className="p-4 font-bold text-slate-800">{pursuit.company}</td>
+                                        <td className="p-4 text-sm text-slate-600">{pursuit.role}</td>
                                         <td className="p-4">
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${opp.status === 'offer' ? 'bg-green-100 text-green-700' :
-                                                opp.status === 'interviewing' ? 'bg-blue-50 text-blue-600' :
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${pursuit.status === 'offer' ? 'bg-green-100 text-green-700' :
+                                                pursuit.status === 'interviewing' ? 'bg-blue-50 text-blue-600' :
                                                     'bg-slate-100 text-slate-500'
                                                 }`}>
-                                                {opp.status}
+                                                {pursuit.status}
                                             </span>
                                         </td>
                                         <td className="p-4 text-sm font-mono text-slate-500">
-                                            ${((opp.financials?.rep_net_value || 0) / 1000).toFixed(1)}k
+                                            ${((pursuit.financials?.rep_net_value || 0) / 1000).toFixed(1)}k
                                         </td>
                                     </tr>
                                 ))}
@@ -338,7 +338,7 @@ export default function ClientDetail() {
                         </table>
                     ) : (
                         <div className="p-8 text-center text-slate-400 text-sm italic">
-                            No active opportunities for this client.
+                            No active job pursuits for this client.
                         </div>
                     )}
                 </div>

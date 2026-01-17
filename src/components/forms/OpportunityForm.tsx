@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
-import type { Opportunity } from '../../types/schema';
+import type { JobPursuit } from '../../types/schema';
 
 interface OpportunityFormProps {
-    initialData?: Partial<Opportunity>;
-    onSubmit: (data: Partial<Opportunity>) => Promise<void>;
+    initialData?: Partial<JobPursuit>;
+    onSubmit: (data: Partial<JobPursuit> & { assignClientId?: string }) => Promise<void>;
     onCancel: () => void;
     isSubmitting: boolean;
     hideStatus?: boolean;
+    clients?: any[]; // Optional list of clients for assignment
 }
 
-export default function OpportunityForm({ initialData, onSubmit, onCancel, isSubmitting, hideStatus }: OpportunityFormProps) {
-    const [formData, setFormData] = useState<Partial<Opportunity>>({
+export default function OpportunityForm({ initialData, onSubmit, onCancel, isSubmitting, hideStatus, clients }: OpportunityFormProps) {
+    const [formData, setFormData] = useState<Partial<JobPursuit>>({
         company: '',
         role: '',
         stage_detail: '',
@@ -18,6 +19,8 @@ export default function OpportunityForm({ initialData, onSubmit, onCancel, isSub
         financials: { base: 0, bonus: 0, equity: '', rep_net_value: 0 },
         ...initialData
     });
+
+    const [assignClientId, setAssignClientId] = useState('');
 
     useEffect(() => {
         if (initialData) {
@@ -27,7 +30,7 @@ export default function OpportunityForm({ initialData, onSubmit, onCancel, isSub
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSubmit(formData);
+        onSubmit({ ...formData, assignClientId });
     };
 
     return (
@@ -108,6 +111,26 @@ export default function OpportunityForm({ initialData, onSubmit, onCancel, isSub
                     </div>
                 </div>
             </div>
+
+            {/* Optional Assignment */}
+            {clients && clients.length > 0 && (
+                <div className="pt-4 border-t border-gray-100 mt-4">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Assign to Client (Optional)</label>
+                    <div className="text-[10px] text-gray-400 mb-2">Creating this will add it to the Global Inventory AND the Client's Pipeline.</div>
+                    <select
+                        className="w-full p-2 border border-blue-200 rounded-sm text-sm bg-blue-50 focus:border-signal-orange outline-none"
+                        value={assignClientId}
+                        onChange={e => setAssignClientId(e.target.value)}
+                    >
+                        <option value="">-- Add to Inventory Only --</option>
+                        {clients.map(client => (
+                            <option key={client.id} value={client.id}>
+                                {client.profile?.firstName ? `${client.profile.firstName} ${client.profile.lastName}` : client.profile?.headline || 'Unknown Client'}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            )}
 
             <div className="pt-4 flex gap-3">
                 <button

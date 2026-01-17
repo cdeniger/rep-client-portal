@@ -8,36 +8,34 @@ export default function RepDashboard() {
         where('status', '==', 'active')
     );
 
-    // 2. Fetch Opportunities for this Rep (denormalized repId query for speed, or filter client-side)
-    // NOTE: Ideally we query opportunities where 'repId' == user.uid, if we added that to schema.
-    // Since we didn't explicitly add repId to Opps in the last schema update (only engagementId),
-    // we might need to fetch all opps and filter, OR rely on a composite index if we add repId back.
-    // Let's rely on fetching ALL opps for now (prototype scale) or just mock the aggregation to save reads.
-    // Actually, let's just fetch opps linked to these engagements.
-    // For MVP/Prototype: Fetching all opportunities is okay if < 1000 docs.
-    const { data: opportunities } = useCollection<any>('opportunities');
+    // 2. Fetch Job Pursuits (Active Pipeline)
+    // Fetching all for prototype scale. In production, would filter by rep's engagements server-side.
+    const { data: pursuits } = useCollection<any>('job_pursuits');
 
     // 3. Calculate Metrics
     const activeClientCount = engagements?.length || 0;
 
     const pipelineValue = useMemo(() => {
-        if (!opportunities || !engagements) return 0;
+        if (!pursuits || !engagements) return 0;
 
         // Map engagement ID to ISA %
         const isaMap = new Map();
         engagements.forEach(e => isaMap.set(e.id, e.isaPercentage || 0));
 
-        return opportunities.reduce((total, opp) => {
-            // Only count opps for active engagements
-            if (isaMap.has(opp.engagementId)) {
-                const base = opp.financials?.base || 0;
-                const isa = isaMap.get(opp.engagementId);
+        return pursuits.reduce((total, pursuit) => {
+            // Only count pursuits for active engagements
+            // We check both engagementId (new schema) and userId (fallback)
+            const engId = pursuit.engagementId || pursuit.userId;
+
+            if (isaMap.has(engId)) {
+                const base = pursuit.financials?.base || 0;
+                const isa = isaMap.get(engId);
                 // Value = Base * ISA %
                 return total + (base * isa);
             }
             return total;
         }, 0);
-    }, [opportunities, engagements]);
+    }, [pursuits, engagements]);
 
     // Format Currency
     const formatCurrency = (val: number) => {
@@ -125,7 +123,7 @@ export default function RepDashboard() {
                 <MetricCard label="Proj. Commission" value={formatCurrency(pipelineValue * 0.4)} subtext="Est. 40% Realization" textColor="text-emerald-600" />
                 <MetricCard
                     label="Critical Actions"
-                    value={opportunities?.filter(o => o.status === 'offer' || o.status === 'negotiating' || o.id === 'demo').length.toString() || '0'}
+                    value={pursuits?.filter(o => o.status === 'offer' || o.status === 'negotiating' || o.id === 'demo').length.toString() || '0'}
                     subtext="Requires Attention"
                     textColor="text-red-500"
                 />
@@ -138,24 +136,24 @@ export default function RepDashboard() {
                         Triage Feed
                     </h3>
                     <div className="space-y-2">
-                        {opportunities && opportunities.filter(o => o.status === 'offer' || o.status === 'negotiating').length > 0 ? (
-                            opportunities
+                        {pursuits && pursuits.filter(o => o.status === 'offer' || o.status === 'negotiating').length > 0 ? (
+                            pursuits
                                 .filter(o => o.status === 'offer' || o.status === 'negotiating')
-                                .map((opp: any) => (
-                                    <div key={opp.id} className="p-3 bg-slate-50 border border-slate-100 rounded-sm flex justify-between items-center group hover:border-slate-300 transition-colors cursor-pointer">
+                                .map((pursuit: any) => (
+                                    <div key={pursuit.id} className="p-3 bg-slate-50 border border-slate-100 rounded-sm flex justify-between items-center group hover:border-slate-300 transition-colors cursor-pointer">
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
                                                 <span className="h-1.5 w-1.5 rounded-full bg-red-500"></span>
                                                 <span className="text-red-500 text-[10px] font-bold uppercase tracking-wider">
-                                                    {opp.status === 'offer' ? 'Offer Received' : 'Active Negotiation'}
+                                                    {pursuit.status === 'offer' ? 'Offer Received' : 'Active Negotiation'}
                                                 </span>
                                             </div>
                                             <div className="text-sm font-bold text-slate-800">
-                                                {opp.company} - {opp.role}
+                                                {pursuit.company} - {pursuit.role}
                                             </div>
                                         </div>
                                         <div className="text-slate-400 text-xs">
-                                            {opp.financials?.base ? `$${(opp.financials.base / 1000).toFixed(0)}k Base` : 'Comp Pending'}
+                                            {pursuit.financials?.base ? `$${(pursuit.financials.base / 1000).toFixed(0)}k Base` : 'Comp Pending'}
                                         </div>
                                     </div>
                                 ))

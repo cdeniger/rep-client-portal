@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useDocument } from '../hooks/useFirestore';
 import { useCollection } from '../hooks/useCollection';
-import { where, doc, updateDoc } from 'firebase/firestore';
+import { where, doc, updateDoc, addDoc, collection } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import type { UserProfile, Opportunity } from '../types/schema';
+import type { UserProfile, JobPursuit, Engagement, JobRecommendation, JobTarget } from '../types/schema';
 import { ArrowRight, Trophy, Target, Calendar, Edit2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Modal from '../components/ui/Modal';
@@ -18,11 +18,27 @@ export default function Dashboard() {
     // Fetch User Profile
     const { data: userProfile, loading: profileLoading } = useDocument<UserProfile>('users', user?.uid || '');
 
-    // Fetch Opportunities
-    const { data: opportunities, loading: oppsLoading } = useCollection<Opportunity>(
-        'opportunities',
+    // Fetch Job Pursuits (Active Pipeline)
+    const { data: opportunities, loading: oppsLoading } = useCollection<JobPursuit>(
+        'job_pursuits',
         where('userId', '==', user?.uid || '')
     );
+
+    // Fetch Active Engagement to get context
+    const { data: engagements } = useCollection<Engagement>(
+        'engagements',
+        where('userId', '==', user?.uid || '')
+    );
+    const activeEngagement = engagements.find(e => ['active', 'searching', 'negotiating'].includes(e.status));
+
+    // Fetch Recommendations
+    const { data: recommendations } = useCollection<JobRecommendation>(
+        'job_recommendations',
+        where('engagementId', '==', activeEngagement?.id || 'null')
+    );
+
+    // Fetch Targets (to resolve details)
+    const { data: targets } = useCollection<JobTarget>('job_targets');
 
     const handleUpdateProfile = async (data: Partial<UserProfile['profile']>) => {
         if (!user || !userProfile) return;
@@ -43,6 +59,44 @@ export default function Dashboard() {
 
     const activeOpps = opportunities.filter(o => ['interviewing', 'offer', 'negotiating'].includes(o.status));
     const negotiatingOpps = opportunities.filter(o => o.status === 'negotiating');
+
+    // Recommendation Actions
+    const handleRecAction = async (recId: string, action: 'pursue' | 'reject' | 'defer') => {
+        if (!user || !activeEngagement) return;
+        const rec = recommendations.find(r => r.id === recId);
+        const target = targets.find(t => t.id === rec?.targetId);
+        if (!rec || !target) return;
+
+        try {
+            if (action === 'pursue') {
+                // 1. Create Pursuit
+                await addDoc(collection(db, 'job_pursuits'), {
+                    targetId: target.id,
+                    userId: user.uid,
+                    engagementId: activeEngagement.id,
+                    company: target.company,
+                    role: target.role,
+                    status: 'outreach',
+                    stage_detail: 'Client Accepted Recommendation',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    financials: target.financials || {}
+                });
+                // 2. Update Rec Status
+                await updateDoc(doc(db, 'job_recommendations', recId), { status: 'converted' });
+            } else if (action === 'reject') {
+                await updateDoc(doc(db, 'job_recommendations', recId), { status: 'rejected' });
+            } else if (action === 'defer') {
+                await updateDoc(doc(db, 'job_recommendations', recId), { status: 'deferred' });
+            }
+        } catch (err) {
+            console.error("Action failed", err);
+            alert("Action failed.");
+        }
+    };
+
+    const pendingRecs = recommendations.filter(r => r.status === 'pending_client');
+    const deferredRecs = recommendations.filter(r => r.status === 'deferred');
 
     if (profileLoading || oppsLoading) {
         return <div className="text-gray-400 text-sm animate-pulse">Loading Dashboard...</div>;
@@ -72,6 +126,7 @@ export default function Dashboard() {
                 </div>
             </div>
 
+
             {/* High Level Metrics */}
             <div className="grid md:grid-cols-3 gap-6">
                 {/* Metric 1: Active Pipeline */}
@@ -93,20 +148,22 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Metric 2: Net Value (Placeholder for logic) */}
+                {/* Metric 2: Avg Comp Value */}
                 <div className="bg-white p-6 rounded-sm border border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Est. Net Value</h3>
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">Avg. Comp Value</h3>
                         <Trophy className="text-oxford-green h-5 w-5 opacity-50" />
                     </div>
                     <div className="flex items-baseline gap-2">
                         <span className="text-4xl font-bold text-oxford-green">
-                            ${activeOpps.reduce((acc, curr) => acc + (curr.financials?.rep_net_value || 0), 0).toLocaleString()}
+                            ${activeOpps.length > 0
+                                ? Math.round(activeOpps.reduce((acc, curr) => acc + (curr.financials?.base || 0) + (curr.financials?.bonus || 0), 0) / activeOpps.length).toLocaleString()
+                                : 0}
                         </span>
-                        <span className="text-sm text-gray-500">Weighted</span>
+                        <span className="text-sm text-gray-500">Est. Total Cash</span>
                     </div>
                     <div className="mt-4 pt-4 border-t border-gray-100 text-xs text-gray-500">
-                        Across {opportunities.length} total opportunities
+                        Across {activeOpps.length} active opportunities
                     </div>
                 </div>
 
@@ -174,6 +231,36 @@ export default function Dashboard() {
                 </div>
             </div>
 
+
+            {/* Deferred Recommendations */}
+            {
+                deferredRecs.length > 0 && (
+                    <div className="pt-8 border-t border-gray-100">
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Deferred Recommendations</h3>
+                        <div className="space-y-3 opacity-75 hover:opacity-100 transition-opacity">
+                            {deferredRecs.map(rec => {
+                                const target = targets.find(t => t.id === rec.targetId);
+                                if (!target) return null;
+                                return (
+                                    <div key={rec.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-sm border border-gray-100">
+                                        <div>
+                                            <div className="font-bold text-sm text-slate-600">{target.role} @ {target.company}</div>
+                                            <div className="text-xs text-gray-400">{new Date(rec.createdAt).toLocaleDateString()}</div>
+                                        </div>
+                                        <button
+                                            onClick={() => handleRecAction(rec.id, 'pursue')}
+                                            className="text-xs font-bold text-oxford-green uppercase hover:underline"
+                                        >
+                                            Reconsider
+                                        </button>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
+                )
+            }
+
             {/* Edit Profile Modal */}
             <Modal
                 isOpen={isEditOpen}
@@ -189,6 +276,6 @@ export default function Dashboard() {
                     />
                 )}
             </Modal>
-        </div>
+        </div >
     );
 }

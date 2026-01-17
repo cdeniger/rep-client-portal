@@ -119,20 +119,54 @@ export interface DiagnosticReport {
     };
 }
 
-export interface Opportunity {
+
+
+export interface JobTarget {
     id: string;
-    userId?: string; // Optional: If null/undefined, it is "Unassigned" (Inventory)
     company: string;
     role: string;
-    status: 'outreach' | 'interviewing' | 'offer' | 'negotiating';
-    stage_detail: string;
-    source: 'manual' | 'radar' | 'network';
+    status: 'OPEN' | 'CLOSED';
+    source: 'radar' | 'manual' | 'network';
+    website?: string;
+    description?: string;
+    createdAt: string;
     financials?: {
         base: number;
         bonus: number;
         equity: string;
         rep_net_value: number;
     };
+}
+
+export interface JobPursuit {
+    id: string;
+    targetId: string;
+    userId: string;
+    engagementId?: string;
+    company: string; // Denormalized for easy display
+    role: string;    // Denormalized for easy display
+    status: 'outreach' | 'interviewing' | 'offer' | 'negotiating' | 'closed_lost' | 'closed_by_market';
+    stage_detail: string;
+    createdAt: string;
+    updatedAt: string;
+    financials?: { // Overrides target financials
+        base: number;
+        bonus: number;
+        equity: string;
+        rep_net_value: number;
+    };
+}
+
+export interface JobRecommendation {
+    id: string;
+    engagementId: string;
+    targetId: string;
+    status: 'pending_rep' | 'pending_client' | 'converted' | 'rejected' | 'deferred';
+    source: 'manual' | 'AI';
+    rep_notes: string;
+    ai_score?: number;
+    ai_rationale?: string;
+    createdAt: string;
 }
 
 export interface Engagement {

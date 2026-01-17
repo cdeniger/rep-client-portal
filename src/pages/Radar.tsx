@@ -29,15 +29,32 @@ export default function Radar() {
         setProcessing(signal.id);
 
         try {
-            await addDoc(collection(db, 'opportunities'), {
-                userId: user.uid,
+            // 1. Create Job Target (Market Inventory)
+            const targetRef = await addDoc(collection(db, 'job_targets'), {
                 company: signal.company,
                 role: 'Target Role via Radar', // Placeholder
+                status: 'OPEN',
+                source: 'radar',
+                financials: { base: 0, bonus: 0, equity: '', rep_net_value: 0 },
+                createdAt: new Date().toISOString(),
+            });
+
+            // 2. Create Job Pursuit (Client Application)
+            await addDoc(collection(db, 'job_pursuits'), {
+                targetId: targetRef.id,
+                userId: user.uid,
+                // engagementId: we assume rep logic will link this later, or we could fetch it.
+                // For now, same as Pipeline.tsx, we rely on userId for visibility.
+
+                company: signal.company,
+                role: 'Target Role via Radar',
                 status: 'outreach',
                 stage_detail: `Sourced from ${signal.source}: ${signal.type}`,
-                source: 'radar',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
                 financials: { base: 0, bonus: 0, equity: '', rep_net_value: 0 }
             });
+
             // In a real app, we'd mark this signal as 'actioned' for this user to hide button
             alert(`Added ${signal.company} to your Pipeline.`);
         } catch (err) {

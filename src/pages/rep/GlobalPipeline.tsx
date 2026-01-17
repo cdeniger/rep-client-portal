@@ -15,16 +15,22 @@ export default function GlobalPipeline() {
 
     // Assignment State
     const [selectedOpp, setSelectedOpp] = useState<any | null>(null);
+    const [suggestTarget, setSuggestTarget] = useState<any | null>(null);
     const [clients, setClients] = useState<any[]>([]); // Using 'any' for speed, ideally UserProfile
     const [assignClientId, setAssignClientId] = useState('');
     const [isAssigning, setIsAssigning] = useState(false);
+
+    // Suggestion State
+    const [suggestClientId, setSuggestClientId] = useState('');
+    const [suggestNote, setSuggestNote] = useState('');
+    const [isSuggesting, setIsSuggesting] = useState(false);
 
     // Create State
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
 
     useEffect(() => {
-        fetchOpportunities();
+        fetchData();
         fetchClients();
     }, []);
 
@@ -40,11 +46,32 @@ export default function GlobalPipeline() {
         if (!selectedOpp || !assignClientId) return;
         setIsAssigning(true);
         try {
-            await updateDoc(doc(db, 'opportunities', selectedOpp.id), {
-                userId: assignClientId,
-                status: 'interviewing'
+            // Find the full client object to get the real userId (auth ID) from the engagement ID
+            const assignedClient = clients.find(c => c.id === assignClientId);
+            const realUserId = assignedClient?.userId;
+
+            if (!realUserId) {
+                console.error("Could not find user ID for engagement", assignClientId);
+                alert("Error: Could not find user ID for selected client.");
+                return;
+            }
+
+            // New Logic: Create a Job Pursuit linked to the Target
+            // The Target remains OPEN in the inventory (shared market data)
+            await addDoc(collection(db, 'job_pursuits'), {
+                targetId: selectedOpp.id,
+                userId: realUserId, // The Auth/User Profile ID
+                engagementId: assignClientId, // The Business Engagement ID (Critical for ClientDetail views)
+                company: selectedOpp.company,
+                role: selectedOpp.role,
+                status: 'interviewing', // Default start status for assignment
+                stage_detail: 'Responded to Outreach',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                financials: selectedOpp.financials || {}
             });
-            await fetchOpportunities();
+
+            await fetchData();
             setSelectedOpp(null);
             setAssignClientId('');
         } catch (err) {
@@ -54,16 +81,72 @@ export default function GlobalPipeline() {
         }
     };
 
+    const handleSuggest = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!suggestTarget || !suggestClientId) return;
+        setIsSuggesting(true);
+        try {
+            // Create a Job Recommendation
+            await addDoc(collection(db, 'job_recommendations'), {
+                targetId: suggestTarget.id,
+                engagementId: suggestClientId,
+                status: 'pending_rep',
+                source: 'manual',
+                rep_notes: suggestNote,
+                createdAt: new Date().toISOString(),
+            });
+
+            alert("Recommendation sent to client!");
+            setSuggestTarget(null);
+            setSuggestClientId('');
+            setSuggestNote('');
+        } catch (err) {
+            console.error("Failed to suggest", err);
+            alert("Failed to send recommendation.");
+        } finally {
+            setIsSuggesting(false);
+        }
+    };
+
     const handleCreateOpportunity = async (data: any) => {
         setIsCreating(true);
         try {
-            await addDoc(collection(db, 'opportunities'), {
-                ...data,
+            // New Logic: Create a Job Target (Inventory Item)
+            const targetRef = await addDoc(collection(db, 'job_targets'), {
+                company: data.company,
+                role: data.role,
+                stage_detail: data.stage_detail,
+                financials: data.financials,
                 source: 'manual',
+                status: 'OPEN',
                 createdAt: new Date().toISOString(),
-                status: data.status || 'outreach'
             });
-            await fetchOpportunities();
+
+            // Dual Creation: If client assigned, create Pursuit immediately
+            if (data.assignClientId) {
+                // Find the full client object to get the real userId (auth ID) from the engagement ID
+                const assignedClient = clients.find(c => c.id === data.assignClientId);
+                const realUserId = assignedClient?.userId;
+
+                if (realUserId) {
+                    await addDoc(collection(db, 'job_pursuits'), {
+                        targetId: targetRef.id,
+                        userId: realUserId,
+                        engagementId: data.assignClientId,
+                        company: data.company,
+                        role: data.role,
+                        status: 'outreach',
+                        stage_detail: data.stage_detail,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        financials: data.financials || {}
+                    });
+                } else {
+                    console.error("Could not find user ID for engagement during dual creation", data.assignClientId);
+                }
+            }
+
+            await fetchData();
             setIsCreateModalOpen(false);
         } catch (err) {
             console.error("Failed to create opportunity", err);
@@ -73,16 +156,23 @@ export default function GlobalPipeline() {
         }
     };
 
-    const fetchOpportunities = async () => {
+    const fetchData = async () => {
         setLoading(true);
         try {
-            const snap = await getDocs(collection(db, 'opportunities'));
-            const allOpps = snap.docs.map(d => ({ id: d.id, ...d.data() })) as any[];
+            // 1. Fetch Inventory (Job Targets)
+            // Filter only OPEN targets? For now fetch all or just OPEN.
+            // Let's assume we want to see everything available.
+            const targetsSnap = await getDocs(query(collection(db, 'job_targets'))); // TODO: where('status', '==', 'OPEN')
+            const targets = targetsSnap.docs.map(d => ({ id: d.id, ...d.data() })) as any[];
 
-            setInventory(allOpps.filter(o => !o.userId));
-            setPipeline(allOpps.filter(o => o.userId));
+            // 2. Fetch Pipeline (Job Pursuits)
+            const pursuitsSnap = await getDocs(collection(db, 'job_pursuits'));
+            const pursuits = pursuitsSnap.docs.map(d => ({ id: d.id, ...d.data() })) as any[];
+
+            setInventory(targets.filter(t => t.status === 'OPEN'));
+            setPipeline(pursuits);
         } catch (error) {
-            console.error("Failed to fetch opportunities", error);
+            console.error("Failed to fetch pipeline data", error);
         } finally {
             setLoading(false);
         }
@@ -131,7 +221,7 @@ export default function GlobalPipeline() {
             ) : (
                 <div className="bg-white border border-slate-200 rounded-lg min-h-[500px]">
                     {activeTab === 'inventory' ? (
-                        <InventoryTable data={inventory} onAssign={setSelectedOpp} />
+                        <InventoryTable data={inventory} onAssign={setSelectedOpp} onSuggest={setSuggestTarget} />
                     ) : (
                         <PipelineBoard data={pipeline} />
                     )}
@@ -183,6 +273,55 @@ export default function GlobalPipeline() {
                 </form>
             </Modal>
 
+            {/* Suggestion Modal */}
+            <Modal isOpen={!!suggestTarget} onClose={() => setSuggestTarget(null)} title="Suggest to Client">
+                <form onSubmit={handleSuggest} className="space-y-4">
+                    <div>
+                        <div className="text-xs text-slate-500 mb-4 font-mono">
+                            Recommending: {suggestTarget?.role} @ {suggestTarget?.company}
+                        </div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Select Client</label>
+                        <select
+                            className="w-full p-2 border border-slate-300 rounded-sm text-sm bg-white mb-4"
+                            value={suggestClientId}
+                            onChange={(e) => setSuggestClientId(e.target.value)}
+                            required
+                        >
+                            <option value="">-- Choose a Client --</option>
+                            {clients.map(client => (
+                                <option key={client.id} value={client.id}>
+                                    {client.profile?.firstName ? `${client.profile.firstName} ${client.profile.lastName}` : client.profile?.headline || 'Unknown Client'}
+                                </option>
+                            ))}
+                        </select>
+
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Personal Note</label>
+                        <textarea
+                            className="w-full p-2 border border-slate-300 rounded-sm text-sm bg-white h-24"
+                            placeholder="Why is this a good fit?"
+                            value={suggestNote}
+                            onChange={(e) => setSuggestNote(e.target.value)}
+                        />
+                    </div>
+                    <div className="pt-4 flex gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setSuggestTarget(null)}
+                            className="flex-1 py-2 border border-slate-300 text-slate-500 font-bold text-xs uppercase tracking-widest rounded-sm"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isSuggesting}
+                            className="flex-1 py-2 bg-signal-orange text-white font-bold text-xs uppercase tracking-widest rounded-sm hover:bg-opacity-90"
+                        >
+                            {isSuggesting ? 'Sending...' : 'Send Suggestion'}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
+
             {/* Create Modal */}
             <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} title="Add Job Opportunity">
                 <OpportunityForm
@@ -190,14 +329,15 @@ export default function GlobalPipeline() {
                     onCancel={() => setIsCreateModalOpen(false)}
                     isSubmitting={isCreating}
                     hideStatus={true}
+                    clients={clients}
                 />
             </Modal>
 
-        </div>
+        </div >
     );
 }
 
-function InventoryTable({ data, onAssign }: { data: any[], onAssign: (opp: any) => void }) {
+function InventoryTable({ data, onAssign, onSuggest }: { data: any[], onAssign: (opp: any) => void, onSuggest: (opp: any) => void }) {
     return (
         <div className="p-4">
             <div className="flex items-center gap-4 mb-4">
@@ -244,6 +384,12 @@ function InventoryTable({ data, onAssign }: { data: any[], onAssign: (opp: any) 
                                     className="opacity-0 group-hover:opacity-100 px-3 py-1 bg-oxford-green text-white text-xs font-bold rounded shadow-sm hover:bg-opacity-90 transition-all"
                                 >
                                     Assign
+                                </button>
+                                <button
+                                    onClick={() => onSuggest(opp)}
+                                    className="opacity-0 group-hover:opacity-100 px-3 py-1 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded shadow-sm hover:bg-slate-50 transition-all ml-2"
+                                >
+                                    Suggest
                                 </button>
                             </td>
                         </tr>
@@ -298,7 +444,7 @@ function PipelineCard({ opp }: { opp: any }) {
             </div>
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-50">
                 <div className="text-xs font-mono text-slate-400">
-                    ID: {opp.userId ? opp.userId.slice(0, 8) : 'Unassigned'}
+                    ID: {opp.engagementId ? opp.engagementId.replace('eng_user_', '').slice(0, 8) : opp.userId ? opp.userId.slice(0, 8) : 'Unassigned'}
                 </div>
                 <div className="text-xs font-bold text-oxford-green">
                     ${((opp.financials?.rep_net_value || 0) / 1000).toFixed(1)}k Net
