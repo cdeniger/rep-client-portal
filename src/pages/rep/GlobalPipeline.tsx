@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { collection, query, getDocs } from 'firebase/firestore';
+import { collection, query, getDocs, addDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { updateDoc, doc } from 'firebase/firestore';
 import { Search, Filter, Briefcase, List as ListIcon, Kanban } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import Modal from '../../components/ui/Modal';
+import OpportunityForm from '../../components/forms/OpportunityForm';
 
 export default function GlobalPipeline() {
     const [activeTab, setActiveTab] = useState<'inventory' | 'pipeline'>('inventory');
@@ -17,6 +18,10 @@ export default function GlobalPipeline() {
     const [clients, setClients] = useState<any[]>([]); // Using 'any' for speed, ideally UserProfile
     const [assignClientId, setAssignClientId] = useState('');
     const [isAssigning, setIsAssigning] = useState(false);
+
+    // Create State
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
 
     useEffect(() => {
         fetchOpportunities();
@@ -49,6 +54,25 @@ export default function GlobalPipeline() {
         }
     };
 
+    const handleCreateOpportunity = async (data: any) => {
+        setIsCreating(true);
+        try {
+            await addDoc(collection(db, 'opportunities'), {
+                ...data,
+                source: 'manual',
+                createdAt: new Date().toISOString(),
+                status: data.status || 'outreach'
+            });
+            await fetchOpportunities();
+            setIsCreateModalOpen(false);
+        } catch (err) {
+            console.error("Failed to create opportunity", err);
+            alert("Failed to create opportunity");
+        } finally {
+            setIsCreating(false);
+        }
+    };
+
     const fetchOpportunities = async () => {
         setLoading(true);
         try {
@@ -71,23 +95,32 @@ export default function GlobalPipeline() {
                     <h1 className="text-2xl font-bold text-oxford-green">Job Opportunity Pipeline</h1>
                     <p className="text-slate-500 text-sm">Manage open market inventory and active client deals.</p>
                 </div>
-                <div className="flex bg-slate-100 p-1 rounded-lg">
+                <div className="flex gap-3">
                     <button
-                        onClick={() => setActiveTab('inventory')}
-                        className={`px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-all ${activeTab === 'inventory' ? 'bg-white shadow text-oxford-green' : 'text-slate-500 hover:text-slate-700'
-                            }`}
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="px-4 py-2 bg-signal-orange text-white text-xs font-bold uppercase tracking-widest rounded-sm hover:bg-opacity-90 flex items-center gap-2"
                     >
-                        <ListIcon className="h-4 w-4" />
-                        Inventory ({inventory.length})
+                        <Briefcase className="h-4 w-4" />
+                        + Add Job Opportunity
                     </button>
-                    <button
-                        onClick={() => setActiveTab('pipeline')}
-                        className={`px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-all ${activeTab === 'pipeline' ? 'bg-white shadow text-oxford-green' : 'text-slate-500 hover:text-slate-700'
-                            }`}
-                    >
-                        <Kanban className="h-4 w-4" />
-                        Active Pipeline ({pipeline.length})
-                    </button>
+                    <div className="flex bg-slate-100 p-1 rounded-lg">
+                        <button
+                            onClick={() => setActiveTab('inventory')}
+                            className={`px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-all ${activeTab === 'inventory' ? 'bg-white shadow text-oxford-green' : 'text-slate-500 hover:text-slate-700'
+                                }`}
+                        >
+                            <ListIcon className="h-4 w-4" />
+                            Inventory ({inventory.length})
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('pipeline')}
+                            className={`px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-all ${activeTab === 'pipeline' ? 'bg-white shadow text-oxford-green' : 'text-slate-500 hover:text-slate-700'
+                                }`}
+                        >
+                            <Kanban className="h-4 w-4" />
+                            Active Pipeline ({pipeline.length})
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -149,6 +182,17 @@ export default function GlobalPipeline() {
                     </div>
                 </form>
             </Modal>
+
+            {/* Create Modal */}
+            <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} title="Add Job Opportunity">
+                <OpportunityForm
+                    onSubmit={handleCreateOpportunity}
+                    onCancel={() => setIsCreateModalOpen(false)}
+                    isSubmitting={isCreating}
+                    hideStatus={true}
+                />
+            </Modal>
+
         </div>
     );
 }

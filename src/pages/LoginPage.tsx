@@ -106,7 +106,7 @@ export default function LoginPage() {
                     <button
                         onClick={async () => {
                             // Client: Alex Mercer
-                            await handleDevLogin('client_alex', 'alex.mercer@example.com', 'client', 'Alex Mercer');
+                            await handleDevLogin('eng_user_alex_mercer', 'alex.mercer@example.com', 'client', 'Alex Mercer');
                             // Auto-seed disabled to persist edits
                             /* 
                             try {
@@ -125,12 +125,14 @@ export default function LoginPage() {
                         onClick={async () => {
                             // Rep: Jordan Wolf
                             await handleDevLogin('rep_jordan', 'jordan.rep@example.com', 'rep', 'Jordan Wolf');
-                            // Auto-seed for convenience
+                            // Auto-seed for convenience (DISABLED to prevent data overwrite)
+                            /*
                             try {
                                 const { seedRepData } = await import('../scripts/seed');
                                 await seedRepData('rep_jordan');
                                 console.log('Auto-seeded rep data');
                             } catch (e) { console.error('Auto-seed failed', e) }
+                            */
                         }}
                         className="w-full bg-oxford-green/10 text-oxford-green font-bold py-2 px-4 rounded-sm uppercase tracking-widest text-[10px] hover:bg-oxford-green/20 border border-oxford-green/20"
                     >

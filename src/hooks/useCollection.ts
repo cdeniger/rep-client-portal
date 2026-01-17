@@ -8,11 +8,13 @@ export function useCollection<T = DocumentData>(collectionName: string, ...query
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
+        console.log(`[useCollection] Hook triggered for ${collectionName}`, queryConstraints);
         setLoading(true);
         const q = query(collection(db, collectionName), ...queryConstraints);
 
         const unsub = onSnapshot(q,
             (querySnapshot) => {
+                console.log(`[useCollection] Snapshot received for ${collectionName}. Docs:`, querySnapshot.docs.length);
                 const documents = querySnapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
@@ -28,7 +30,7 @@ export function useCollection<T = DocumentData>(collectionName: string, ...query
         );
 
         return () => unsub();
-    }, [collectionName]); // Note: queryConstraints dependency handling is tricky in hooks, usually requires useMemo in consumer
+    }, [collectionName, JSON.stringify(queryConstraints)]); // Re-run when query parameters change
 
     return { data, loading, error };
 }

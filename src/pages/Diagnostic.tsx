@@ -10,7 +10,7 @@ import DiagnosticForm from '../components/forms/DiagnosticForm';
 
 export default function Diagnostic() {
     const { user } = useAuth();
-    const { data: report, loading } = useDocument<DiagnosticReport>('diagnostic_reports', user?.uid || 'diagnostic_report_mock'); // Fallback for dev
+    const { data: report, loading } = useDocument<DiagnosticReport>('diagnostic_reports', user?.uid);
 
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [updating, setUpdating] = useState(false);

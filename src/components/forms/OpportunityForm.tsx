@@ -6,9 +6,10 @@ interface OpportunityFormProps {
     onSubmit: (data: Partial<Opportunity>) => Promise<void>;
     onCancel: () => void;
     isSubmitting: boolean;
+    hideStatus?: boolean;
 }
 
-export default function OpportunityForm({ initialData, onSubmit, onCancel, isSubmitting }: OpportunityFormProps) {
+export default function OpportunityForm({ initialData, onSubmit, onCancel, isSubmitting, hideStatus }: OpportunityFormProps) {
     const [formData, setFormData] = useState<Partial<Opportunity>>({
         company: '',
         role: '',
@@ -51,19 +52,21 @@ export default function OpportunityForm({ initialData, onSubmit, onCancel, isSub
                     onChange={e => setFormData({ ...formData, role: e.target.value })}
                 />
             </div>
-            <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Status</label>
-                <select
-                    className="w-full p-2 border border-gray-200 rounded-sm text-sm focus:border-signal-orange outline-none bg-white"
-                    value={formData.status}
-                    onChange={e => setFormData({ ...formData, status: e.target.value as any })}
-                >
-                    <option value="outreach">Outreach</option>
-                    <option value="interviewing">Interviewing</option>
-                    <option value="offer">Offer Received</option>
-                    <option value="negotiating">Negotiating</option>
-                </select>
-            </div>
+            {!hideStatus && (
+                <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Status</label>
+                    <select
+                        className="w-full p-2 border border-gray-200 rounded-sm text-sm focus:border-signal-orange outline-none bg-white"
+                        value={formData.status}
+                        onChange={e => setFormData({ ...formData, status: e.target.value as any })}
+                    >
+                        <option value="outreach">Outreach</option>
+                        <option value="interviewing">Interviewing</option>
+                        <option value="offer">Offer Received</option>
+                        <option value="negotiating">Negotiating</option>
+                    </select>
+                </div>
+            )}
             <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Stage Detail</label>
                 <input

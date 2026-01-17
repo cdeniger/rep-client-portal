@@ -123,7 +123,12 @@ export default function RepDashboard() {
                 <MetricCard label="Active Engagements" value={activeClientCount.toString()} subtext="Career Search" />
                 <MetricCard label="Pipeline Value" value={formatCurrency(pipelineValue)} subtext="Base * ISA %" />
                 <MetricCard label="Proj. Commission" value={formatCurrency(pipelineValue * 0.4)} subtext="Est. 40% Realization" textColor="text-emerald-600" />
-                <MetricCard label="Critical Actions" value="3" subtext="Requires Attention" textColor="text-red-500" />
+                <MetricCard
+                    label="Critical Actions"
+                    value={opportunities?.filter(o => o.status === 'offer' || o.status === 'negotiating' || o.id === 'demo').length.toString() || '0'}
+                    subtext="Requires Attention"
+                    textColor="text-red-500"
+                />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -133,18 +138,32 @@ export default function RepDashboard() {
                         Triage Feed
                     </h3>
                     <div className="space-y-2">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="p-3 bg-slate-50 border border-slate-100 rounded-sm flex justify-between items-center group hover:border-slate-300 transition-colors cursor-pointer">
-                                <div>
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className="h-1.5 w-1.5 rounded-full bg-red-500"></span>
-                                        <span className="text-red-500 text-[10px] font-bold uppercase tracking-wider">High Urgency</span>
+                        {opportunities && opportunities.filter(o => o.status === 'offer' || o.status === 'negotiating').length > 0 ? (
+                            opportunities
+                                .filter(o => o.status === 'offer' || o.status === 'negotiating')
+                                .map((opp: any) => (
+                                    <div key={opp.id} className="p-3 bg-slate-50 border border-slate-100 rounded-sm flex justify-between items-center group hover:border-slate-300 transition-colors cursor-pointer">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                                <span className="text-red-500 text-[10px] font-bold uppercase tracking-wider">
+                                                    {opp.status === 'offer' ? 'Offer Received' : 'Active Negotiation'}
+                                                </span>
+                                            </div>
+                                            <div className="text-sm font-bold text-slate-800">
+                                                {opp.company} - {opp.role}
+                                            </div>
+                                        </div>
+                                        <div className="text-slate-400 text-xs">
+                                            {opp.financials?.base ? `$${(opp.financials.base / 1000).toFixed(0)}k Base` : 'Comp Pending'}
+                                        </div>
                                     </div>
-                                    <div className="text-sm font-bold text-slate-800">Offer Expiring: Alex Mercer @ Stripe</div>
-                                </div>
-                                <div className="text-slate-400 text-xs">Expires in 24h</div>
+                                ))
+                        ) : (
+                            <div className="text-center py-8 text-slate-400 italic text-xs">
+                                No urgent items requiring attention.
                             </div>
-                        ))}
+                        )}
                     </div>
                 </div>
 
@@ -154,9 +173,18 @@ export default function RepDashboard() {
                         Recent Momentum
                     </h3>
                     <div className="space-y-4">
-                        <div className="text-center py-8 text-slate-400 italic text-xs">
-                            No recent wins recorded.
-                        </div>
+                        {engagements && engagements.filter(e => e.status === 'placed').length > 0 ? (
+                            engagements.filter(e => e.status === 'placed').map((e: any) => (
+                                <div key={e.id} className="text-center py-4 bg-emerald-50 rounded-sm border border-emerald-100">
+                                    <div className="text-emerald-700 font-bold text-sm">Placed {e.profile?.firstName}</div>
+                                    <div className="text-emerald-600/60 text-xs uppercase tracking-wider font-bold">New Commission Generated</div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="text-center py-8 text-slate-400 italic text-xs">
+                                No recent wins recorded.
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

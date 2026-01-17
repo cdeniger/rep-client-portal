@@ -41,4 +41,10 @@ try {
     console.error('Error initializing Firebase. Check your .env file.', error);
 }
 
+// Debugging: Expose db to window
+if (typeof window !== 'undefined') {
+    // @ts-ignore
+    window.db = db;
+}
+
 export { app, auth, db, storage };

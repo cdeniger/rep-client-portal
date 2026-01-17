@@ -2,7 +2,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import PrivateRoute from './components/auth/PrivateRoute';
-import DevTools from './components/dev/DevTools';
+
 import AppShell from './components/layout/AppShell';
 import Dashboard from './pages/Dashboard';
 import Pipeline from './pages/Pipeline';
@@ -45,7 +45,7 @@ function App() {
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <DevTools />
+
     </Router>
   );
 }

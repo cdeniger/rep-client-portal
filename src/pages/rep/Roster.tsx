@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import { where } from 'firebase/firestore';
 import {
     Search,
-    Filter,
     MoreHorizontal,
     ChevronLeft,
     ChevronRight,
@@ -198,7 +197,18 @@ export default function Roster() {
                                     <StatusBadge status={client.status} />
                                 </td>
                                 <td className="p-5">
-                                    <span className="text-xs text-slate-400">2h ago</span>
+                                    <span className="text-xs text-slate-400">
+                                        {client.lastActivity ? (() => {
+                                            const date = new Date(client.lastActivity);
+                                            const now = new Date();
+                                            const diffMs = now.getTime() - date.getTime();
+                                            const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+                                            if (diffHrs < 1) return 'Just now';
+                                            if (diffHrs < 24) return `${diffHrs}h ago`;
+                                            const diffDays = Math.floor(diffHrs / 24);
+                                            return `${diffDays}d ago`;
+                                        })() : 'N/A'}
+                                    </span>
                                 </td>
                                 <td className="p-5 text-right">
                                     <button className="p-2 text-slate-500 hover:text-white hover:bg-slate-700 rounded-full transition-all">

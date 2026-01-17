@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, Component, ReactNode, ErrorInfo } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDocument } from '../../hooks/useDocument';
 import { useCollection } from '../../hooks/useCollection';
@@ -6,43 +6,11 @@ import { useAuth } from '../../context/AuthContext';
 import { doc, updateDoc, where, arrayUnion } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../lib/firebase';
-import { ChevronLeft, Edit, Calendar, DollarSign, Briefcase, FileText, Download, ExternalLink, Loader2 } from 'lucide-react';
+import { ChevronLeft, Edit, Calendar, DollarSign, FileText, Download, ExternalLink, Loader2 } from 'lucide-react';
 import Modal from '../../components/ui/Modal';
 import DealCard from '../../components/rep/DealCard';
-import { lazy, Suspense } from 'react';
+import DealParamsModal from '../../components/rep/DealParamsModal';
 
-// Lazy load to prevent circular dependency crashes
-const DealParamsModal = lazy(() => import('../../components/rep/DealParamsModal'));
-
-// Simple Error Boundary for debugging
-class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean, error: any }> {
-    constructor(props: any) {
-        super(props);
-        this.state = { hasError: false, error: null };
-    }
-
-    static getDerivedStateFromError(error: any) {
-        return { hasError: true, error };
-    }
-
-    componentDidCatch(error: any, errorInfo: ErrorInfo) {
-        console.error("DealParamsModal Error:", error, errorInfo);
-    }
-
-    render() {
-        if (this.state.hasError) {
-            return (
-                <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-                    <p className="font-bold">DealParamsModal Failed to Load</p>
-                    <pre className="text-xs mt-2 overflow-auto max-h-40">
-                        {this.state.error?.toString()}
-                    </pre>
-                </div>
-            );
-        }
-        return this.props.children;
-    }
-}
 
 export default function ClientDetail() {
     const { id } = useParams();
@@ -56,6 +24,50 @@ export default function ClientDetail() {
         'opportunities',
         where('userId', '==', id)
     );
+
+    // Calculations
+    const avgComp = useMemo(() => {
+        if (!opportunities || opportunities.length === 0) return 0;
+        const totalBase = opportunities.reduce((acc: number, opp: any) => acc + (opp.financials?.base || 0), 0);
+        return totalBase / opportunities.length;
+    }, [opportunities]);
+
+    const projectedISA = useMemo(() => {
+        if (!opportunities || !engagement) return 0;
+        return opportunities.reduce((acc: number, opp: any) => {
+            // Only count active opps
+            if (['offer', 'negotiating', 'interviewing'].includes(opp.status)) {
+                const base = opp.financials?.base || 0;
+                const isaPct = engagement.isaPercentage || 0;
+                return acc + (base * isaPct);
+            }
+            return acc;
+        }, 0);
+    }, [opportunities, engagement]);
+
+    const lastTouch = useMemo(() => {
+        if (!engagement?.lastActivity) return 'N/A';
+        const date = new Date(engagement.lastActivity);
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+
+        if (diffHrs < 1) return 'Just now';
+        if (diffHrs < 24) return `${diffHrs}h Ago`;
+        const diffDays = Math.floor(diffHrs / 24);
+        return `${diffDays}d Ago`;
+    }, [engagement]);
+
+    const formatCurrency = (val: number) => {
+        if (val === 0) return '$0';
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            maximumFractionDigits: 1,
+            notation: "compact",
+            compactDisplay: "short"
+        }).format(val);
+    };
 
     // Edit State
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -201,24 +213,31 @@ export default function ClientDetail() {
                     {/* Row 1 */}
                     <MetricTile
                         label="Time in Process"
-                        value="12 Days"
+                        value={(() => {
+                            if (!engagement.startDate) return 'N/A';
+                            const start = new Date(engagement.startDate);
+                            const now = new Date();
+                            const diffTime = Math.abs(now.getTime() - start.getTime());
+                            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                            return `${diffDays} Day${diffDays !== 1 ? 's' : ''}`;
+                        })()}
                         icon={<Calendar className="h-5 w-5" />}
                     />
                     <MetricTile
                         label="Avg Opportunity Comp"
-                        value="$245k"
+                        value={formatCurrency(avgComp)}
                         icon={<DollarSign className="h-5 w-5" />}
                     />
                     <MetricTile
                         label="Projected ISA Value"
-                        value="$36.7k"
+                        value={formatCurrency(projectedISA)}
                         icon={<DollarSign className="h-5 w-5" />}
                     />
 
                     {/* Row 2 */}
                     <MetricTile
                         label="Last Touch"
-                        value="2h Ago"
+                        value={lastTouch}
                         icon={<Calendar className="h-5 w-5" />}
                     />
 
@@ -274,15 +293,12 @@ export default function ClientDetail() {
             </div>
 
             {/* Deal Params Edit Modal (Hidden Logic) */}
-            <ErrorBoundary>
-                <Suspense fallback={null}>
-                    <DealParamsModal
-                        isOpen={isDealParamsModalOpen}
-                        onClose={() => setIsDealParamsModalOpen(false)}
-                        engagement={engagement}
-                    />
-                </Suspense>
-            </ErrorBoundary>
+            {/* Deal Params Edit Modal */}
+            <DealParamsModal
+                isOpen={isDealParamsModalOpen}
+                onClose={() => setIsDealParamsModalOpen(false)}
+                engagement={engagement}
+            />
 
             {/* Job Opportunities Section */}
             <div className="border-t border-slate-200 pt-8">
