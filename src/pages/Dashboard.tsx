@@ -251,34 +251,7 @@ export default function Dashboard() {
             </div>
 
 
-            {/* Deferred Recommendations */}
-            {
-                deferredRecs.length > 0 && (
-                    <div className="pt-8 border-t border-gray-100">
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Deferred Recommendations</h3>
-                        <div className="space-y-3 opacity-75 hover:opacity-100 transition-opacity">
-                            {deferredRecs.map(rec => {
-                                const target = targets.find(t => t.id === rec.targetId);
-                                if (!target) return null;
-                                return (
-                                    <div key={rec.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-sm border border-gray-100">
-                                        <div>
-                                            <div className="font-bold text-sm text-slate-600">{target.role} @ {target.company}</div>
-                                            <div className="text-xs text-gray-400">{new Date(rec.createdAt).toLocaleDateString()}</div>
-                                        </div>
-                                        <button
-                                            onClick={() => handleRecAction(rec.id, 'pursue')}
-                                            className="text-xs font-bold text-oxford-green uppercase hover:underline"
-                                        >
-                                            Reconsider
-                                        </button>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    </div>
-                )
-            }
+
 
             {/* Edit Profile Modal */}
             <Modal
