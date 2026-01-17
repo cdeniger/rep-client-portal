@@ -1,4 +1,4 @@
-import { ExternalLink, DollarSign, MapPin, Briefcase } from 'lucide-react';
+import { DollarSign, MapPin, Briefcase } from 'lucide-react';
 import type { Engagement } from '../../types/schema';
 
 // Helper to format currency
