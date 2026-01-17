@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
-import { collection, query, getDocs, addDoc } from 'firebase/firestore';
+import { collection, query, getDocs, addDoc, writeBatch, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
-import { updateDoc, doc } from 'firebase/firestore';
-import { Search, Filter, Briefcase, List as ListIcon, Kanban } from 'lucide-react';
-import { Loader2 } from 'lucide-react';
+import { Search, Filter, Briefcase, List as ListIcon, Kanban, Loader2, CheckSquare, Square } from 'lucide-react';
 import Modal from '../../components/ui/Modal';
 import OpportunityForm from '../../components/forms/OpportunityForm';
 
@@ -24,6 +22,12 @@ export default function GlobalPipeline() {
     const [suggestClientId, setSuggestClientId] = useState('');
     const [suggestNote, setSuggestNote] = useState('');
     const [isSuggesting, setIsSuggesting] = useState(false);
+
+    // Helper state for bulk suggest modal opening
+    // We treat 'suggestTarget === null' but 'inventory.some(c => c.checked)' as a bulk context if needed
+    // But to open the modal we need a trigger. Let's use a specific state for clarity or reuse suggestTarget?
+    // Let's use a boolean flag for "Bulk Suggest Mode" if suggestTarget is null.
+    const [isBulkSuggestOpen, setIsBulkSuggestOpen] = useState(false);
 
     // Create State
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -83,26 +87,51 @@ export default function GlobalPipeline() {
 
     const handleSuggest = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!suggestTarget || !suggestClientId) return;
+        if (!suggestClientId) return;
+
+        // Determine items to suggest: either specific target or all checked items
+        let targetsToSuggest = [];
+        if (suggestTarget) {
+            targetsToSuggest = [suggestTarget];
+        } else {
+            targetsToSuggest = inventory.filter(t => t.checked);
+        }
+
+        if (targetsToSuggest.length === 0) return;
+
         setIsSuggesting(true);
         try {
-            // Create a Job Recommendation
-            await addDoc(collection(db, 'job_recommendations'), {
-                targetId: suggestTarget.id,
-                engagementId: suggestClientId,
-                status: 'pending_rep',
-                source: 'manual',
-                rep_notes: suggestNote,
-                createdAt: new Date().toISOString(),
+            const batch = writeBatch(db);
+            const now = new Date().toISOString();
+
+            targetsToSuggest.forEach(target => {
+                const docRef = doc(collection(db, 'job_recommendations'));
+                batch.set(docRef, {
+                    targetId: target.id,
+                    engagementId: suggestClientId,
+                    status: 'pending_rep',
+                    source: 'manual',
+                    rep_notes: suggestNote, // Same note for all
+                    createdAt: now,
+                });
             });
 
-            alert("Recommendation sent to client!");
+            await batch.commit();
+
+            alert(`Successfully recommended ${targetsToSuggest.length} opportunities!`);
+
+            // Reset UI
             setSuggestTarget(null);
+            setIsBulkSuggestOpen(false);
             setSuggestClientId('');
             setSuggestNote('');
+
+            // Clear checks
+            setInventory(prev => prev.map(t => ({ ...t, checked: false })));
+
         } catch (err) {
             console.error("Failed to suggest", err);
-            alert("Failed to send recommendation.");
+            alert("Failed to send recommendations.");
         } finally {
             setIsSuggesting(false);
         }
@@ -160,10 +189,8 @@ export default function GlobalPipeline() {
         setLoading(true);
         try {
             // 1. Fetch Inventory (Job Targets)
-            // Filter only OPEN targets? For now fetch all or just OPEN.
-            // Let's assume we want to see everything available.
-            const targetsSnap = await getDocs(query(collection(db, 'job_targets'))); // TODO: where('status', '==', 'OPEN')
-            const targets = targetsSnap.docs.map(d => ({ id: d.id, ...d.data() })) as any[];
+            const targetsSnap = await getDocs(query(collection(db, 'job_targets')));
+            const targets = targetsSnap.docs.map(d => ({ id: d.id, ...d.data(), checked: false })) as any[];
 
             // 2. Fetch Pipeline (Job Pursuits)
             const pursuitsSnap = await getDocs(collection(db, 'job_pursuits'));
@@ -177,6 +204,25 @@ export default function GlobalPipeline() {
             setLoading(false);
         }
     };
+
+    // Toggle Check Logic
+    const toggleCheck = (id: string) => {
+        setInventory(prev => prev.map(item =>
+            item.id === id ? { ...item, checked: !item.checked } : item
+        ));
+    };
+
+    const toggleSelectAll = () => {
+        const allChecked = inventory.every(i => i.checked);
+        setInventory(prev => prev.map(i => ({ ...i, checked: !allChecked })));
+    };
+
+    const checkedCount = inventory.filter(i => i.checked).length;
+
+    // Determine title for suggest modal
+    const suggestModalTitle = suggestTarget
+        ? `Suggest Opportunity`
+        : `Suggest ${checkedCount} Opportunities`;
 
     return (
         <div className="space-y-6">
@@ -221,7 +267,15 @@ export default function GlobalPipeline() {
             ) : (
                 <div className="bg-white border border-slate-200 rounded-lg min-h-[500px]">
                     {activeTab === 'inventory' ? (
-                        <InventoryTable data={inventory} onAssign={setSelectedOpp} onSuggest={setSuggestTarget} />
+                        <InventoryTable
+                            data={inventory}
+                            onAssign={setSelectedOpp}
+                            onSuggest={setSuggestTarget}
+                            onCheck={toggleCheck}
+                            onSelectAll={toggleSelectAll}
+                            checkedCount={checkedCount}
+                            openSuggestModal={() => setIsBulkSuggestOpen(true)}
+                        />
                     ) : (
                         <PipelineBoard data={pipeline} />
                     )}
@@ -274,12 +328,24 @@ export default function GlobalPipeline() {
             </Modal>
 
             {/* Suggestion Modal */}
-            <Modal isOpen={!!suggestTarget} onClose={() => setSuggestTarget(null)} title="Suggest to Client">
+            <Modal
+                isOpen={!!suggestTarget || isBulkSuggestOpen}
+                onClose={() => { setSuggestTarget(null); setIsBulkSuggestOpen(false); }}
+                title={suggestModalTitle}
+            >
                 <form onSubmit={handleSuggest} className="space-y-4">
                     <div>
-                        <div className="text-xs text-slate-500 mb-4 font-mono">
-                            Recommending: {suggestTarget?.role} @ {suggestTarget?.company}
-                        </div>
+                        {suggestTarget && (
+                            <div className="text-xs text-slate-500 mb-4 font-mono">
+                                Recommending: {suggestTarget.role} @ {suggestTarget.company}
+                            </div>
+                        )}
+                        {!suggestTarget && checkedCount > 0 && (
+                            <div className="text-xs text-slate-500 mb-4 font-mono">
+                                Recommending {checkedCount} Opportunities
+                            </div>
+                        )}
+
                         <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Select Client</label>
                         <select
                             className="w-full p-2 border border-slate-300 rounded-sm text-sm bg-white mb-4"
@@ -306,7 +372,7 @@ export default function GlobalPipeline() {
                     <div className="pt-4 flex gap-2">
                         <button
                             type="button"
-                            onClick={() => setSuggestTarget(null)}
+                            onClick={() => { setSuggestTarget(null); setIsBulkSuggestOpen(false); }}
                             className="flex-1 py-2 border border-slate-300 text-slate-500 font-bold text-xs uppercase tracking-widest rounded-sm"
                         >
                             Cancel
@@ -337,7 +403,23 @@ export default function GlobalPipeline() {
     );
 }
 
-function InventoryTable({ data, onAssign, onSuggest }: { data: any[], onAssign: (opp: any) => void, onSuggest: (opp: any) => void }) {
+function InventoryTable({
+    data,
+    onAssign,
+    onSuggest,
+    onCheck,
+    onSelectAll,
+    checkedCount,
+    openSuggestModal
+}: {
+    data: any[],
+    onAssign: (opp: any) => void,
+    onSuggest: (opp: any) => void,
+    onCheck: (id: string) => void,
+    onSelectAll: () => void,
+    checkedCount: number,
+    openSuggestModal: () => void
+}) {
     return (
         <div className="p-4">
             <div className="flex items-center gap-4 mb-4">
@@ -349,6 +431,14 @@ function InventoryTable({ data, onAssign, onSuggest }: { data: any[], onAssign: 
                         className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-md text-sm focus:ring-1 focus:ring-oxford-green"
                     />
                 </div>
+                {checkedCount > 0 && (
+                    <button
+                        onClick={openSuggestModal}
+                        className="flex items-center gap-2 px-4 py-2 bg-oxford-green text-white text-xs font-bold uppercase tracking-widest rounded-sm hover:bg-opacity-90 animate-in fade-in slide-in-from-right-4"
+                    >
+                        Suggest Selected ({checkedCount})
+                    </button>
+                )}
                 <button className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-md text-slate-600 text-sm hover:bg-slate-50">
                     <Filter className="h-4 w-4" />
                     Filters
@@ -358,6 +448,11 @@ function InventoryTable({ data, onAssign, onSuggest }: { data: any[], onAssign: 
             <table className="w-full text-left text-sm">
                 <thead className="text-xs text-slate-400 uppercase tracking-wider border-b border-slate-100">
                     <tr>
+                        <th className="p-3 w-10">
+                            <button onClick={onSelectAll} className="text-slate-400 hover:text-oxford-green">
+                                {data.length > 0 && data.every(d => d.checked) ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
+                            </button>
+                        </th>
                         <th className="font-bold p-3">Role</th>
                         <th className="font-bold p-3">Company</th>
                         <th className="font-bold p-3">Comp Range</th>
@@ -367,7 +462,12 @@ function InventoryTable({ data, onAssign, onSuggest }: { data: any[], onAssign: 
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                     {data.map(opp => (
-                        <tr key={opp.id} className="hover:bg-slate-50 group">
+                        <tr key={opp.id} className={`hover:bg-slate-50 group ${opp.checked ? 'bg-slate-50' : ''}`}>
+                            <td className="p-3">
+                                <button onClick={() => onCheck(opp.id)} className="text-slate-400 hover:text-oxford-green">
+                                    {opp.checked ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
+                                </button>
+                            </td>
                             <td className="p-3 font-medium text-slate-700">{opp.role}</td>
                             <td className="p-3 text-slate-600">{opp.company}</td>
                             <td className="p-3 text-slate-500 font-mono text-xs">
