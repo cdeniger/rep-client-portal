@@ -205,7 +205,7 @@ export default function ClientDetail() {
                         icon={<Calendar className="h-5 w-5" />}
                     />
                     <MetricTile
-                        label="Avg Deal Size (Est)"
+                        label="Avg Opportunity Comp"
                         value="$245k"
                         icon={<DollarSign className="h-5 w-5" />}
                     />
@@ -284,9 +284,9 @@ export default function ClientDetail() {
                 </Suspense>
             </ErrorBoundary>
 
-            {/* Mandate Opportunities Section */}
+            {/* Job Opportunities Section */}
             <div className="border-t border-slate-200 pt-8">
-                <h3 className="text-lg font-bold text-oxford-green mb-4">Mandate Opportunities</h3>
+                <h3 className="text-lg font-bold text-oxford-green mb-4">Job Opportunities</h3>
                 <div className="bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
                     {loadingOpps ? (
                         <div className="p-8 text-center text-slate-400 text-sm">Loading opportunities...</div>

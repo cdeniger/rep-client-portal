@@ -44,7 +44,7 @@ export default function DealCard({ engagement, onEdit }: DealCardProps) {
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-white font-bold text-sm uppercase tracking-widest flex items-center gap-2">
                     <DollarSign className="h-4 w-4 text-signal-orange" />
-                    Deal Parameters
+                    Client Parameters
                 </h3>
                 <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded border ${getStatusColor(engagement.status)}`}>
                     {engagement.status}
