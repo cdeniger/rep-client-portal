@@ -5,7 +5,7 @@ import { useCollection } from '../hooks/useCollection';
 import { where, doc, updateDoc, addDoc, collection } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import type { UserProfile, JobPursuit, Engagement, JobRecommendation, JobTarget } from '../types/schema';
-import { ArrowRight, Trophy, Target, Calendar, Edit2 } from 'lucide-react';
+import { ArrowRight, Trophy, Target, Calendar, Edit2, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Modal from '../components/ui/Modal';
 import ProfileForm from '../components/forms/ProfileForm';
@@ -168,25 +168,27 @@ export default function Dashboard() {
                 </div>
 
                 {/* Metric 3: Strategy Sync */}
-                <div className="bg-white p-6 rounded-sm border border-gray-200 shadow-sm bg-oxford-green/5">
+                {/* Metric 3: Job Recommendations Summary */}
+                <div className="bg-white p-6 rounded-sm border border-gray-200 shadow-sm bg-signal-orange/5">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-oxford-green">Next Sync</h3>
-                        <Calendar className="text-oxford-green h-5 w-5" />
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-oxford-green">Pending Recs</h3>
+                        <Sparkles className="text-signal-orange h-5 w-5" />
                     </div>
                     <div className="flex items-baseline gap-2">
-                        <span className="text-xl font-bold text-oxford-green">Thursday, 2pm</span>
+                        <span className="text-4xl font-bold text-oxford-green">{pendingRecs.length}</span>
+                        <span className="text-sm text-gray-500">Awaiting Review</span>
                     </div>
-                    <div className="mt-2 text-sm text-gray-600">
-                        Topic: Offer Analysis (Stripe)
+                    <div className="mt-4 pt-4 border-t border-gray-100 text-xs text-gray-500">
+                        Review your curated opportunities
                     </div>
-                    <button className="mt-4 w-full py-2 bg-oxford-green text-white text-xs font-bold uppercase tracking-widest rounded-sm hover:bg-opacity-90">
-                        View Agenda
-                    </button>
+                    <Link to="/recommendations" className="mt-4 block w-full py-2 bg-oxford-green text-white text-center text-xs font-bold uppercase tracking-widest rounded-sm hover:bg-opacity-90">
+                        View All
+                    </Link>
                 </div>
             </div>
 
             {/* Recent Activity / Pipeline Snapshot */}
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid md:grid-cols-3 gap-6">
                 {/* Pipeline Snapshot */}
                 <div className="bg-white p-6 rounded-sm border border-gray-200 shadow-sm">
                     <div className="flex justify-between items-center mb-6">
@@ -228,6 +230,23 @@ export default function Dashboard() {
                             Complete Intake (Completed)
                         </button>
                     </div>
+                </div>
+
+                {/* Next Sync (Moved) */}
+                <div className="bg-white p-6 rounded-sm border border-gray-200 shadow-sm bg-oxford-green/5">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-oxford-green">Next Sync</h3>
+                        <Calendar className="text-oxford-green h-5 w-5" />
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-xl font-bold text-oxford-green">Thursday, 2pm</span>
+                    </div>
+                    <div className="mt-2 text-sm text-gray-600">
+                        Topic: Offer Analysis (Stripe)
+                    </div>
+                    <button className="mt-4 w-full py-2 bg-oxford-green text-white text-xs font-bold uppercase tracking-widest rounded-sm hover:bg-opacity-90">
+                        View Agenda
+                    </button>
                 </div>
             </div>
 
