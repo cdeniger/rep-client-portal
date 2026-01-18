@@ -4,10 +4,8 @@ import {
     addDoc,
     doc,
     updateDoc,
-    getDoc,
     query,
     where,
-    orderBy,
     getDocs,
     Timestamp
 } from 'firebase/firestore';
@@ -61,12 +59,18 @@ export const ActivityService = {
     ): Promise<Activity[]> {
         const q = query(
             collection(db, ACTIVITIES_COLLECTION),
-            where(`associations.${associationType}`, '==', associationId),
-            orderBy('performedAt', 'desc')
+            where(`associations.${associationType}`, '==', associationId)
         );
 
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Activity));
+        const activities = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as Activity));
+
+        // Client-side sort to be robust against missing composite indexes
+        return activities.sort((a, b) => {
+            const timeA = a.performedAt?.toMillis() || 0;
+            const timeB = b.performedAt?.toMillis() || 0;
+            return timeB - timeA; // Descending
+        });
     },
 
     // Helper to get definitions for the UI

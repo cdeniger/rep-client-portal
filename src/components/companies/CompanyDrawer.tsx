@@ -1,6 +1,7 @@
 import { X, Building2, Globe } from 'lucide-react';
 import type { Company } from '../../types/schema';
 import LocationManager from './LocationManager';
+import ActivityContextPanel from '../activities/ActivityContextPanel';
 
 interface CompanyDrawerProps {
     company: Company | null;
@@ -60,6 +61,15 @@ export default function CompanyDrawer({ company, isOpen, onClose }: CompanyDrawe
 
                     <div className="border-t border-gray-100 pt-6">
                         <LocationManager company={company} />
+                    </div>
+
+                    <div className="border-t border-gray-100 pt-6 pb-6">
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Activity Context</h3>
+                        <ActivityContextPanel
+                            entityType="company"
+                            entityId={company.id}
+                            compactMode={true}
+                        />
                     </div>
 
                 </div>

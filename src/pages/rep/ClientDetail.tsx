@@ -1,16 +1,16 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDocument } from '../../hooks/useDocument';
 import { useCollection } from '../../hooks/useCollection';
 import { useAuth } from '../../context/AuthContext';
-import { doc, updateDoc, where, arrayUnion } from 'firebase/firestore';
+import { doc, updateDoc, where, arrayUnion, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../lib/firebase';
 import { ChevronLeft, Edit, Calendar, DollarSign, FileText, Download, ExternalLink, Loader2 } from 'lucide-react';
 import Modal from '../../components/ui/Modal';
 import DealCard from '../../components/rep/DealCard';
 import DealParamsModal from '../../components/rep/DealParamsModal';
-import ActivityTimeline from '../../components/activities/ActivityTimeline';
+import ActivityContextPanel from '../../components/activities/ActivityContextPanel';
 
 
 export default function ClientDetail() {
@@ -23,6 +23,12 @@ export default function ClientDetail() {
     // Fetch Job Pursuits (Active Pipeline) for this Engagement
     const { data: pursuits, loading: loadingPursuits } = useCollection<any>(
         'job_pursuits',
+        where('engagementId', '==', id)
+    );
+
+    // Fetch Pending Recommendations
+    const { data: recommendations, loading: loadingRecs } = useCollection<any>(
+        'job_recommendations',
         where('engagementId', '==', id)
     );
 
@@ -157,11 +163,64 @@ export default function ClientDetail() {
         }
     };
 
+    // Duplicate Detection Logic
+    const [isDuplicate, setIsDuplicate] = useState(false);
+    const [correctId, setCorrectId] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!id) return;
+        if (id.startsWith('eng_eng_')) {
+            const potentialId = id.replace('eng_eng_', 'eng_');
+            const checkExists = async () => {
+                const docRef = doc(db, 'engagements', potentialId);
+                const snap = await getDoc(docRef);
+                if (snap.exists()) {
+                    setIsDuplicate(true);
+                    setCorrectId(potentialId);
+                }
+            };
+            checkExists();
+        }
+    }, [id]);
+
     if (loading) return <div className="p-8 text-slate-500 font-mono">Loading Engagement...</div>;
     if (error || !engagement) return <div className="p-8 text-red-400 font-mono">Engagement not found.</div>;
 
     if (engagement.repId !== user?.uid) {
-        return <div className="p-8 text-red-500 font-bold">Unauthorized Access</div>;
+        return (
+            <div className="p-12 flex flex-col items-center justify-center h-full">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md text-center">
+                    <h2 className="text-xl font-bold text-red-700 mb-2">Unauthorized Access</h2>
+                    <p className="text-sm text-red-600 mb-6">
+                        You do not have permission to view this client record.
+                    </p>
+
+                    <div className="bg-white p-4 rounded border border-red-100 text-left text-xs font-mono text-slate-500 mb-6 space-y-1">
+                        <div><strong className="text-slate-700">User ID:</strong> {user?.uid}</div>
+                        <div><strong className="text-slate-700">Record Owner:</strong> {engagement.repId}</div>
+                        <div><strong className="text-slate-700">Record ID:</strong> {id}</div>
+                    </div>
+
+                    <button
+                        onClick={async () => {
+                            if (!id || !user) return;
+                            try {
+                                await updateDoc(doc(db, 'engagements', id), { repId: user.uid });
+                                window.location.reload();
+                            } catch (e) {
+                                alert("Failed to claim record.");
+                            }
+                        }}
+                        className="w-full px-4 py-2 bg-red-600 text-white font-bold uppercase text-xs tracking-wider rounded shadow-sm hover:bg-red-700 transition-colors"
+                    >
+                        Claim Record Ownership
+                    </button>
+                    <p className="text-[10px] text-red-400 mt-2">
+                        *This action will re-assign this client to you.
+                    </p>
+                </div>
+            </div>
+        );
     }
 
     // Header Title Construction
@@ -172,6 +231,31 @@ export default function ClientDetail() {
 
     return (
         <div className="space-y-6 pb-12">
+
+            {/* Duplicate Warning Banner */}
+            {isDuplicate && correctId && (
+                <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mb-4 rounded-r shadow-sm flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                        <div className="text-amber-500">
+                            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-bold text-amber-800">Potential Duplicate Record Detected</h3>
+                            <p className="text-xs text-amber-700">
+                                You are viewing a record with a malformed ID (`{id}`). A corrected record (`{correctId}`) was found which likely contains your missing data.
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => navigate(`/rep/client/${correctId}`)}
+                        className="px-4 py-2 bg-amber-100 text-amber-800 text-xs font-bold uppercase rounded hover:bg-amber-200 transition-colors border border-amber-200"
+                    >
+                        Switch to Correct Record
+                    </button>
+                </div>
+            )}
             {/* Header */}
             <div className="flex items-center gap-4 border-b border-slate-700 pb-4">
                 <button
@@ -208,95 +292,185 @@ export default function ClientDetail() {
                 </button>
             </div >
 
-            <div className="grid grid-cols-4 gap-6">
-                {/* Left Column: Metrics & Assets (3 cols wide) */}
-                <div className="col-span-3 grid grid-cols-3 gap-4">
-                    {/* Row 1 */}
-                    <MetricTile
-                        label="Time in Process"
-                        value={(() => {
-                            if (!engagement.startDate) return 'N/A';
-                            const start = new Date(engagement.startDate);
-                            const now = new Date();
-                            const diffTime = Math.abs(now.getTime() - start.getTime());
-                            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                            return `${diffDays} Day${diffDays !== 1 ? 's' : ''}`;
-                        })()}
-                        icon={<Calendar className="h-5 w-5" />}
-                    />
-                    <MetricTile
-                        label="Avg Opportunity Comp"
-                        value={formatCurrency(avgComp)}
-                        icon={<DollarSign className="h-5 w-5" />}
-                    />
-                    <MetricTile
-                        label="Projected ISA Value"
-                        value={formatCurrency(projectedISA)}
-                        icon={<DollarSign className="h-5 w-5" />}
-                    />
-
-                    {/* Row 2 */}
-                    <MetricTile
-                        label="Last Touch"
-                        value={lastTouch}
-                        icon={<Calendar className="h-5 w-5" />}
-                    />
-
-                    {/* Client Assets (Spanning 2 cols) */}
-                    <div className="col-span-2 bg-slate-50 border border-slate-200 rounded-sm p-4 h-full flex flex-col justify-between">
-                        <div>
-                            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 flex items-center justify-between">
-                                <span>Client Assets</span>
-                                <span className="text-[10px] bg-slate-200 px-1.5 rounded text-slate-500">{engagement.assets?.length || 0}</span>
-                            </h3>
-                            <div className="space-y-1">
-                                {engagement.assets && engagement.assets.length > 0 ? (
-                                    engagement.assets.slice(0, 2).map((asset: any, idx: number) => {
-                                        if (!asset) return null;
-                                        return (
-                                            <AssetRow key={idx} name={asset.name || 'Unknown'} type={asset.type} url={asset.url} />
-                                        );
-                                    })
-                                ) : (
-                                    <div className="text-xs text-slate-400 italic">No assets uploaded.</div>
-                                )}
-                                {engagement.assets && engagement.assets.length > 2 && (
-                                    <div className="text-[10px] text-slate-400 pl-2">+{engagement.assets.length - 2} more</div>
-                                )}
-                            </div>
-
-                            {/* Hidden File Input */}
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                onChange={handleFileUpload}
-                                className="hidden"
-                                accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left Column: Metrics & Assets & Pursuits (2 cols wide on large screens) */}
+                <div className="lg:col-span-2 space-y-8">
+                    {/* Top Row: Metrics & Assets */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-4">
+                            <MetricTile
+                                label="Time in Process"
+                                value={(() => {
+                                    if (!engagement.startDate) return 'N/A';
+                                    const start = new Date(engagement.startDate);
+                                    const now = new Date();
+                                    const diffTime = Math.abs(now.getTime() - start.getTime());
+                                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                                    return `${diffDays} Day${diffDays !== 1 ? 's' : ''}`;
+                                })()}
+                                icon={<Calendar className="h-5 w-5" />}
+                            />
+                            <MetricTile
+                                label="Avg Opportunity Comp"
+                                value={formatCurrency(avgComp)}
+                                icon={<DollarSign className="h-5 w-5" />}
+                            />
+                            <MetricTile
+                                label="Projected ISA Value"
+                                value={formatCurrency(projectedISA)}
+                                icon={<DollarSign className="h-5 w-5" />}
+                            />
+                            <MetricTile
+                                label="Last Touch"
+                                value={lastTouch}
+                                icon={<Calendar className="h-5 w-5" />}
                             />
                         </div>
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={isUploading}
-                            className="w-full mt-2 py-1.5 border border-dashed border-slate-300 rounded text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:bg-white hover:text-slate-600 transition-colors flex items-center justify-center gap-2"
-                        >
-                            {isUploading ? (
-                                <>
-                                    <Loader2 className="h-3 w-3 animate-spin" /> Uploading...
-                                </>
+
+                        {/* Client Assets */}
+                        <div className="bg-slate-50 border border-slate-200 rounded-sm p-4 h-full flex flex-col justify-between">
+                            <div>
+                                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 flex items-center justify-between">
+                                    <span>Client Assets</span>
+                                    <span className="text-[10px] bg-slate-200 px-1.5 rounded text-slate-500">{engagement.assets?.length || 0}</span>
+                                </h3>
+                                <div className="space-y-1">
+                                    {engagement.assets && engagement.assets.length > 0 ? (
+                                        engagement.assets.slice(0, 5).map((asset: any, idx: number) => {
+                                            if (!asset) return null;
+                                            return (
+                                                <AssetRow key={idx} name={asset.name || 'Unknown'} type={asset.type} url={asset.url} />
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="text-xs text-slate-400 italic">No assets uploaded.</div>
+                                    )}
+                                    {engagement.assets && engagement.assets.length > 5 && (
+                                        <div className="text-[10px] text-slate-400 pl-2">+{engagement.assets.length - 5} more</div>
+                                    )}
+                                </div>
+
+                                {/* Hidden File Input */}
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileUpload}
+                                    className="hidden"
+                                    accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+                                />
+                            </div>
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isUploading}
+                                className="w-full mt-4 py-2 border border-dashed border-slate-300 rounded text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:bg-white hover:text-slate-600 transition-colors flex items-center justify-center gap-2"
+                            >
+                                {isUploading ? (
+                                    <>
+                                        <Loader2 className="h-3 w-3 animate-spin" /> Uploading...
+                                    </>
+                                ) : (
+                                    "+ Upload Asset"
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
+
+                    {/* Pending Recommendations Section */}
+                    {(loadingRecs || (recommendations && recommendations.length > 0)) && (
+                        <div className="border-t border-slate-200 pt-8">
+                            <h3 className="text-lg font-bold text-oxford-green mb-4">Pending Recommendations</h3>
+                            {loadingRecs ? (
+                                <div className="text-sm text-slate-400">Loading recommendations...</div>
                             ) : (
-                                "+ Upload Asset"
+                                <div className="bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
+                                    <table className="w-full text-left">
+                                        <thead className="bg-slate-50 border-b border-slate-100 text-xs uppercase text-slate-500">
+                                            <tr>
+                                                <th className="p-4 font-bold">Company</th>
+                                                <th className="p-4 font-bold">Role</th>
+                                                <th className="p-4 font-bold">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-50">
+                                            {recommendations.map((rec: any) => (
+                                                <tr key={rec.id} className="hover:bg-slate-50 transition-colors">
+                                                    <td className="p-4 font-bold text-slate-800">{rec.target?.company || 'Unknown'}</td>
+                                                    <td className="p-4 text-sm text-slate-600">{rec.target?.role || 'Unknown'}</td>
+                                                    <td className="p-4">
+                                                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
+                                                            {rec.status.replace('_', ' ')}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             )}
-                        </button>
+                        </div>
+                    )}
+
+
+                    {/* Job Pursuits Section */}
+                    <div className="border-t border-slate-200 pt-8">
+                        <h3 className="text-lg font-bold text-oxford-green mb-4">Job Pursuits</h3>
+                        <div className="bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
+                            {loadingPursuits ? (
+                                <div className="p-8 text-center text-slate-400 text-sm">Loading pursuits...</div>
+                            ) : (pursuits && pursuits.length > 0) ? (
+                                <table className="w-full text-left">
+                                    <thead className="bg-slate-50 border-b border-slate-100 text-xs uppercase text-slate-500">
+                                        <tr>
+                                            <th className="p-4 font-bold">Company</th>
+                                            <th className="p-4 font-bold">Role</th>
+                                            <th className="p-4 font-bold">Status</th>
+                                            <th className="p-4 font-bold">Value (Net)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                        {pursuits.map((pursuit: any) => (
+                                            <tr key={pursuit.id} className="hover:bg-slate-50 transition-colors group">
+                                                <td className="p-4 font-bold text-slate-800">{pursuit.company}</td>
+                                                <td className="p-4 text-sm text-slate-600">{pursuit.role}</td>
+                                                <td className="p-4">
+                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${pursuit.status === 'offer' ? 'bg-green-100 text-green-700' :
+                                                        pursuit.status === 'interviewing' ? 'bg-blue-50 text-blue-600' :
+                                                            'bg-slate-100 text-slate-500'
+                                                        }`}>
+                                                        {pursuit.status}
+                                                    </span>
+                                                </td>
+                                                <td className="p-4 text-sm font-mono text-slate-500">
+                                                    ${((pursuit.financials?.rep_net_value || 0) / 1000).toFixed(1)}k
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <div className="p-8 text-center text-slate-400 text-sm italic">
+                                    No active job pursuits for this client.
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                {/* Right Column: Deal Parameters (1 col wide, full height) */}
-                <div className="col-span-1 h-full">
+                {/* Right Column: Deal Parameters & Activities (1 col wide, full height) */}
+                <div className="space-y-6">
                     <DealCard engagement={engagement} onEdit={() => setIsDealParamsModalOpen(true)} />
+
+                    {/* Activity Context Panel */}
+                    <div className="h-[600px]">
+                        <ActivityContextPanel
+                            entityType="engagement"
+                            entityId={id || ''}
+                        />
+                    </div>
                 </div>
             </div>
 
-            {/* Deal Params Edit Modal (Hidden Logic) */}
             {/* Deal Params Edit Modal */}
             <DealParamsModal
                 isOpen={isDealParamsModalOpen}
@@ -304,63 +478,9 @@ export default function ClientDetail() {
                 engagement={engagement}
             />
 
-            {/* Job Pursuits Section */}
-            <div className="border-t border-slate-200 pt-8">
-                <h3 className="text-lg font-bold text-oxford-green mb-4">Job Pursuits</h3>
-                <div className="bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
-                    {loadingPursuits ? (
-                        <div className="p-8 text-center text-slate-400 text-sm">Loading pursuits...</div>
-                    ) : (pursuits && pursuits.length > 0) ? (
-                        <table className="w-full text-left">
-                            <thead className="bg-slate-50 border-b border-slate-100 text-xs uppercase text-slate-500">
-                                <tr>
-                                    <th className="p-4 font-bold">Company</th>
-                                    <th className="p-4 font-bold">Role</th>
-                                    <th className="p-4 font-bold">Status</th>
-                                    <th className="p-4 font-bold">Value (Net)</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-50">
-                                {pursuits.map((pursuit: any) => (
-                                    <tr key={pursuit.id} className="hover:bg-slate-50 transition-colors group">
-                                        <td className="p-4 font-bold text-slate-800">{pursuit.company}</td>
-                                        <td className="p-4 text-sm text-slate-600">{pursuit.role}</td>
-                                        <td className="p-4">
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${pursuit.status === 'offer' ? 'bg-green-100 text-green-700' :
-                                                pursuit.status === 'interviewing' ? 'bg-blue-50 text-blue-600' :
-                                                    'bg-slate-100 text-slate-500'
-                                                }`}>
-                                                {pursuit.status}
-                                            </span>
-                                        </td>
-                                        <td className="p-4 text-sm font-mono text-slate-500">
-                                            ${((pursuit.financials?.rep_net_value || 0) / 1000).toFixed(1)}k
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    ) : (
-                        <div className="p-8 text-center text-slate-400 text-sm italic">
-                            No active job pursuits for this client.
-                        </div>
-                    )}
-                </div>
-            </div>
 
-            {/* Activities Section */}
-            <div className="border-t border-slate-200 pt-8">
-                <div className="h-[600px] bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
-                    <ActivityTimeline
-                        associationId={id || ''}
-                        associationType="engagementId"
-                        associationData={{
-                            engagementId: id,
-                            contactId: engagement.contactId
-                        }}
-                    />
-                </div>
-            </div>
+
+
 
             {/* Edit Modal */}
             <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Client Engagement">

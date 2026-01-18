@@ -53,7 +53,7 @@ export default function ActivityTimeline({ associationId, associationType, assoc
         <div className="h-full flex flex-col bg-stone-50/50">
             {/* Header */}
             <div className="flex justify-between items-center px-4 py-3 border-b border-stone-200 bg-white">
-                <h3 className="font-serif text-stone-900 font-medium">Activity Timeline</h3>
+                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500">Activity Timeline</h3>
                 <button
                     onClick={() => setIsModalOpen(true)}
                     className="flex items-center gap-1 text-xs font-medium text-white bg-stone-900 px-3 py-1.5 rounded hover:bg-black transition-colors"

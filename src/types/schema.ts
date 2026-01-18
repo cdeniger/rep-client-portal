@@ -82,6 +82,21 @@ export interface IntakeResponse {
         resumeFile?: string;
         uploadedAt?: Timestamp;
     };
+    filters: {
+        hardConstraints: {
+            minBase: number;
+            minTotalComp: number;
+            minLevel: number;
+            maxCommuteMinutes: number;
+            relocationWillingness: boolean;
+        };
+        softPreferences: {
+            preferredIndustries: string[];
+            avoidIndustries: string[];
+            preferredFunctions: string[];
+            workStyle: 'remote' | 'hybrid' | 'onsite';
+        };
+    };
 }
 
 // Placeholder for full Diagnostic Report types if needed
