@@ -9,7 +9,8 @@ import {
     LogOut,
     Hexagon,
     Contact,
-    Building2
+    Building2,
+    Activity
 } from 'lucide-react';
 import Logo from '../components/ui/Logo';
 
@@ -48,6 +49,7 @@ export default function RepLayout() {
                         </div>
                         <NavItem to="/rep/contacts" icon={Contact} label="Contacts" />
                         <NavItem to="/rep/companies" icon={Building2} label="Companies" />
+                        <NavItem to="/rep/activities" icon={Activity} label="Activities" />
                     </div>
                 </nav>
 

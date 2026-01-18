@@ -22,6 +22,7 @@ import Companies from './pages/Companies';
 import CompanyDetail from './pages/CompanyDetail';
 import PipelineManager from './pages/admin/PipelineManager';
 import ActivityDefinitionBuilder from './pages/admin/ActivityDefinitionBuilder';
+import Activities from './pages/Activities';
 
 function App() {
   return (
@@ -49,6 +50,7 @@ function App() {
             <Route path="contacts" element={<Contacts />} />
             <Route path="companies" element={<Companies />} />
             <Route path="companies/:id" element={<CompanyDetail />} />
+            <Route path="activities" element={<Activities />} />
             <Route path="pending-recs" element={<PendingRecs />} />
             <Route path="deals" element={<div className="p-8 text-slate-500">Deal Desk Placeholder</div>} />
             <Route path="invoices" element={<div className="p-8 text-slate-500">Invoices Placeholder</div>} />
