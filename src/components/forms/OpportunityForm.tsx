@@ -3,8 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import type { JobPursuit, Company, CompanyLocation } from '../../types/schema';
-import { findOrCreateCompany } from '../../lib/companies';
-import { Search, Plus, MapPin } from 'lucide-react';
+import { Plus, MapPin } from 'lucide-react';
 
 interface OpportunityFormProps {
     initialData?: Partial<JobPursuit>;
@@ -79,7 +78,7 @@ export default function OpportunityForm({ initialData, onSubmit, onCancel, isSub
     const lookupCompany = async (name: string) => {
         const q = query(collection(db, 'companies'), where('name_lower', '==', name.toLowerCase()));
         const snaps = await getDocs(q);
-        if (!snps.empty) {
+        if (!snaps.empty) {
             setSelectedCompany({ id: snaps.docs[0].id, ...snaps.docs[0].data() } as Company);
         }
     }

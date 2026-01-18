@@ -1,6 +1,6 @@
 import { collection, doc, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import type { UserProfile, IntakeResponse, Opportunity } from '../types/schema';
+import type { UserProfile, IntakeResponse } from '../types/schema';
 
 export const seedClientData = async (uid: string) => {
     if (!uid) throw new Error("No User ID provided for seeding.");
@@ -76,7 +76,7 @@ export const seedClientData = async (uid: string) => {
     // 3. Seed Opportunities
     // Fix: Use specific IDs so we don't duplicate on re-seed
     const oppsRef = doc(db, 'opportunities', `opp_${uid}_1`);
-    const oppData1: Opportunity = {
+    const oppData1: any = {
         id: `opp_${uid}_1`,
         userId: uid,
         company: 'Stripe',
@@ -185,6 +185,37 @@ export const seedClientData = async (uid: string) => {
 
     await batch.commit();
     console.log("Client data seeded for:", uid);
+};
+
+export const seedAdminData = async () => {
+    const uid = 'rep_admin';
+    console.log(`Starting Admin Seeding for: ${uid}`);
+    const batch = writeBatch(db);
+
+    // 1. Seed Admin User
+    const userRef = doc(db, 'users', uid);
+    batch.set(userRef, {
+        uid,
+        email: 'admin@repteam.com',
+        role: 'rep', // Role 'rep' allows access to internal portal
+        contactId: `contact_${uid}`
+    });
+
+    // 2. Seed Admin Contact Info
+    const contactRef = doc(db, 'contacts', `contact_${uid}`);
+    batch.set(contactRef, {
+        id: `contact_${uid}`,
+        userId: uid,
+        firstName: 'Admin',
+        lastName: 'User',
+        email: 'admin@repteam.com',
+        headline: 'System Administrator',
+        bio: 'Internal Admin User',
+        avatarUrl: null
+    });
+
+    await batch.commit();
+    console.log("Admin User Seeded.");
 };
 
 export const seedRepData = async (uid: string) => {
@@ -334,7 +365,10 @@ export const seedDatabase = seedClientData;
 
 // Execute Seeding for Rep Jordan Only if running as script
 if (typeof process !== 'undefined' && process.versions && process.versions.node) {
-    seedRepData('rep_jordan')
+    Promise.all([
+        seedRepData('rep_jordan'),
+        seedAdminData()
+    ])
         .then(() => process.exit(0))
         .catch((error) => {
             console.error("Seeding Failed:", error);

@@ -5,7 +5,8 @@ import { useAuth } from '../../context/AuthContext';
 const ALLOWED_ADMINS = [
     'alex.mercer@test.com',
     'clay.deniger@gmail.com', // Assuming this might be the dev
-    'admin@rep.com'
+    'admin@rep.com',
+    'admin@repteam.com'
 ];
 
 export default function AdminGuard() {

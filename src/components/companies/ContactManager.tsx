@@ -1,16 +1,15 @@
 import { useState } from 'react';
-import { Plus, Mail, Phone, Linkedin, Trash2, Edit2, User } from 'lucide-react';
+import { Plus, Mail, Phone, Linkedin, Trash2, Edit2 } from 'lucide-react';
 import { addDoc, updateDoc, deleteDoc, doc, collection } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import type { Contact } from '../../types/schema';
 
 interface ContactManagerProps {
     companyId: string;
-    companyName: string;
     contacts: Contact[];
 }
 
-export default function ContactManager({ companyId, companyName, contacts }: ContactManagerProps) {
+export default function ContactManager({ companyId, contacts }: ContactManagerProps) {
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [formData, setFormData] = useState<Partial<Contact>>({ type: 'client' });
@@ -195,8 +194,8 @@ export default function ContactManager({ companyId, companyName, contacts }: Con
                                     <div className="flex items-center gap-2 mb-1">
                                         <div className="font-bold text-slate-800 text-sm truncate">{contact.firstName} {contact.lastName}</div>
                                         <span className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold tracking-wide ${contact.type === 'client' ? 'bg-orange-50 text-orange-600' :
-                                                contact.type === 'hiring_manager' ? 'bg-blue-50 text-blue-600' :
-                                                    'bg-slate-100 text-slate-500'
+                                            contact.type === 'hiring_manager' ? 'bg-blue-50 text-blue-600' :
+                                                'bg-slate-100 text-slate-500'
                                             }`}>
                                             {contact.type?.replace('_', ' ')}
                                         </span>

@@ -2,14 +2,13 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useDocument } from '../hooks/useFirestore';
 import { useCollection } from '../hooks/useCollection';
-import { where, doc, updateDoc, addDoc, collection } from 'firebase/firestore';
+import { where, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import type { UserProfile, JobPursuit, Engagement, JobRecommendation, JobTarget } from '../types/schema';
+import type { UserProfile, JobPursuit, Engagement, JobRecommendation } from '../types/schema';
 import { ArrowRight, Trophy, Target, Calendar, Edit2, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Modal from '../components/ui/Modal';
 import ProfileForm from '../components/forms/ProfileForm';
-import { findOrCreateCompany } from '../lib/companies';
 
 export default function Dashboard() {
     const { user } = useAuth();
@@ -38,9 +37,6 @@ export default function Dashboard() {
         where('engagementId', '==', activeEngagement?.id || 'null')
     );
 
-    // Fetch Targets (to resolve details)
-    const { data: targets } = useCollection<JobTarget>('job_targets');
-
     if (profileLoading || oppsLoading) {
         return <div className="text-gray-400 text-sm animate-pulse">Loading Dashboard...</div>;
     }
@@ -65,47 +61,11 @@ export default function Dashboard() {
     const activeOpps = opportunities.filter(o => ['interviewing', 'offer', 'negotiating'].includes(o.status));
     const negotiatingOpps = opportunities.filter(o => o.status === 'negotiating');
 
-    // Recommendation Actions
-    const handleRecAction = async (recId: string, action: 'pursue' | 'reject' | 'defer') => {
-        if (!user || !activeEngagement) return;
-        const rec = recommendations.find(r => r.id === recId);
-        const target = targets.find(t => t.id === rec?.targetId);
-        if (!rec || !target) return;
-
-        try {
-            if (action === 'pursue') {
-                // 1. Resolve Company ID (Deduplication)
-                const companyId = await findOrCreateCompany(target.company || 'Unknown');
-
-                // 2. Create Pursuit
-                await addDoc(collection(db, 'job_pursuits'), {
-                    targetId: target.id,
-                    userId: user.uid,
-                    engagementId: activeEngagement.id,
-                    companyId: companyId,
-                    company: target.company,
-                    role: target.role,
-                    status: 'outreach',
-                    stage_detail: 'Client Accepted Recommendation',
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                    financials: target.financials || {}
-                });
-                // 3. Update Rec Status
-                await updateDoc(doc(db, 'job_recommendations', recId), { status: 'converted' });
-            } else if (action === 'reject') {
-                await updateDoc(doc(db, 'job_recommendations', recId), { status: 'rejected' });
-            } else if (action === 'defer') {
-                await updateDoc(doc(db, 'job_recommendations', recId), { status: 'deferred' });
-            }
-        } catch (err) {
-            console.error("Action failed", err);
-            alert("Action failed.");
-        }
-    };
+    // Recommendation Actions (Future Implementation)
+    // const handleRecAction = async (recId: string, action: 'pursue' | 'reject' | 'defer') => { ... }
 
     const pendingRecs = recommendations.filter(r => r.status === 'pending_client');
-    const deferredRecs = recommendations.filter(r => r.status === 'deferred');
+    // const deferredRecs = recommendations.filter(r => r.status === 'deferred');
 
 
 
@@ -119,17 +79,17 @@ export default function Dashboard() {
                 >
                     <div className="flex items-center gap-3">
                         <h1 className="text-3xl font-bold text-oxford-green mb-1">
-                            Good afternoon, {userProfile?.profile.name.split(' ')[0] || 'Client'}.
+                            Good afternoon, {userProfile?.profile?.name?.split(' ')[0] || 'Client'}.
                         </h1>
                         <Edit2 className="h-4 w-4 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                     <p className="text-gray-500 text-sm">
-                        {userProfile?.profile.headline || 'Managing your career asset.'}
+                        {userProfile?.profile?.headline || 'Managing your career asset.'}
                     </p>
                 </div>
                 <div className="text-right hidden md:block">
                     <div className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Current Pod</div>
-                    <div className="text-sm font-semibold text-oxford-green">{userProfile?.profile.pod || 'Unassigned'}</div>
+                    <div className="text-sm font-semibold text-oxford-green">{userProfile?.profile?.pod || 'Unassigned'}</div>
                 </div>
             </div>
 

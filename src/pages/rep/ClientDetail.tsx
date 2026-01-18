@@ -251,9 +251,12 @@ export default function ClientDetail() {
                             </h3>
                             <div className="space-y-1">
                                 {engagement.assets && engagement.assets.length > 0 ? (
-                                    engagement.assets.slice(0, 2).map((asset: any, idx: number) => (
-                                        <AssetRow key={idx} name={asset.name} type={asset.type} url={asset.url} />
-                                    ))
+                                    engagement.assets.slice(0, 2).map((asset: any, idx: number) => {
+                                        if (!asset) return null;
+                                        return (
+                                            <AssetRow key={idx} name={asset.name || 'Unknown'} type={asset.type} url={asset.url} />
+                                        );
+                                    })
                                 ) : (
                                     <div className="text-xs text-slate-400 italic">No assets uploaded.</div>
                                 )}

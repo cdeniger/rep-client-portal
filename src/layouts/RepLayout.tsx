@@ -51,6 +51,13 @@ export default function RepLayout() {
                         <NavItem to="/rep/companies" icon={Building2} label="Companies" />
                         <NavItem to="/rep/activities" icon={Activity} label="Activities" />
                     </div>
+
+                    <div className="pt-4 mt-4 border-t border-white/10">
+                        <div className="px-3 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest hidden md:block">
+                            Utilities
+                        </div>
+                        <NavItem to="/admin/activity-types" icon={List} label="Activity Config" />
+                    </div>
                 </nav>
 
                 <div className="px-4 mt-auto">

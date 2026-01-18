@@ -197,6 +197,7 @@ export interface JobPursuit {
         equity: string;
         rep_net_value: number;
     };
+    locationId?: string;
 }
 
 export interface JobRecommendation {

@@ -9,7 +9,12 @@ interface ProfileFormProps {
 }
 
 export default function ProfileForm({ initialData, onSubmit, onCancel, isSubmitting }: ProfileFormProps) {
-    const [formData, setFormData] = useState(initialData);
+    const [formData, setFormData] = useState(initialData || {
+        name: '',
+        headline: '',
+        bio_short: '',
+        pitch: ''
+    });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

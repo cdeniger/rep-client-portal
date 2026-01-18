@@ -22,6 +22,7 @@ import Companies from './pages/Companies';
 import CompanyDetail from './pages/CompanyDetail';
 import PipelineManager from './pages/admin/PipelineManager';
 import ActivityDefinitionBuilder from './pages/admin/ActivityDefinitionBuilder';
+import ActivityTypes from './pages/admin/ActivityTypes';
 import Activities from './pages/Activities';
 
 function App() {
@@ -61,6 +62,7 @@ function App() {
             <Route element={<RepLayout />}>
               <Route path="pipelines" element={<PipelineManager />} />
               <Route path="definitions" element={<ActivityDefinitionBuilder />} />
+              <Route path="activity-types" element={<ActivityTypes />} />
             </Route>
           </Route>
         </Route>

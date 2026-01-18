@@ -1,9 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { ActivityService } from '../../services/ActivityService';
 import type { ActivityDefinition, ActivityAssociations, Activity, PipelineDefinition } from '../../types/activities';
-import { X, Save, Calendar, Star, Clock } from 'lucide-react';
+import { X, Save, Star, Clock } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 
 interface LogActivityModalProps {
@@ -19,7 +19,7 @@ export default function LogActivityModal({ isOpen, onClose, associations, initia
     const [pipelines, setPipelines] = useState<PipelineDefinition[]>([]);
     const [loading, setLoading] = useState(false);
 
-    const { register, control, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm({
+    const { register, handleSubmit, watch, reset } = useForm({
         defaultValues: {
             type: initialData?.type || 'call',
             notes: initialData?.notes || '',
@@ -69,7 +69,11 @@ export default function LogActivityModal({ isOpen, onClose, associations, initia
 
             // Ensure core types exist in definitions for UI rendering if not in DB
             const coreTypes = ['interview', 'call', 'stage_change', 'email', 'note'];
-            const mergedDefs = [...defs];
+
+            // Defensive: Ensure all loaded definitions have fields array
+            const safeDefs = defs.map(d => ({ ...d, fields: d.fields || [] }));
+
+            const mergedDefs = [...safeDefs];
             coreTypes.forEach(ct => {
                 if (!mergedDefs.find(d => d.id === ct)) {
                     mergedDefs.push({ id: ct, label: ct.charAt(0).toUpperCase() + ct.slice(1), isCore: true, fields: [] });
@@ -89,6 +93,37 @@ export default function LogActivityModal({ isOpen, onClose, associations, initia
         setLoading(true);
         try {
             const performedAt = Timestamp.fromDate(new Date(data.performedAtDate));
+            const currentDef = definitions.find(d => d.id === data.type);
+
+            // Clean metadata: filters out fields that don't belong to the current type
+            // This prevents stale data from persisting if user switches types in the modal
+            const cleanMetadata: Record<string, any> = {};
+
+            // 1. Preserve Zone A (Core) fields relevant to this type
+            if (data.type === 'interview') {
+                cleanMetadata.round = data.metadata.round;
+                cleanMetadata.rating = data.metadata.rating;
+                cleanMetadata.interviewers = data.metadata.interviewers;
+            } else if (data.type === 'stage_change') {
+                cleanMetadata.pipelineKey = data.metadata.pipelineKey;
+                cleanMetadata.toStage = data.metadata.toStage;
+            } else if (data.type === 'email') {
+                cleanMetadata.subject = data.metadata.subject;
+                cleanMetadata.recipientEmail = data.metadata.recipientEmail;
+                cleanMetadata.direction = data.metadata.direction;
+            } else if (data.type === 'call') {
+                cleanMetadata.outcome = data.metadata.outcome;
+                cleanMetadata.durationMinutes = data.metadata.durationMinutes;
+            }
+
+            // 2. Preserve Zone B (Dynamic) fields defined in the configuration
+            if (currentDef && currentDef.fields) {
+                currentDef.fields.forEach(field => {
+                    if (data.metadata[field.key] !== undefined) {
+                        cleanMetadata[field.key] = data.metadata[field.key];
+                    }
+                });
+            }
 
             // Structure payload properly
             const payload = {
@@ -97,7 +132,7 @@ export default function LogActivityModal({ isOpen, onClose, associations, initia
                 notes: data.notes,
                 status: data.status,
                 performedAt,
-                metadata: data.metadata,
+                metadata: cleanMetadata, // Use cleaned metadata
                 associations // Ensure associations are attached
             };
 
@@ -211,8 +246,9 @@ export default function LogActivityModal({ isOpen, onClose, associations, initia
                                             {...register('metadata.pipelineKey')}
                                             className="w-full p-2 bg-white border border-blue-200 rounded text-sm"
                                         >
-                                            <option value="job_search">Job Search</option>
-                                            <option value="client_origination">Client Origination</option>
+                                            {pipelines.map(p => (
+                                                <option key={p.id} value={p.id}>{p.label}</option>
+                                            ))}
                                         </select>
                                     </div>
                                     <div>

@@ -58,7 +58,7 @@ export default function PendingRecs() {
                 const target = targetsMap.get(r.targetId);
                 const engg = enggMap.get(r.engagementId);
                 const user = engg ? usersMap.get(engg.userId) : null;
-                const clientName = user ? (user.profile?.name || user.profile?.firstName + ' ' + user.profile?.lastName) : 'Unknown Client';
+                const clientName = user ? (user.profile?.name || (user.profile?.firstName && user.profile?.lastName ? user.profile.firstName + ' ' + user.profile.lastName : 'Unknown Client')) : 'Unknown Client';
 
                 return {
                     ...r,

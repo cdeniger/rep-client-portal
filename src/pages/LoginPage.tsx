@@ -123,13 +123,13 @@ export default function LoginPage() {
 
                     <button
                         onClick={async () => {
-                            // Rep: Jordan Wolf
-                            await handleDevLogin('rep_jordan', 'jordan.rep@example.com', 'rep', 'Jordan Wolf');
+                            // Rep: Admin
+                            await handleDevLogin('rep_admin', 'admin@repteam.com', 'rep', 'Admin User');
                             // Auto-seed for convenience (DISABLED to prevent data overwrite)
                             /*
                             try {
                                 const { seedRepData } = await import('../scripts/seed');
-                                await seedRepData('rep_jordan');
+                                await seedRepData('rep_admin');
                                 console.log('Auto-seeded rep data');
                             } catch (e) { console.error('Auto-seed failed', e) }
                             */
