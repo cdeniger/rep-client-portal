@@ -10,6 +10,7 @@ import { ChevronLeft, Edit, Calendar, DollarSign, FileText, Download, ExternalLi
 import Modal from '../../components/ui/Modal';
 import DealCard from '../../components/rep/DealCard';
 import DealParamsModal from '../../components/rep/DealParamsModal';
+import ActivityTimeline from '../../components/activities/ActivityTimeline';
 
 
 export default function ClientDetail() {
@@ -341,6 +342,20 @@ export default function ClientDetail() {
                             No active job pursuits for this client.
                         </div>
                     )}
+                </div>
+            </div>
+
+            {/* Activities Section */}
+            <div className="border-t border-slate-200 pt-8">
+                <div className="h-[600px] bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
+                    <ActivityTimeline
+                        associationId={id || ''}
+                        associationType="engagementId"
+                        associationData={{
+                            engagementId: id,
+                            contactId: engagement.contactId
+                        }}
+                    />
                 </div>
             </div>
 

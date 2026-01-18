@@ -2,6 +2,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import PrivateRoute from './components/auth/PrivateRoute';
+import AdminGuard from './components/auth/AdminGuard';
 
 import AppShell from './components/layout/AppShell';
 import Dashboard from './pages/Dashboard';
@@ -19,6 +20,8 @@ import JobRecs from './pages/JobRecs';
 import Contacts from './pages/Contacts';
 import Companies from './pages/Companies';
 import CompanyDetail from './pages/CompanyDetail';
+import PipelineManager from './pages/admin/PipelineManager';
+import ActivityDefinitionBuilder from './pages/admin/ActivityDefinitionBuilder';
 
 function App() {
   return (
@@ -49,6 +52,14 @@ function App() {
             <Route path="pending-recs" element={<PendingRecs />} />
             <Route path="deals" element={<div className="p-8 text-slate-500">Deal Desk Placeholder</div>} />
             <Route path="invoices" element={<div className="p-8 text-slate-500">Invoices Placeholder</div>} />
+          </Route>
+
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminGuard />}>
+            <Route element={<RepLayout />}>
+              <Route path="pipelines" element={<PipelineManager />} />
+              <Route path="definitions" element={<ActivityDefinitionBuilder />} />
+            </Route>
           </Route>
         </Route>
 
