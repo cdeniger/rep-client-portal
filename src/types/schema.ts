@@ -228,34 +228,96 @@ export interface JobRecommendation {
 }
 
 export interface Engagement {
+    // --- Operational Core (Preserved) ---
     id: string;
     userId: string;
     repId?: string;
     status: 'active' | 'searching' | 'negotiating' | 'placed' | 'paused' | 'alumni';
     startDate?: string;
     isaPercentage?: number;
-    profile?: {
-        firstName?: string;
-        lastName?: string;
-        headline?: string;
-        pod?: string;
-        bio_short?: string;
-    };
     assets?: Array<{
         name: string;
         url: string;
         type: 'pdf' | 'other';
         uploadedAt: string;
     }>;
-    searchCriteria?: {
-        minBase?: number;
-        targetTotal?: number;
-        minLevel?: number;
-        primaryFunction?: string;
-        locationType?: string;
-        targetLocations?: string[];
-        excludedIndustries?: string[];
-        minEquity?: string;
-        dealStructure?: string;
+
+    // --- Profile: The Identity ---
+    profile?: {
+        // Legacy/Existing
+        firstName?: string;
+        lastName?: string;
+        headline?: string;
+        pod?: string;
+        bio_short?: string;
+
+        // Hydrated from IntakeResponse.profile
+        currentTitle?: string;
+        currentCompany?: string;
+        industry?: string;
+        experienceBand?: string;
+
+        // Hydrated from IntakeResponse.marketIdentity
+        marketIdentity?: {
+            current: string;
+            target: string;
+            visibilityChannels: string[];
+        };
+    };
+
+    // --- Strategy: The "Soft" Psychology ---
+    // Now acts as a complete container for the "Soft" Intake sections
+    strategy?: {
+        // From IntakeResponse.trajectory
+        trajectory?: {
+            primaryArc: string;
+            secondaryArc?: string;
+            successMetrics: string[];
+            negativeConstraints: string[];
+        };
+
+        // From IntakeResponse.horizon
+        horizon?: {
+            nextRoleDuration: string;
+            payoffTiming: string;
+            progressionLens: string;
+        };
+
+        // From IntakeResponse.ownership
+        ownership?: {
+            current: string[];
+            nextLevelTarget: string;
+            expansionPriority: string;
+        };
+
+        // From IntakeResponse.authority
+        authority?: {
+            currentMode: string;
+            targetDomains: string[];
+            failureTolerance: string;
+        };
+
+        // From IntakeResponse.comp
+        comp?: {
+            orientation: { primary: string }; // Strictly matched to Intake
+            riskPosture: string;
+            successSignals: string[];
+        };
+    };
+
+    // --- Target Parameters: The "Hard" Deal Desk Numbers ---
+    targetParameters?: {
+        // From IntakeResponse.filters.hardConstraints
+        minBase: number;
+        minTotalComp: number;
+        minLevel: number;
+        maxCommuteMinutes: number;
+        relocationWillingness: boolean;
+
+        // From IntakeResponse.filters.softPreferences
+        preferredIndustries: string[];
+        avoidIndustries: string[];
+        preferredFunctions: string[];
+        workStyle: 'remote' | 'hybrid' | 'onsite';
     };
 }
