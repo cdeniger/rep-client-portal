@@ -79,6 +79,7 @@ export const seedClientData = async (uid: string) => {
     const oppData1: any = {
         id: `opp_${uid}_1`,
         userId: uid,
+        engagementId: `eng_${uid}`, // Linked to the Engagement we create later
         company: 'Stripe',
         role: 'Product Lead, Issuing',
         status: 'interviewing',
@@ -181,6 +182,54 @@ export const seedClientData = async (uid: string) => {
             userId: uid,
             description: 'Monthly Retainer'
         });
+    });
+
+    // 6. Seed Engagement (CRITICAL FIX: Link to Rep)
+    const engId = `eng_${uid}`; // eng_eng_user_alex_mercer
+    const contactId = `contact_${uid}`;
+    const companyId = `comp_${uid}_stripe`;
+
+    // A. Contact
+    const contactRef = doc(db, 'contacts', contactId);
+    batch.set(contactRef, {
+        id: contactId,
+        userId: uid,
+        currentCompanyId: companyId,
+        firstName: 'Alex',
+        lastName: 'Mercer',
+        email: 'alex.mercer@example.com',
+        headline: userData.profile.headline,
+        bio: userData.profile.bio_short,
+        phone: '555-0100',
+        linkedInUrl: 'https://linkedin.com/in/alexmercer',
+        avatarUrl: null
+    });
+
+    // B. Company (Stripe)
+    const compRef = doc(db, 'companies', companyId);
+    batch.set(compRef, {
+        id: companyId,
+        name: 'Stripe',
+        domain: 'stripe.com',
+        logoUrl: null
+    });
+
+    // C. Engagement
+    const engRef = doc(db, 'engagements', engId);
+    batch.set(engRef, {
+        id: engId,
+        contactId: contactId,
+        repId: 'rep_admin', // LINKED TO ADMIN USER
+        status: 'active',
+        startDate: new Date().toISOString(),
+        isaPercentage: 0.15,
+        profile: {
+            headline: userData.profile.headline,
+            pod: userData.profile.pod,
+            bio_short: userData.profile.bio_short,
+            firstName: 'Alex',
+            lastName: 'Mercer'
+        }
     });
 
     await batch.commit();
@@ -367,7 +416,9 @@ export const seedDatabase = seedClientData;
 if (typeof process !== 'undefined' && process.versions && process.versions.node) {
     Promise.all([
         seedRepData('rep_jordan'),
-        seedAdminData()
+        seedAdminData(),
+        seedRepData('rep_admin'),
+        seedClientData('eng_user_alex_mercer')
     ])
         .then(() => process.exit(0))
         .catch((error) => {

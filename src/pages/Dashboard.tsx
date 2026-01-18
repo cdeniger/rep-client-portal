@@ -18,23 +18,23 @@ export default function Dashboard() {
     // Fetch User Profile
     const { data: userProfile, loading: profileLoading } = useDocument<UserProfile>('users', user?.uid || '');
 
-    // Fetch Job Pursuits (Active Pipeline)
-    const { data: opportunities, loading: oppsLoading } = useCollection<JobPursuit>(
-        'job_pursuits',
-        where('userId', '==', user?.uid || '')
-    );
-
-    // Fetch Active Engagement to get context
-    const { data: engagements } = useCollection<Engagement>(
+    // 1. Fetch Active Engagement (Context Root)
+    const { data: engagements, loading: engagementsLoading } = useCollection<Engagement>(
         'engagements',
         where('userId', '==', user?.uid || '')
     );
     const activeEngagement = engagements.find(e => ['active', 'searching', 'negotiating'].includes(e.status));
 
-    // Fetch Recommendations
+    // 2. Fetch Job Pursuits (Scoped to Engagement)
+    const { data: opportunities, loading: oppsLoading } = useCollection<JobPursuit>(
+        'job_pursuits',
+        where('engagementId', '==', activeEngagement?.id || 'no_op')
+    );
+
+    // 3. Fetch Recommendations (Scoped to Engagement)
     const { data: recommendations } = useCollection<JobRecommendation>(
         'job_recommendations',
-        where('engagementId', '==', activeEngagement?.id || 'null')
+        where('engagementId', '==', activeEngagement?.id || 'no_op')
     );
 
     if (profileLoading || oppsLoading) {
