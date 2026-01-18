@@ -18,6 +18,7 @@ import PendingRecs from './pages/rep/PendingRecs';
 import JobRecs from './pages/JobRecs';
 import Contacts from './pages/Contacts';
 import Companies from './pages/Companies';
+import CompanyDetail from './pages/CompanyDetail';
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
             <Route path="pipeline" element={<GlobalPipeline />} />
             <Route path="contacts" element={<Contacts />} />
             <Route path="companies" element={<Companies />} />
+            <Route path="companies/:id" element={<CompanyDetail />} />
             <Route path="pending-recs" element={<PendingRecs />} />
             <Route path="deals" element={<div className="p-8 text-slate-500">Deal Desk Placeholder</div>} />
             <Route path="invoices" element={<div className="p-8 text-slate-500">Invoices Placeholder</div>} />

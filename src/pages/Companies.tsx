@@ -4,8 +4,10 @@ import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import type { Company } from '../types/schema';
 import { Search, Building2, MapPin, Plus } from 'lucide-react';
 import CompanyDrawer from '../components/companies/CompanyDrawer';
+import { useNavigate } from 'react-router-dom';
 
 export default function Companies() {
+    const navigate = useNavigate();
     const [companies, setCompanies] = useState<Company[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -96,7 +98,7 @@ export default function Companies() {
                             {filteredCompanies.map(company => (
                                 <div
                                     key={company.id}
-                                    onClick={() => setSelectedCompanyId(company.id)}
+                                    onClick={() => navigate(`/rep/companies/${company.id}`)}
                                     className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 cursor-pointer transition-colors group"
                                 >
                                     <div className="col-span-6 flex items-center gap-3">

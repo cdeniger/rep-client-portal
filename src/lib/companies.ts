@@ -31,7 +31,9 @@ export async function findOrCreateCompany(name: string): Promise<string> {
     const newCompany: Omit<Company, 'id'> = {
         name: trimmedName, // Store original casing for display
         name_lower: nameLower,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        type: 'target',
+        status: 'active'
     };
 
     const docRef = await addDoc(companiesRef, newCompany);

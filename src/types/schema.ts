@@ -26,6 +26,7 @@ export interface Contact {
     id: string;
     firstName: string;
     lastName: string;
+    title?: string;
     email?: string;
     phone?: string;
     linkedInUrl?: string;
@@ -142,8 +143,20 @@ export interface Company {
     id: string; // Auto-generated
     name: string; // "Stripe"
     name_lower: string; // "stripe" for case-insensitive search
-    domain?: string; // "stripe.com" (future proofing)
-    logoUrl?: string; // (future proofing)
+    domain?: string; // "stripe.com" (auto-extracted)
+    website?: string; // Full URL "https://stripe.com"
+    logoUrl?: string;
+    linkedInUrl?: string;
+
+    // Classification
+    type: 'target' | 'client' | 'vendor' | 'partner'; // Default: 'target'
+    status: 'active' | 'inactive'; // Default: 'active'
+    industry?: string;
+
+    // Relationship
+    accountOwnerId?: string; // Internal Rep User ID
+    relationshipNotes?: string;
+
     createdAt: string;
     locations?: CompanyLocation[];
 }
