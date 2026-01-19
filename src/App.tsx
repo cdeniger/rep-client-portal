@@ -20,7 +20,7 @@ import JobRecs from './pages/JobRecs';
 import Contacts from './pages/Contacts';
 import Companies from './pages/Companies';
 import CompanyDetail from './pages/CompanyDetail';
-import PipelineManager from './pages/admin/PipelineManager';
+import PipelineConfig from './pages/admin/PipelineConfig';
 import ActivityDefinitionBuilder from './pages/admin/ActivityDefinitionBuilder';
 import ActivityTypes from './pages/admin/ActivityTypes';
 import Activities from './pages/Activities';
@@ -62,7 +62,7 @@ function App() {
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminGuard />}>
             <Route element={<RepLayout />}>
-              <Route path="pipelines" element={<PipelineManager />} />
+              <Route path="pipelines" element={<PipelineConfig />} />
               <Route path="definitions" element={<ActivityDefinitionBuilder />} />
               <Route path="activity-types" element={<ActivityTypes />} />
             </Route>

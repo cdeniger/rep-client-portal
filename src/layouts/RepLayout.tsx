@@ -74,6 +74,7 @@ export default function RepLayout() {
                             Utilities
                         </div>
                         <NavItem to="/admin/activity-types" icon={List} label="Activity Config" />
+                        <NavItem to="/admin/pipelines" icon={Kanban} label="Pipelines Config" />
                     </div>
                 </nav>
 

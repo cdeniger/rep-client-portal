@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { doc, updateDoc, where, arrayUnion, getDoc, query, collection, getDocs } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../lib/firebase';
-import { ChevronLeft, Edit, Calendar, DollarSign, FileText, Download, ExternalLink, Loader2, Database } from 'lucide-react';
+import { ChevronLeft, Edit, Calendar, DollarSign, FileText, Database } from 'lucide-react';
 import DealCard from '../../components/rep/DealCard';
 import ClientMasterFileModal from '../../components/rep/ClientMasterFileModal';
 import ActivityContextPanel from '../../components/activities/ActivityContextPanel';
@@ -137,7 +137,7 @@ export default function ClientDetail() {
     const [masterFileTab, setMasterFileTab] = useState<'profile' | 'parameters' | 'strategy'>('profile');
     const [isUploading, setIsUploading] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
-    const [activeTab, setActiveTab] = useState<'overview' | 'job_hunt'>('job_hunt');
+    const [activeTab, setActiveTab] = useState<'overview' | 'history'>('overview');
 
     const openMasterFile = (tab: 'profile' | 'parameters' | 'strategy') => {
         setMasterFileTab(tab);
@@ -384,12 +384,31 @@ export default function ClientDetail() {
                 </button>
             </div >
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left Column: Metrics & Assets & Pursuits (2 cols wide on large screens) */}
-                <div className="lg:col-span-2 space-y-8">
-                    {/* Top Row: Metrics & Assets */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-4">
+            {/* TABS HEADER */}
+            <div className="flex items-center gap-6 border-b border-slate-700/50 mb-6">
+                <button
+                    onClick={() => setActiveTab('overview')}
+                    className={`pb-2 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'overview' ? 'border-signal-orange text-oxford-green' : 'border-transparent text-slate-400 hover:text-slate-600'
+                        }`}
+                >
+                    Overview
+                </button>
+                <button
+                    onClick={() => setActiveTab('history')}
+                    className={`pb-2 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'history' ? 'border-signal-orange text-oxford-green' : 'border-transparent text-slate-400 hover:text-slate-600'
+                        }`}
+                >
+                    History
+                </button>
+            </div>
+
+            {activeTab === 'overview' ? (
+                <div className="space-y-8 animate-fadeIn">
+                    {/* HEADS UP DISPLAY (Header Grid) */}
+                    <div className="grid grid-cols-12 gap-6 h-auto lg:h-[500px]">
+                        {/* LEFT: Metrics Grid (Cols 1-8) */}
+                        <div className="col-span-12 lg:col-span-8 grid grid-cols-2 gap-4 h-full">
+                            {/* Row 1 */}
                             <MetricTile
                                 label="Time in Process"
                                 value={(() => {
@@ -400,49 +419,22 @@ export default function ClientDetail() {
                                     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
                                     return `${diffDays} Day${diffDays !== 1 ? 's' : ''}`;
                                 })()}
-                                icon={<Calendar className="h-5 w-5" />}
+                                icon={<Calendar className="h-4 w-4" />}
                             />
-                            <MetricTile
-                                label="Avg Opportunity Comp"
-                                value={formatCurrency(avgComp)}
-                                icon={<DollarSign className="h-5 w-5" />}
-                            />
-                            <MetricTile
-                                label="Projected ISA Value"
-                                value={formatCurrency(projectedISA)}
-                                icon={<DollarSign className="h-5 w-5" />}
-                            />
-                            <MetricTile
-                                label="Last Touch"
-                                value={lastTouch}
-                                icon={<Calendar className="h-5 w-5" />}
-                            />
-                        </div>
 
-                        {/* Client Assets */}
-                        <div className="bg-slate-50 border border-slate-200 rounded-sm p-4 h-full flex flex-col justify-between">
-                            <div>
-                                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 flex items-center justify-between">
-                                    <span>Client Assets</span>
-                                    <span className="text-[10px] bg-slate-200 px-1.5 rounded text-slate-500">{engagement.assets?.length || 0}</span>
-                                </h3>
-                                <div className="space-y-1">
-                                    {engagement.assets && engagement.assets.length > 0 ? (
-                                        engagement.assets.slice(0, 5).map((asset: any, idx: number) => {
-                                            if (!asset) return null;
-                                            return (
-                                                <AssetRow key={idx} name={asset.name || 'Unknown'} type={asset.type} url={asset.url} />
-                                            );
-                                        })
-                                    ) : (
-                                        <div className="text-xs text-slate-400 italic">No assets uploaded.</div>
-                                    )}
-                                    {engagement.assets && engagement.assets.length > 5 && (
-                                        <div className="text-[10px] text-slate-400 pl-2">+{engagement.assets.length - 5} more</div>
-                                    )}
+                            <div className="bg-white border border-slate-200 p-4 rounded-sm shadow-sm flex flex-col justify-between relative group hover:border-slate-300 transition-colors cursor-pointer">
+                                <div className="flex justify-between items-start">
+                                    <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Client Assets</div>
+                                    <div className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 font-bold">{engagement.assets?.length || 0}</div>
                                 </div>
-
-                                {/* Hidden File Input */}
+                                <div className="text-lg font-bold text-oxford-green flex items-center gap-2">
+                                    <FileText className="h-5 w-5 text-slate-400" />
+                                    <span>{engagement.assets?.length || 0} Files</span>
+                                </div>
+                                <div className="absolute inset-0 bg-slate-50/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]">
+                                    <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">View All</span>
+                                </div>
+                                {/* Hidden File Input for quick upload if needed, or just link to modal */}
                                 <input
                                     type="file"
                                     ref={fileInputRef}
@@ -451,148 +443,99 @@ export default function ClientDetail() {
                                     accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
                                 />
                             </div>
-                            <button
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={isUploading}
-                                className="w-full mt-4 py-2 border border-dashed border-slate-300 rounded text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:bg-white hover:text-slate-600 transition-colors flex items-center justify-center gap-2"
-                            >
-                                {isUploading ? (
-                                    <>
-                                        <Loader2 className="h-3 w-3 animate-spin" /> Uploading...
-                                    </>
-                                ) : (
-                                    "+ Upload Asset"
-                                )}
-                            </button>
-                        </div>
-                    </div>
 
+                            {/* Row 2 */}
+                            <MetricTile
+                                label="Projected ISA"
+                                value={formatCurrency(projectedISA)}
+                                icon={<DollarSign className="h-4 w-4" />}
+                            />
 
-
-                    {/* Main Content Tabs */}
-                    <div className="border-t border-slate-200 pt-6">
-                        <div className="flex items-center gap-6 border-b border-slate-200 mb-6">
-                            <button
-                                onClick={() => setActiveTab('overview')}
-                                className={`pb-2 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'overview' ? 'border-signal-orange text-oxford-green' : 'border-transparent text-slate-400 hover:text-slate-600'
-                                    }`}
-                            >
-                                Overview
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('job_hunt')}
-                                className={`pb-2 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'job_hunt' ? 'border-signal-orange text-oxford-green' : 'border-transparent text-slate-400 hover:text-slate-600'
-                                    }`}
-                            >
-                                Job Hunt <span className="ml-1 bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full text-[10px]">{MOCK_DELIVERY_ITEMS.length}</span>
-                            </button>
-                        </div>
-
-                        {activeTab === 'overview' ? (
-                            <div className="space-y-8 animate-fadeIn">
-                                {/* Original Job Pursuits Table */}
+                            <div className="bg-white border border-slate-200 p-4 rounded-sm shadow-sm flex flex-col justify-between cursor-pointer hover:border-slate-300 transition-colors group">
+                                <div className="flex justify-between items-start">
+                                    <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Activity Nexus</div>
+                                    <div className="h-2 w-2 rounded-full bg-signal-orange animate-pulse"></div>
+                                </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-oxford-green mb-4">Active Pursuits</h3>
-                                    <div className="bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
-                                        {loadingPursuits ? (
-                                            <div className="p-8 text-center text-slate-400 text-sm">Loading pursuits...</div>
-                                        ) : (pursuits && pursuits.length > 0) ? (
-                                            <table className="w-full text-left">
-                                                <thead className="bg-slate-50 border-b border-slate-100 text-xs uppercase text-slate-500">
-                                                    <tr>
-                                                        <th className="p-4 font-bold">Company</th>
-                                                        <th className="p-4 font-bold">Role</th>
-                                                        <th className="p-4 font-bold">Status</th>
-                                                        <th className="p-4 font-bold">Value (Net)</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="divide-y divide-slate-50">
-                                                    {pursuits.map((pursuit: any) => (
-                                                        <tr key={pursuit.id} className="hover:bg-slate-50 transition-colors group">
-                                                            <td className="p-4 font-bold text-slate-800">{pursuit.company}</td>
-                                                            <td className="p-4 text-sm text-slate-600">{pursuit.role}</td>
-                                                            <td className="p-4">
-                                                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${pursuit.status === 'offer' ? 'bg-green-100 text-green-700' :
-                                                                    pursuit.status === 'interviewing' ? 'bg-blue-50 text-blue-600' :
-                                                                        'bg-slate-100 text-slate-500'
-                                                                    }`}>
-                                                                    {pursuit.status}
-                                                                </span>
-                                                            </td>
-                                                            <td className="p-4 text-sm font-mono text-slate-500">
-                                                                ${((pursuit.financials?.rep_net_value || 0) / 1000).toFixed(1)}k
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        ) : (
-                                            <div className="p-8 text-center text-slate-400 text-sm italic">
-                                                No active job pursuits for this client.
-                                            </div>
-                                        )}
+                                    <div className="text-[10px] text-slate-400 mb-1">Suggested Next Action:</div>
+                                    <div className="text-sm font-bold text-oxford-green flex items-center gap-2">
+                                        Strategy Call <ChevronLeft className="h-4 w-4 rotate-180" />
                                     </div>
                                 </div>
+                            </div>
 
-                                {/* Pending Client Actions (Recommendations) */}
-                                {(loadingRecs || (recommendations && recommendations.filter((r: any) => r.status === 'pending_client').length > 0)) && (
-                                    <div>
-                                        <h3 className="text-lg font-bold text-oxford-green mb-4">Pending Client Actions</h3>
-                                        {loadingRecs ? (
-                                            <div className="text-sm text-slate-400">Loading recommendations...</div>
-                                        ) : (
-                                            <div className="bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
-                                                <table className="w-full text-left">
-                                                    <thead className="bg-slate-50 border-b border-slate-100 text-xs uppercase text-slate-500">
-                                                        <tr>
-                                                            <th className="p-4 font-bold">Company</th>
-                                                            <th className="p-4 font-bold">Role</th>
-                                                            <th className="p-4 font-bold">Status</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-slate-50">
-                                                        {recommendations.filter((rec: any) => rec.status === 'pending_client').map((rec: any) => (
-                                                            <tr key={rec.id} className="hover:bg-slate-50 transition-colors">
-                                                                <td className="p-4 font-bold text-slate-800">{rec.target?.company || 'Unknown'}</td>
-                                                                <td className="p-4 text-sm text-slate-600">{rec.target?.role || 'Unknown'}</td>
-                                                                <td className="p-4">
-                                                                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
-                                                                        Pending Client
-                                                                    </span>
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+                            {/* Row 3 */}
+                            <MetricTile
+                                label="Avg Opp. Comp"
+                                value={formatCurrency(avgComp)}
+                                icon={<DollarSign className="h-4 w-4" />}
+                            />
+
+                            <div className="bg-white border border-slate-200 p-4 rounded-sm shadow-sm flex flex-col justify-between">
+                                <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Pipeline Pulse</div>
+                                <div className="flex items-end gap-2">
+                                    <span className="text-2xl font-bold text-oxford-green">{pursuits?.length || 0}</span>
+                                    <span className="text-xs font-bold text-slate-400 mb-1.5">Active</span>
+                                    <span className="text-slate-200 text-xl font-light">/</span>
+                                    <span className="text-xl font-bold text-green-600">{pursuits?.filter((p: any) => p.status === 'offer').length || 0}</span>
+                                    <span className="text-xs font-bold text-green-600/70 mb-1.5">Offer</span>
+                                </div>
                             </div>
-                        ) : (
-                            <div className="h-[600px] bg-slate-50 border border-slate-200 rounded-lg overflow-hidden animate-fadeIn">
-                                <PipelineBoard
-                                    definitionId="delivery_v1"
-                                    items={MOCK_DELIVERY_ITEMS}
-                                />
+
+                            {/* Row 4 */}
+                            <MetricTile
+                                label="Last Touch"
+                                value={lastTouch}
+                                icon={<Calendar className="h-4 w-4" />}
+                            />
+
+                            <div className="bg-red-50 border border-red-100 p-4 rounded-sm shadow-sm flex flex-col justify-between">
+                                <div className="text-[10px] uppercase tracking-widest text-red-400 font-bold flex items-center gap-2">
+                                    Stalled Alerts <span className="h-1.5 w-1.5 rounded-full bg-red-500"></span>
+                                </div>
+                                <div className="text-sm font-bold text-red-800">
+                                    2 Opps &gt; 5 Days
+                                </div>
+                                <div className="text-[10px] text-red-400 underline cursor-pointer">View Stalled Items</div>
                             </div>
-                        )}
+                        </div>
+
+                        {/* RIGHT: Parameters Card (Cols 9-12) */}
+                        <div className="col-span-12 lg:col-span-4 h-full">
+                            <div className="h-full">
+                                <DealCard engagement={engagement} onEdit={() => openMasterFile('parameters')} className="h-full flex flex-col" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* PIPELINE BOARD (Full Width) */}
+                    <div>
+                        <div className="h-[600px] bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
+                            <PipelineBoard
+                                definitionId="delivery_v1"
+                                items={MOCK_DELIVERY_ITEMS}
+                            />
+                        </div>
                     </div>
                 </div>
-
-                {/* Right Column: Deal Parameters & Activities (1 col wide, full height) */}
-                <div className="space-y-6">
-                    <DealCard engagement={engagement} onEdit={() => openMasterFile('parameters')} />
-
-                    {/* Activity Context Panel */}
-                    <div className="h-[600px]">
-                        <ActivityContextPanel
-                            entityType="engagement"
-                            entityId={id || ''}
-                        />
+            ) : (
+                /* HISTORY TAB */
+                <div className="animate-fadeIn">
+                    <div className="grid grid-cols-12 gap-6">
+                        <div className="col-span-12 lg:col-span-8">
+                            <ActivityContextPanel
+                                entityType="engagement"
+                                entityId={id || ''}
+                            />
+                        </div>
+                        <div className="col-span-12 lg:col-span-4">
+                            <div className="bg-slate-50 border border-slate-200 rounded p-6 text-center text-slate-400 text-sm italic">
+                                Additional historical context or analytics could go here.
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Master File Modal */}
             {engagement && (
@@ -621,14 +564,4 @@ function MetricTile({ label, value, icon }: { label: string, value: string, icon
     );
 }
 
-function AssetRow({ name, type, url }: { name: string, type: 'pdf' | 'other', url: string }) {
-    return (
-        <a href={url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-2 hover:bg-white rounded border border-transparent hover:border-slate-100 transition-all group cursor-pointer decoration-0">
-            <div className="flex items-center gap-2 overflow-hidden">
-                {type === 'pdf' ? <FileText className="h-4 w-4 text-red-400 flex-shrink-0" /> : <ExternalLink className="h-4 w-4 text-blue-400 flex-shrink-0" />}
-                <span className="text-xs text-slate-600 font-medium truncate">{name}</span>
-            </div>
-            <Download className="h-3 w-3 text-slate-300 opacity-0 group-hover:opacity-100 hover:text-slate-500" />
-        </a>
-    );
-}
+

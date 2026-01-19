@@ -1,37 +1,42 @@
-# Implementation Plan - Job Pursuit Pipeline (Client Detail)
+# Implementation Plan - Client Detail "Control Center" Refactor
 
 ## Objective
-Implement the "Job Hunt" pipeline visualization within the `ClientDetail` page using the polymorphic `PipelineBoard` architecture.
+Refactor `src/pages/rep/ClientDetail.tsx` into a high-density "Heads Up Display" layout, consolidating metrics, parameters, and the pipeline board into a single main view ("Overview") and moving the activity timeline to a separate tab ("History").
 
 ## Proposed Changes
 
-### 1. Update `src/pages/rep/ClientDetail.tsx`
+### 1. Layout Restructuring (`src/pages/rep/ClientDetail.tsx`)
 
-*   **Import Components**:
-    *   `PipelineBoard` from `../../components/pipeline/PipelineBoard`
-    *   `JobPursuit` type from `../../types/pipeline`
-    *   `Timestamp` from `firebase/firestore` (for mock data)
+*   **Remove Existing Grid**: Remove the top-level `grid-cols-1 lg:grid-cols-3` layout that splits the page into Main Content vs Sidebar.
+*   **New "Header" Section (Top)**:
+    *   Implement a 12-column grid container (`grid grid-cols-12 gap-6`).
+    *   **Metrics Area (Cols 1-8)**: A wrapper div (`col-span-12 lg:col-span-8`).
+        *   Inside this wrapper, create a sub-grid: `grid grid-cols-2 gap-4` containing 8 tiles.
+        *   **Row 1**: Time in Process | Client Assets (Condensed)
+        *   **Row 2**: Projected ISA | Activity Nexus (Mock)
+        *   **Row 3**: Avg Opp. Comp | Pipeline Pulse (Mock)
+        *   **Row 4**: Last Touch | Stalled Alerts (Mock)
+    *   **Parameters Area (Cols 9-12)**: A wrapper div (`col-span-12 lg:col-span-4 flex flex-col`).
+        *   Render `<DealCard />` here.
+        *   **Constraint**: container must allow `DealCard` to be `h-full` to match the metrics grid height.
 
-*   **Create Mock Data (`MOCK_DELIVERY_ITEMS`)**:
-    *   Create 3 `JobPursuit` items as requested:
-        1.  **CTO @ Stripe**: Stage `interview_loop`, Deal Value $450k, Role "CTO".
-        2.  **VP Engineering @ Google**: Stage `target_locked`, Deal Value $520k, Role "VP Engineering".
-        3.  **Head of AI @ Anthropic**: Stage `the_shadow`, Deal Value $600k, Role "Head of AI".
+### 2. Tab Architecture Update
+*   **State**: Update `activeTab` to allow `'overview' | 'history'`. Default to `'overview'`.
+*   **"Overview" Tab Content**:
+    *   Renders the **Header Section** (Metrics + DealCard).
+    *   Renders the `<PipelineBoard />` immediately below, consuming full width.
+*   **"History" Tab Content**:
+    *   Renders `<ActivityContextPanel />` (moved from the old right sidebar).
 
-*   **UI Updates**:
-    *   Locate the existing "Tabs" or "Section" switching logic (Profile, Strategy, etc.).
-    *   Add a new Tab/Section option: **"Job Hunt"**.
-    *   Render the `PipelineBoard` when this tab is active:
-        ```tsx
-        <div className="h-[600px] bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
-             <PipelineBoard 
-                 definitionId="delivery_v1"
-                 items={MOCK_DELIVERY_ITEMS}
-             />
-        </div>
-        ```
+### 3. Mock Components & Data
+*   Create inline mock components or render logic for the new requested cards:
+    *   **Activity Nexus**: "Next: Strategy Call" button.
+    *   **Pipeline Pulse**: "3 Active / 1 Offer" stat display.
+    *   **Stalled Alerts**: "2 Opps > 5 Days" alert display.
+*   **Client Assets**: Update to a condensed "4 Files" display style instead of the list.
 
-### 2. Verification
-*   **Visual Check**: Verify "Job Hunt" tab appears in Client Detail.
-*   **Polymorphic Check**: Confirm cards render "Deal Value" and "Role Title" (JobPursuit schema) instead of Lead metrics.
-*   **Stage Check**: Confirm items appear in 'Target Locked', 'Interview Loop', and 'The Shadow'.
+## Verification
+*   **Layout Check**: Verify the top section uses a 2:1 ratio (approx) between Metrics and Parameters.
+*   **Height Check**: Verify `DealCard` stretches to match the height of the metric grid.
+*   **Full Width**: Verify `PipelineBoard` is full width (no right sidebar).
+*   **Tabs**: Verify switching between "Overview" (Dashboard) and "History" (Timeline).

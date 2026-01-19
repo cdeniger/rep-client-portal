@@ -15,6 +15,7 @@ export interface OfferDetails {
 export interface PipelineDefinition {
     id: string;
     label: string;
+    category: 'sales' | 'delivery';
     stages: Stage[];
 }
 

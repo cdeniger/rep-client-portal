@@ -4,6 +4,7 @@ export const PIPELINE_DEFS: Record<string, PipelineDefinition> = {
     sales_v1: {
         id: 'sales_v1',
         label: 'Sales Pipeline',
+        category: 'sales',
         stages: [
             {
                 id: 'new_lead',
@@ -42,6 +43,7 @@ export const PIPELINE_DEFS: Record<string, PipelineDefinition> = {
     delivery_v1: {
         id: 'delivery_v1',
         label: 'Delivery Pipeline',
+        category: 'delivery',
         stages: [
             {
                 id: 'target_locked',

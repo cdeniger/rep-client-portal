@@ -1,4 +1,5 @@
-import { DollarSign, MapPin, Briefcase } from 'lucide-react';
+// Consolidated imports
+import { DollarSign, MapPin, Briefcase, TrendingUp, Target, Globe } from 'lucide-react';
 import type { Engagement } from '../../types/schema';
 
 // Helper to format currency
@@ -15,27 +16,34 @@ const formatCurrency = (amount: number) => {
 interface DealCardProps {
     engagement: Engagement;
     onEdit?: () => void;
+    className?: string;
 }
 
-export default function DealCard({ engagement, onEdit }: DealCardProps) {
-    // Fallback if data is missing (graceful degradation)
-    const criteria = engagement.targetParameters ? {
-        minBase: engagement.targetParameters.minBase,
-        targetTotal: engagement.targetParameters.minTotalComp,
-        locationType: engagement.targetParameters.workStyle,
-        targetLocations: engagement.targetParameters.preferredIndustries, // Mapping Ind. to Loc for display
-        primaryFunction: engagement.targetParameters.preferredFunctions?.[0] || 'Not Set',
-        minLevel: engagement.targetParameters.minLevel,
-        excludedIndustries: engagement.targetParameters.avoidIndustries
-    } : {
-        minBase: 0,
-        targetTotal: 0,
-        locationType: 'Not Set',
-        targetLocations: [],
-        primaryFunction: 'Not Set',
-        minLevel: 0,
-        excludedIndustries: []
-    };
+export default function DealCard({ engagement, onEdit, className = '' }: DealCardProps) {
+    // Data Extraction with Fallbacks
+    const params = engagement.targetParameters;
+    const strategy = engagement.strategy;
+
+    // Row 1: Hard Numbers
+    const baseFloor = params?.minBase;
+    const targetTC = params?.minTotalComp;
+
+    // Row 2: Logistics
+    const workStyle = params?.workStyle || 'N/A';
+    const relocation = params?.relocationWillingness
+        ? (typeof params.relocationWillingness === 'string' ? params.relocationWillingness : 'Open to Relocation')
+        : 'No Relocation';
+
+    // Row 3: Deal Strategy (Critical)
+    const riskProfile = strategy?.comp?.riskPosture || 'N/A';
+    const primaryArc = strategy?.trajectory?.primaryArc || 'N/A';
+
+    // Row 4: Market Focus
+    const targetSectors = params?.preferredIndustries || [];
+    const sectorsDisplay = targetSectors.length > 0 ? targetSectors.join(', ') : 'Open / Generalist';
+
+    // Footer: Exclusions
+    const exclusions = params?.avoidIndustries || [];
 
     // Derived Status Color
     const getStatusColor = (status: string) => {
@@ -48,8 +56,9 @@ export default function DealCard({ engagement, onEdit }: DealCardProps) {
     };
 
     return (
-        <div className="bg-oxford-green border border-white/10 rounded-lg p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
+        <div className={`bg-oxford-green border border-white/10 rounded-lg p-5 shadow-sm flex flex-col justify-between ${className}`}>
+            {/* Header */}
+            <div className="flex items-center justify-between mb-5">
                 <h3 className="text-white font-bold text-sm uppercase tracking-widest flex items-center gap-2">
                     <DollarSign className="h-4 w-4 text-signal-orange" />
                     Client Parameters
@@ -59,81 +68,112 @@ export default function DealCard({ engagement, onEdit }: DealCardProps) {
                 </span>
             </div>
 
-            <div className="space-y-4">
-                {/* 1. Commercials */}
+            <div className="space-y-4 flex-1 flex flex-col">
+                {/* 1. Hard Numbers */}
                 <div className="p-3 bg-white/5 rounded border border-white/5">
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <div className="text-gray-400 text-[10px] uppercase tracking-wider mb-1">Base Floor</div>
                             <div className="text-white font-mono font-bold text-lg">
-                                {(criteria.minBase ?? 0) > 0 ? formatCurrency(criteria.minBase ?? 0) : <span className="text-gray-500 text-sm">--</span>}
+                                {baseFloor ? formatCurrency(baseFloor) : <span className="text-gray-500 text-sm">--</span>}
                             </div>
                         </div>
                         <div>
                             <div className="text-gray-400 text-[10px] uppercase tracking-wider mb-1">Target TC</div>
                             <div className="text-emerald-400 font-mono font-bold text-lg">
-                                {(criteria.targetTotal ?? 0) > 0 ? formatCurrency(criteria.targetTotal ?? 0) : <span className="text-gray-500 text-sm">--</span>}
+                                {targetTC ? formatCurrency(targetTC) : <span className="text-gray-500 text-sm">--</span>}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* 2. Logistics & Scope Grid */}
-                <div className="grid grid-cols-2 gap-4">
+                {/* 2. Logistics */}
+                <div className="grid grid-cols-2 gap-4 border-b border-white/5 pb-3">
                     <div className="flex items-start gap-3">
-                        <MapPin className="h-4 w-4 text-gray-400 mt-1 flex-shrink-0" />
+                        <MapPin className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
                         <div>
-                            <div className="text-gray-400 text-[10px] uppercase tracking-wider mb-0.5">Logistics</div>
-                            <div className="text-white text-sm font-medium">
-                                <span className="capitalize">{criteria.locationType}</span>
-                                {criteria.targetLocations && criteria.targetLocations.length > 0 && (
-                                    <div className="text-gray-400 text-xs mt-0.5">
-                                        {criteria.targetLocations.join(', ')}
-                                    </div>
-                                )}
+                            <div className="text-gray-400 text-[10px] uppercase tracking-wider mb-0.5">Work Style</div>
+                            <div className="text-white text-sm font-medium capitalize truncate">
+                                {workStyle}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                        <Globe className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                            <div className="text-gray-400 text-[10px] uppercase tracking-wider mb-0.5">Relocation</div>
+                            <div className="text-white text-sm font-medium truncate">
+                                {relocation}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 3. Deal Strategy - Vertical Stack */}
+                <div className="border-b border-white/5">
+                    {/* Risk Profile - Full Width & Wrapping */}
+                    <div className="flex items-start gap-3 py-3 border-b border-white/5 border-dashed">
+                        <Briefcase className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                            <div className="text-gray-400 text-[10px] uppercase tracking-wider mb-0.5">Risk Profile</div>
+                            <div className="text-white text-sm font-medium capitalize leading-normal">
+                                {riskProfile}
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-start gap-3">
-                        <Briefcase className="h-4 w-4 text-gray-400 mt-1 flex-shrink-0" />
+                    {/* Primary Arc - Full Width */}
+                    <div className="flex items-start gap-3 py-3">
+                        <TrendingUp className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
                         <div>
-                            <div className="text-gray-400 text-[10px] uppercase tracking-wider mb-0.5">Target Scope</div>
+                            <div className="text-gray-400 text-[10px] uppercase tracking-wider mb-0.5">Primary Arc</div>
                             <div className="text-white text-sm font-medium capitalize">
-                                {criteria.primaryFunction} &bull; L{criteria.minLevel}+
+                                {primaryArc}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* 3. Exclusions & Edit Action */}
-                <div className="pt-4 border-t border-white/5 flex items-end justify-between gap-4">
+                {/* 4. Market Focus */}
+                <div className="flex items-start gap-3 pb-2">
+                    <Target className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 overflow-hidden">
+                        <div className="text-gray-400 text-[10px] uppercase tracking-wider mb-0.5">Target Sectors</div>
+                        <div className="text-white text-sm font-medium leading-tight line-clamp-2">
+                            {sectorsDisplay}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer: Exclusions & Edit Action */}
+                <div className="pt-2 flex items-end justify-between gap-4 mt-auto">
                     {/* Exclusions Left */}
-                    <div className="flex-1">
-                        {criteria.excludedIndustries && criteria.excludedIndustries.length > 0 ? (
+                    <div className="flex-1 overflow-hidden">
+                        {exclusions.length > 0 ? (
                             <div>
                                 <div className="text-red-400 text-[10px] uppercase tracking-wider mb-1">Exclusions</div>
                                 <div className="flex flex-wrap gap-1">
-                                    {criteria.excludedIndustries.map((ex, i) => (
-                                        <span key={i} className="text-[10px] text-red-300 bg-red-900/20 px-1.5 py-0.5 rounded border border-red-900/30">
+                                    {exclusions.map((ex, i) => (
+                                        <span key={i} className="text-[10px] text-red-300 bg-red-900/20 px-1.5 py-0.5 rounded border border-red-900/30 whitespace-nowrap">
                                             {ex}
                                         </span>
                                     ))}
                                 </div>
                             </div>
                         ) : (
-                            // Placeholder if no exclusions, to keep layout stable or empty
-                            <div className="text-gray-500 text-[10px] italic">No exclusions</div>
+                            <div className="text-gray-600 text-[10px] italic">No active exclusions</div>
                         )}
                     </div>
 
                     {/* Edit Right */}
-                    <button
-                        onClick={onEdit}
-                        className="flex-shrink-0 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-white border border-slate-700 hover:bg-slate-800 rounded-sm transition-all"
-                    >
-                        Edit Parameters
-                    </button>
+                    {onEdit && (
+                        <button
+                            onClick={onEdit}
+                            className="flex-shrink-0 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-white border border-slate-700 hover:bg-slate-800 rounded-sm transition-all"
+                        >
+                            Edit
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
