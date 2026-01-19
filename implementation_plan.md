@@ -1,42 +1,32 @@
-# Implementation Plan - Client Detail "Control Center" Refactor
+# Implementation Plan: Enforce Strict Pipeline Engagement Container
 
-## Objective
-Refactor `src/pages/rep/ClientDetail.tsx` into a high-density "Heads Up Display" layout, consolidating metrics, parameters, and the pipeline board into a single main view ("Overview") and moving the activity timeline to a separate tab ("History").
+## Problem
+Job Pursuits created via the Client Portal are currently "orphaned" from the Engagement container because the client-side `Pipeline` component does not fetch or attach the `engagementId` during creation. This forces the Rep Dashboard to use loose `userId` matching, which violates the strict data model.
 
-## Proposed Changes
+## User Objective
+Ensure `engagementId` is always the container for `job_pursuits` and enforce this in the Rep Dashboard query.
 
-### 1. Layout Restructuring (`src/pages/rep/ClientDetail.tsx`)
+## Steps
 
-*   **Remove Existing Grid**: Remove the top-level `grid-cols-1 lg:grid-cols-3` layout that splits the page into Main Content vs Sidebar.
-*   **New "Header" Section (Top)**:
-    *   Implement a 12-column grid container (`grid grid-cols-12 gap-6`).
-    *   **Metrics Area (Cols 1-8)**: A wrapper div (`col-span-12 lg:col-span-8`).
-        *   Inside this wrapper, create a sub-grid: `grid grid-cols-2 gap-4` containing 8 tiles.
-        *   **Row 1**: Time in Process | Client Assets (Condensed)
-        *   **Row 2**: Projected ISA | Activity Nexus (Mock)
-        *   **Row 3**: Avg Opp. Comp | Pipeline Pulse (Mock)
-        *   **Row 4**: Last Touch | Stalled Alerts (Mock)
-    *   **Parameters Area (Cols 9-12)**: A wrapper div (`col-span-12 lg:col-span-4 flex flex-col`).
-        *   Render `<DealCard />` here.
-        *   **Constraint**: container must allow `DealCard` to be `h-full` to match the metrics grid height.
+### 1. Fix Creation Logic (`Pipeline.tsx`)
+- **Action**: Update `src/pages/Pipeline.tsx` to fetch the current user's active `engagement` on load.
+- **Logic**: Use a `useCollection` query to find an engagement where `userId == current_user.uid` and status is one of logic `['active', 'searching', 'negotiating', 'placed']`.
+- **Outcome**: When `handleSave` is called, the new `job_pursuit` will include the valid `engagementId`.
 
-### 2. Tab Architecture Update
-*   **State**: Update `activeTab` to allow `'overview' | 'history'`. Default to `'overview'`.
-*   **"Overview" Tab Content**:
-    *   Renders the **Header Section** (Metrics + DealCard).
-    *   Renders the `<PipelineBoard />` immediately below, consuming full width.
-*   **"History" Tab Content**:
-    *   Renders `<ActivityContextPanel />` (moved from the old right sidebar).
+### 2. Backfill Existing Data
+- **Action**: Create and run a one-off script `src/scripts/fix_orphaned_pursuits.ts`.
+- **Logic**:
+    1. Scan `job_pursuits` for records missing `engagementId`.
+    2. For each, look up the `userId`.
+    3. Find the valid Engagement for that user.
+    4. Patch the `job_pursuit` with the correct `engagementId`.
+- **Outcome**: The existing "Stripe" and "Anthropic" records will be properly containerized.
 
-### 3. Mock Components & Data
-*   Create inline mock components or render logic for the new requested cards:
-    *   **Activity Nexus**: "Next: Strategy Call" button.
-    *   **Pipeline Pulse**: "3 Active / 1 Offer" stat display.
-    *   **Stalled Alerts**: "2 Opps > 5 Days" alert display.
-*   **Client Assets**: Update to a condensed "4 Files" display style instead of the list.
+### 3. Enforce Strict Query (`ClientDetail.tsx`)
+- **Action**: Revert the temporary `userId` query in `src/pages/rep/ClientDetail.tsx`.
+- **Logic**: Return to `where('engagementId', '==', id)`.
+- **Outcome**: The Rep Dashboard will correctly display the data because the data itself is now correct.
 
 ## Verification
-*   **Layout Check**: Verify the top section uses a 2:1 ratio (approx) between Metrics and Parameters.
-*   **Height Check**: Verify `DealCard` stretches to match the height of the metric grid.
-*   **Full Width**: Verify `PipelineBoard` is full width (no right sidebar).
-*   **Tabs**: Verify switching between "Overview" (Dashboard) and "History" (Timeline).
+- Confirm new opportunities created by Alex include `engagementId`.
+- Confirm existing opportunities show up in Rep Dashboard under strict filtering.

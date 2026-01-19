@@ -58,8 +58,8 @@ export default function Dashboard() {
         }
     };
 
-    const activeOpps = opportunities.filter(o => ['interviewing', 'offer', 'negotiating'].includes(o.status));
-    const negotiatingOpps = opportunities.filter(o => o.status === 'negotiating');
+    const activeOpps = opportunities.filter(o => ['interview_loop', 'offer_pending', 'target_locked', 'outreach_execution', 'engagement'].includes(o.status));
+    const negotiatingOpps = opportunities.filter(o => o.status === 'offer_pending');
 
     // Recommendation Actions (Future Implementation)
     // const handleRecAction = async (recId: string, action: 'pursue' | 'reject' | 'defer') => { ... }

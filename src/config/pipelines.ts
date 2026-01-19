@@ -71,11 +71,7 @@ export const PIPELINE_DEFS: Record<string, PipelineDefinition> = {
                 label: 'Offer Pending',
                 color: 'yellow',
             },
-            {
-                id: 'the_shadow',
-                label: 'The Shadow',
-                color: 'darkred',
-            },
+
             {
                 id: 'placed',
                 label: 'Placed',

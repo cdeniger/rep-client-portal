@@ -15,58 +15,7 @@ import type { JobPursuit } from '../../types/pipeline';
 import PipelineBoard from '../../components/pipeline/PipelineBoard';
 import { Timestamp } from 'firebase/firestore';
 
-const MOCK_DELIVERY_ITEMS: JobPursuit[] = [
-    {
-        id: 'mock_1',
-        pipelineId: 'delivery_v1',
-        stageId: 'interview_loop',
-        index: 0,
-        type: 'job_pursuit',
-        engagementId: 'mock_eng_1',
-        companyName: 'Stripe',
-        roleTitle: 'CTO',
-        dealValue: 450000,
-        interviewRound: 'Final Round',
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
-    },
-    {
-        id: 'mock_2',
-        pipelineId: 'delivery_v1',
-        stageId: 'target_locked',
-        index: 1,
-        type: 'job_pursuit',
-        engagementId: 'mock_eng_1',
-        companyName: 'Google',
-        roleTitle: 'VP Engineering',
-        dealValue: 520000,
-        interviewRound: 'N/A',
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
-    },
-    {
-        id: 'mock_3',
-        pipelineId: 'delivery_v1',
-        stageId: 'the_shadow',
-        index: 2,
-        type: 'job_pursuit',
-        engagementId: 'mock_eng_1',
-        companyName: 'Anthropic',
-        roleTitle: 'Head of AI',
-        dealValue: 600000,
-        interviewRound: 'Negotiation',
-        offerDetails: {
-            baseSalary: 350000,
-            targetBonus: "20%",
-            equity: "0.25%",
-            signOnBonus: 50000,
-            relocation: 0,
-            status: 'verbal'
-        },
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
-    }
-];
+// MOCK_DELIVERY_ITEMS removed
 
 
 export default function ClientDetail() {
@@ -513,7 +462,7 @@ export default function ClientDetail() {
                         <div className="h-[600px] bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
                             <PipelineBoard
                                 definitionId="delivery_v1"
-                                items={MOCK_DELIVERY_ITEMS}
+                                items={pursuits || []}
                             />
                         </div>
                     </div>

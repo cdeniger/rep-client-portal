@@ -219,7 +219,8 @@ export const seedClientData = async (uid: string) => {
     batch.set(engRef, {
         id: engId,
         contactId: contactId,
-        repId: 'rep_admin', // LINKED TO ADMIN USER
+        repId: 'rep_jordan', // LINKED TO JORDAN WOLF
+        userId: uid, // LINKED TO ALEX MERCER (Critical for Dashboard)
         status: 'active',
         startDate: new Date().toISOString(),
         isaPercentage: 0.15,
@@ -229,6 +230,29 @@ export const seedClientData = async (uid: string) => {
             bio_short: userData.profile.bio_short,
             firstName: 'Alex',
             lastName: 'Mercer'
+        },
+        targetParameters: {
+            minBase: 250000,
+            minTotalComp: 400000,
+            minLevel: 6,
+            maxCommuteMinutes: 45,
+            relocationWillingness: false,
+            preferredIndustries: ['FinTech', 'SaaS'],
+            avoidIndustries: ['AdTech'],
+            preferredFunctions: ['Product Management'],
+            workStyle: 'hybrid'
+        },
+        strategy: {
+            trajectory: {
+                primaryArc: 'Executive leadership (VP / C-suite track)',
+                successMetrics: ['Revenue growth'],
+                negativeConstraints: ['People management']
+            },
+            comp: {
+                orientation: { primary: 'Maximizing total earnings' },
+                riskPosture: 'Comfortable with equity-heavy upside',
+                successSignals: ['Net worth milestones']
+            }
         }
     });
 
@@ -297,84 +321,7 @@ export const seedRepData = async (uid: string) => {
 
     console.log("Seeded Rep Identity.");
 
-    // 3. Seed 50 Mock Clients (Engagements)
-    const statuses = ['active', 'active', 'active', 'paused', 'alumni', 'prospect']; // Weighted towards active
-    const pods = ['FinTech', 'Crypto', 'Consumer', 'Enterprise'];
-    const companiesList = ['Stripe', 'Coinbase', 'Plaid', 'Rippling', 'OpenAI', 'Anthropic', 'Linear', 'Notion'];
-
-    for (let i = 1; i <= 50; i++) {
-        const clientUid = `mock_client_${i}_${uid}`;
-        const contactId = `contact_${clientUid}`;
-        const companyId = `comp_${clientUid}`;
-        const engagementId = `eng_${clientUid}`;
-
-        const status = statuses[Math.floor(Math.random() * statuses.length)] as any;
-        const pod = pods[Math.floor(Math.random() * pods.length)];
-        const companyName = companiesList[Math.floor(Math.random() * companiesList.length)];
-        const isaPct = [0.10, 0.15, 0.20][Math.floor(Math.random() * 3)];
-
-        // A. Company
-        const compRef = doc(db, 'companies', companyId);
-        batch.set(compRef, {
-            id: companyId,
-            name: companyName,
-            domain: `${companyName.toLowerCase()}.com`,
-            logoUrl: null
-        });
-
-        // B. Contact
-        const contactRef = doc(db, 'contacts', contactId);
-        batch.set(contactRef, {
-            id: contactId,
-            userId: clientUid, // Ideally we'd seed a User doc too, but optional for Roster view if we just use Contact
-            currentCompanyId: companyId,
-            firstName: `Client`,
-            lastName: `${i}`,
-            email: `client${i}@example.com`,
-            headline: `Engineering Leader @ ${companyName}`,
-            bio: `Experienced leader in ${pod}.`,
-            phone: null,
-            linkedInUrl: null
-        });
-
-        // C. Engagement (The Key Record)
-        const engRef = doc(db, 'engagements', engagementId);
-        batch.set(engRef, {
-            id: engagementId,
-            contactId: contactId,
-            repId: uid, // Linked to Jordan
-            status: status,
-            startDate: new Date().toISOString(),
-            isaPercentage: isaPct,
-            profile: { // Denormalized for Roster speed
-                headline: `Engineering Leader @ ${companyName}`,
-                pod: pod,
-                bio_short: `Mock Client ${i}`,
-                firstName: `Client`,
-                lastName: `${i}`
-            }
-        });
-
-        // D. Opportunity (Linked to Engagement)
-        if (status === 'active') {
-            const oppId = `opp_${engagementId}_1`;
-            const oppRef = doc(db, 'opportunities', oppId);
-            batch.set(oppRef, {
-                id: oppId,
-                engagementId: engagementId,
-                companyId: companyId, // Target company (same as current for mock, or random?)
-                // Let's make target different
-                company: 'Target Corp',
-                role: 'VP Engineering',
-                status: 'interviewing',
-                financials: {
-                    base: 200000 + (Math.random() * 100000),
-                    equity: '0.5%',
-                    rep_net_value: 10000 // Just a number
-                }
-            });
-        }
-    }
+    console.log("Seeded Rep Identity.");
 
     // 4. Seed Inventory (Unassigned Opportunities)
     console.log("Seeding Inventory (Unassigned Opportunities)...");
@@ -406,7 +353,7 @@ export const seedRepData = async (uid: string) => {
     console.log("Seeded 50 Inventory items.");
 
     await batch.commit();
-    console.log(`Seeded 50 mock Engagements for Rep ${uid}`);
+    console.log(`Seeded Rep ${uid} data (No Mock Clients)`);
 };
 
 // Default export for backward compatibility if needed, but preferred to be explicit

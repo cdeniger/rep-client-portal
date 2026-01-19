@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCollection } from '../hooks/useCollection';
-import { where, addDoc, collection, doc, updateDoc } from 'firebase/firestore';
+import { where, addDoc, collection, doc, updateDoc, query, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { findOrCreateCompany } from '../lib/companies';
 import type { JobPursuit } from '../types/schema';
@@ -57,9 +57,16 @@ export default function Pipeline() {
                 });
 
                 // 3. Create Job Pursuit (Client Application)
+
+                // Lookup Active Engagement
+                const engQuery = query(collection(db, 'engagements'), where('userId', '==', user.uid), where('status', 'in', ['active', 'searching', 'negotiating', 'placed']));
+                const engSnap = await getDocs(engQuery);
+                const engagementId = !engSnap.empty ? engSnap.docs[0].id : null;
+
                 await addDoc(collection(db, 'job_pursuits'), {
                     targetId: targetRef.id,
                     userId: user.uid,
+                    engagementId: engagementId || 'orphaned',
                     // Note: We don't have engagementId easily available here in the Client view 
                     // without fetching it first. For now, we rely on the Rep to "claim" or "link" it later,
                     // OR we should ideally fetch the client's generic engagement ID. 
@@ -69,7 +76,7 @@ export default function Pipeline() {
                     companyId: companyId, // Linked Company Record
                     company: data.company,
                     role: data.role,
-                    status: data.status || 'outreach',
+                    status: data.status || 'target_locked',
                     stage_detail: data.stage_detail,
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
@@ -86,10 +93,13 @@ export default function Pipeline() {
     };
 
     const statusGroups = [
-        { id: 'negotiating', label: 'Negotiating', color: 'bg-signal-orange' },
-        { id: 'offer', label: 'Offer Received', color: 'bg-green-500' },
-        { id: 'interviewing', label: 'Active Interviewing', color: 'bg-blue-500' },
-        { id: 'outreach', label: 'Outreach / Early', color: 'bg-gray-400' },
+        { id: 'placed', label: 'Placed', color: 'bg-emerald-500' },
+
+        { id: 'offer_pending', label: 'Offer Pending', color: 'bg-amber-500' },
+        { id: 'interview_loop', label: 'Interview Loop', color: 'bg-signal-orange' },
+        { id: 'engagement', label: 'Engagement', color: 'bg-blue-600' },
+        { id: 'outreach_execution', label: 'Outreach Execution', color: 'bg-blue-400' },
+        { id: 'target_locked', label: 'Target Locked', color: 'bg-gray-400' },
     ];
 
     if (loading) return <div className="text-gray-400 text-sm animate-pulse">Loading Pipeline...</div>;
@@ -169,6 +179,67 @@ export default function Pipeline() {
                         </div>
                     );
                 })}
+
+                {/* Legacy / Unclassified Items */}
+                {(() => {
+                    const knownStatuses = new Set(statusGroups.map(g => g.id));
+                    const unclassifiedOpps = opportunities.filter(o => !knownStatuses.has(o.status));
+
+                    if (unclassifiedOpps.length === 0) return null;
+
+                    return (
+                        <div key="unclassified">
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="h-2 w-2 rounded-full bg-red-400"></div>
+                                <h3 className="text-sm font-bold uppercase tracking-widest text-red-400">Unclassified / Legacy</h3>
+                                <span className="text-xs text-red-300">({unclassifiedOpps.length})</span>
+                            </div>
+
+                            <div className="grid gap-4">
+                                {unclassifiedOpps.map(opp => (
+                                    <div
+                                        key={opp.id}
+                                        onClick={() => handleOpenEdit(opp)}
+                                        className="bg-white p-4 rounded-sm border border-red-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-signal-orange cursor-pointer group transition-all"
+                                    >
+                                        <div className="flex items-start gap-4">
+                                            <div className="bg-gray-50 p-2 rounded-sm group-hover:bg-orange-50 transition-colors">
+                                                <Building className="h-5 w-5 text-gray-400 group-hover:text-signal-orange" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-bold text-oxford-green text-lg group-hover:text-signal-orange transition-colors">{opp.company}</h4>
+                                                <div className="flex items-center gap-2 text-sm text-gray-500">
+                                                    <Briefcase className="h-3 w-3" />
+                                                    {opp.role}
+                                                </div>
+                                                <div className="text-[10px] text-red-400 mt-1 font-mono">Status: {opp.status}</div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-6">
+                                            <div className="text-right">
+                                                <div className="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1">Current Stage</div>
+                                                <div className="text-sm font-medium text-oxford-green">{opp.stage_detail}</div>
+                                            </div>
+                                            {opp.financials && opp.financials.base > 0 && (
+                                                <div className="text-right pl-6 border-l border-gray-100 hidden sm:block">
+                                                    <div className="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1">Est. Value</div>
+                                                    <div className="text-sm font-bold text-oxford-green flex items-center justify-end gap-1">
+                                                        <DollarSign className="h-3 w-3" />
+                                                        {(opp.financials.rep_net_value / 1000).toFixed(0)}k
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <div className="opacity-0 group-hover:opacity-100 transition-opacity px-2">
+                                                <Edit2 className="h-4 w-4 text-gray-300" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                })()}
 
                 {opportunities.length === 0 && (
                     <div className="text-center py-20 bg-gray-50 rounded-sm border border-dashed border-gray-300">

@@ -17,6 +17,9 @@ export default function PipelineConfig() {
         category: 'sales'
     });
 
+    // Delete Stage Modal State
+    const [stageToDelete, setStageToDelete] = useState<string | null>(null);
+
     // Load data
     useEffect(() => {
         loadPipelines();
@@ -58,9 +61,13 @@ export default function PipelineConfig() {
     };
 
     const removeStage = (stageId: string) => {
-        if (!activePipeline) return;
-        if (!confirm('Are you sure you want to remove this stage?')) return;
-        updatePipelineStages(activePipeline.stages.filter(s => s.id !== stageId));
+        setStageToDelete(stageId);
+    };
+
+    const confirmDeleteStage = () => {
+        if (!activePipeline || !stageToDelete) return;
+        updatePipelineStages(activePipeline.stages.filter(s => s.id !== stageToDelete));
+        setStageToDelete(null);
     };
 
     const moveStage = (index: number, direction: 'up' | 'down') => {
@@ -279,7 +286,7 @@ export default function PipelineConfig() {
 
                                             <button
                                                 onClick={() => removeStage(stage.id)}
-                                                className="text-stone-200 hover:text-red-500 p-2 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 rounded"
+                                                className="text-stone-300 hover:text-red-500 p-2 transition-all hover:bg-red-50 rounded"
                                                 title="Delete Stage"
                                             >
                                                 <Trash2 size={16} />
@@ -305,7 +312,7 @@ export default function PipelineConfig() {
 
             {/* Add Pipeline Modal */}
             {showAddModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fadeIn">
                     <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
                         <div className="px-6 py-4 border-b border-stone-100 bg-stone-50 flex justify-between items-center">
                             <h2 className="text-lg font-bold text-stone-800">Create New Pipeline</h2>
@@ -384,6 +391,37 @@ export default function PipelineConfig() {
                             >
                                 Create Pipeline
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Stage Confirmation Modal */}
+            {stageToDelete && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fadeIn">
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-sm overflow-hidden">
+                        <div className="p-6 text-center">
+                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Trash2 className="text-red-600" size={24} />
+                            </div>
+                            <h3 className="text-lg font-bold text-stone-900 mb-2">Delete Stage?</h3>
+                            <p className="text-stone-500 text-sm mb-6">
+                                Are you sure you want to remove <span className="font-bold text-stone-800">"{activePipeline?.stages.find(s => s.id === stageToDelete)?.label}"</span>? This action cannot be undone.
+                            </p>
+                            <div className="flex gap-3 justify-center">
+                                <button
+                                    onClick={() => setStageToDelete(null)}
+                                    className="px-4 py-2 text-stone-600 hover:text-stone-900 font-medium bg-stone-100 hover:bg-stone-200 rounded"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmDeleteStage}
+                                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-bold shadow-md transform active:scale-95 transition-all"
+                                >
+                                    Delete Stage
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

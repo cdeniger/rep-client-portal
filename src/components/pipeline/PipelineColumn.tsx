@@ -23,7 +23,7 @@ export default function PipelineColumn({ stage, items, onItemClick }: PipelineCo
     const headerBorderClass = borderColorMap[stage.color] || 'border-t-slate-300';
 
     return (
-        <div className="flex flex-col h-full min-w-[280px] w-[280px] bg-slate-50/50 rounded-lg shrink-0">
+        <div className="flex flex-col h-full min-w-[260px] w-[260px] bg-slate-50/50 rounded-lg shrink-0">
             {/* Header */}
             <div className={`p-3 border-t-4 ${headerBorderClass} bg-white rounded-t-lg shadow-sm mb-2`}>
                 <div className="flex justify-between items-center">

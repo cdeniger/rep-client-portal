@@ -19,7 +19,7 @@ export default function OpportunityForm({ initialData, onSubmit, onCancel, isSub
         company: '',
         role: '',
         stage_detail: '',
-        status: 'outreach',
+        status: 'target_locked',
         financials: { base: 0, bonus: 0, equity: '', rep_net_value: 0 },
         locationId: '', // New field
         ...initialData
@@ -234,10 +234,15 @@ export default function OpportunityForm({ initialData, onSubmit, onCancel, isSub
                         value={formData.status}
                         onChange={e => setFormData({ ...formData, status: e.target.value as any })}
                     >
-                        <option value="outreach">Outreach</option>
-                        <option value="interviewing">Interviewing</option>
-                        <option value="offer">Offer Received</option>
-                        <option value="negotiating">Negotiating</option>
+                        <option value="target_locked">Target Locked</option>
+                        <option value="outreach_execution">Outreach Execution</option>
+                        <option value="engagement">Engagement</option>
+                        <option value="interview_loop">Interview Loop</option>
+                        <option value="offer_pending">Offer Pending</option>
+
+                        <option value="placed">Placed</option>
+                        <option value="closed_lost">Closed Lost</option>
+                        <option value="closed_by_market">Closed by Market</option>
                     </select>
                 </div>
             )}

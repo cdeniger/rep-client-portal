@@ -1,6 +1,6 @@
 import { useAuth } from '../context/AuthContext';
 import { useCollection } from '../hooks/useCollection';
-import { addDoc, collection, Timestamp, orderBy } from 'firebase/firestore';
+import { addDoc, collection, Timestamp, orderBy, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Radio, ArrowRight, TrendingUp, AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
@@ -29,7 +29,18 @@ export default function Radar() {
         setProcessing(signal.id);
 
         try {
-            // 1. Create Job Target (Market Inventory)
+            // 1. Get User's Active Engagement
+            const engQuery = query(collection(db, 'engagements'), where('userId', '==', user.uid), where('status', 'in', ['active', 'searching', 'negotiating', 'placed']));
+            const engSnap = await getDocs(engQuery);
+            const engagementId = !engSnap.empty ? engSnap.docs[0].id : null;
+
+            if (!engagementId) {
+                alert("No active engagement found. Please contact support.");
+                setProcessing(null);
+                return;
+            }
+
+            // 2. Create Job Target (Market Inventory)
             const targetRef = await addDoc(collection(db, 'job_targets'), {
                 company: signal.company,
                 role: 'Target Role via Radar', // Placeholder
@@ -39,16 +50,14 @@ export default function Radar() {
                 createdAt: new Date().toISOString(),
             });
 
-            // 2. Create Job Pursuit (Client Application)
+            // 3. Create Job Pursuit (Client Application)
             await addDoc(collection(db, 'job_pursuits'), {
                 targetId: targetRef.id,
                 userId: user.uid,
-                // engagementId: we assume rep logic will link this later, or we could fetch it.
-                // For now, same as Pipeline.tsx, we rely on userId for visibility.
-
+                engagementId: engagementId,
                 company: signal.company,
                 role: 'Target Role via Radar',
-                status: 'outreach',
+                status: 'outreach_execution', // Updated to match schema
                 stage_detail: `Sourced from ${signal.source}: ${signal.type}`,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),

@@ -55,16 +55,18 @@ export default function PipelineBoard({ definitionId, items, onItemClick }: Pipe
             </div>
 
             {/* Scrolling Columns Container */}
-            <div className="flex-1 overflow-x-auto overflow-y-hidden">
+            <div className="flex-1 overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
                 <div className="flex h-full p-4 gap-4 min-w-max">
-                    {definition.stages.map(stage => (
-                        <PipelineColumn
-                            key={stage.id}
-                            stage={stage}
-                            items={itemsByStage[stage.id] || []}
-                            onItemClick={onItemClick}
-                        />
-                    ))}
+                    {definition.stages
+                        .filter(stage => !['placed', 'closed_won'].includes(stage.id))
+                        .map(stage => (
+                            <PipelineColumn
+                                key={stage.id}
+                                stage={stage}
+                                items={itemsByStage[stage.id] || []}
+                                onItemClick={onItemClick}
+                            />
+                        ))}
                 </div>
             </div>
         </div>
