@@ -3,14 +3,70 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDocument } from '../../hooks/useDocument';
 import { useCollection } from '../../hooks/useCollection';
 import { useAuth } from '../../context/AuthContext';
-import { doc, updateDoc, where, arrayUnion, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, where, arrayUnion, getDoc, query, collection, getDocs } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../lib/firebase';
-import { ChevronLeft, Edit, Calendar, DollarSign, FileText, Download, ExternalLink, Loader2 } from 'lucide-react';
-import Modal from '../../components/ui/Modal';
+import { ChevronLeft, Edit, Calendar, DollarSign, FileText, Download, ExternalLink, Loader2, Database } from 'lucide-react';
 import DealCard from '../../components/rep/DealCard';
-import DealParamsModal from '../../components/rep/DealParamsModal';
+import ClientMasterFileModal from '../../components/rep/ClientMasterFileModal';
 import ActivityContextPanel from '../../components/activities/ActivityContextPanel';
+import type { Engagement, JobRecommendation, IntakeResponse } from '../../types/schema';
+import type { JobPursuit } from '../../types/pipeline';
+import PipelineBoard from '../../components/pipeline/PipelineBoard';
+import { Timestamp } from 'firebase/firestore';
+
+const MOCK_DELIVERY_ITEMS: JobPursuit[] = [
+    {
+        id: 'mock_1',
+        pipelineId: 'delivery_v1',
+        stageId: 'interview_loop',
+        index: 0,
+        type: 'job_pursuit',
+        engagementId: 'mock_eng_1',
+        companyName: 'Stripe',
+        roleTitle: 'CTO',
+        dealValue: 450000,
+        interviewRound: 'Final Round',
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now()
+    },
+    {
+        id: 'mock_2',
+        pipelineId: 'delivery_v1',
+        stageId: 'target_locked',
+        index: 1,
+        type: 'job_pursuit',
+        engagementId: 'mock_eng_1',
+        companyName: 'Google',
+        roleTitle: 'VP Engineering',
+        dealValue: 520000,
+        interviewRound: 'N/A',
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now()
+    },
+    {
+        id: 'mock_3',
+        pipelineId: 'delivery_v1',
+        stageId: 'the_shadow',
+        index: 2,
+        type: 'job_pursuit',
+        engagementId: 'mock_eng_1',
+        companyName: 'Anthropic',
+        roleTitle: 'Head of AI',
+        dealValue: 600000,
+        interviewRound: 'Negotiation',
+        offerDetails: {
+            baseSalary: 350000,
+            targetBonus: "20%",
+            equity: "0.25%",
+            signOnBonus: 50000,
+            relocation: 0,
+            status: 'verbal'
+        },
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now()
+    }
+];
 
 
 export default function ClientDetail() {
@@ -76,55 +132,16 @@ export default function ClientDetail() {
         }).format(val);
     };
 
-    // Edit State
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [isDealParamsModalOpen, setIsDealParamsModalOpen] = useState(false);
-    const [editForm, setEditForm] = useState({
-        headline: '',
-        pod: '',
-        status: '',
-        bio_short: '',
-        isaPercentage: 0,
-        startDate: ''
-    });
-    const [isSaving, setIsSaving] = useState(false);
+    // Master File Edit State
+    const [isMasterFileOpen, setIsMasterFileOpen] = useState(false);
+    const [masterFileTab, setMasterFileTab] = useState<'profile' | 'parameters' | 'strategy'>('profile');
     const [isUploading, setIsUploading] = useState(false);
+    const [isResetting, setIsResetting] = useState(false);
+    const [activeTab, setActiveTab] = useState<'overview' | 'job_hunt'>('job_hunt');
 
-    // Initialize form when opening
-    const handleOpenEdit = () => {
-        if (!engagement) return;
-        setEditForm({
-            headline: engagement.profile?.headline || '',
-            pod: engagement.profile?.pod || '',
-            status: engagement.status || 'active',
-            bio_short: engagement.profile?.bio_short || '',
-            isaPercentage: (engagement.isaPercentage || 0) * 100, // Display as whole number (e.g. 15 for 15%)
-            startDate: engagement.startDate ? new Date(engagement.startDate).toISOString().split('T')[0] : ''
-        });
-        setIsEditModalOpen(true);
-    };
-
-    const handleSaveProfile = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!id) return;
-        setIsSaving(true);
-        try {
-            const engRef = doc(db, 'engagements', id);
-            await updateDoc(engRef, {
-                status: editForm.status,
-                'profile.headline': editForm.headline,
-                'profile.pod': editForm.pod,
-                'profile.bio_short': editForm.bio_short,
-                isaPercentage: parseFloat(editForm.isaPercentage.toString()) / 100, // Convert back to decimal
-                startDate: new Date(editForm.startDate).toISOString()
-            });
-            setIsEditModalOpen(false);
-        } catch (err) {
-            console.error("Failed to update profile", err);
-            alert("Failed to save changes.");
-        } finally {
-            setIsSaving(false);
-        }
+    const openMasterFile = (tab: 'profile' | 'parameters' | 'strategy') => {
+        setMasterFileTab(tab);
+        setIsMasterFileOpen(true);
     };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -160,6 +177,72 @@ export default function ClientDetail() {
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    const handleResetFromIntake = async () => {
+        if (!engagement?.id || !engagement.userId) return;
+
+        if (!window.confirm("WARNING: This will OVERWRITE current engagement data with the original Intake Submission. This cannot be undone. Are you sure?")) {
+            return;
+        }
+
+        setIsResetting(true);
+        try {
+            // 1. Find the latest intake for this user
+            const q = query(collection(db, 'intake_responses'), where('userId', '==', engagement.userId)); // Might need ordering if multiple
+            const snapshot = await getDocs(q);
+
+            if (snapshot.empty) {
+                alert("No Intake Submission found for this user.");
+                setIsResetting(false);
+                return;
+            }
+
+            // Assume the first one is the one we want (or sort by date if needed)
+            // In a real scenario, we might want to order by createdAt desc
+            const intakeDoc = snapshot.docs[0];
+            const intakeData = intakeDoc.data() as IntakeResponse;
+
+            // 2. Hydrate Logic (Strict Duplicate of Server-Side Trigger)
+            const updates = {
+                // Profile Mapping
+                'profile.currentTitle': intakeData.profile?.currentTitle || '',
+                'profile.currentCompany': intakeData.profile?.currentCompany || '',
+                'profile.industry': intakeData.profile?.industry || '',
+                'profile.experienceBand': intakeData.profile?.experienceBand || '',
+                'profile.marketIdentity': intakeData.marketIdentity || {},
+
+                // Strategy Mapping (Direct copy of buckets)
+                'strategy.trajectory': intakeData.trajectory || {},
+                'strategy.horizon': intakeData.horizon || {},
+                'strategy.ownership': intakeData.ownership || {},
+                'strategy.authority': intakeData.authority || {},
+                'strategy.comp': intakeData.comp || {},
+
+                // Target Parameters (Hard & Soft Constraints)
+                // Hard Constraints
+                'targetParameters.minBase': intakeData.filters?.hardConstraints?.minBase || 0,
+                'targetParameters.minTotalComp': intakeData.filters?.hardConstraints?.minTotalComp || 0,
+                'targetParameters.minLevel': intakeData.filters?.hardConstraints?.minLevel || 3,
+                'targetParameters.maxCommuteMinutes': intakeData.filters?.hardConstraints?.maxCommuteMinutes || 45,
+                'targetParameters.relocationWillingness': intakeData.filters?.hardConstraints?.relocationWillingness || false,
+
+                // Soft Preferences
+                'targetParameters.preferredIndustries': intakeData.filters?.softPreferences?.preferredIndustries || [],
+                'targetParameters.avoidIndustries': intakeData.filters?.softPreferences?.avoidIndustries || [],
+                'targetParameters.preferredFunctions': intakeData.filters?.softPreferences?.preferredFunctions || [],
+                'targetParameters.workStyle': intakeData.filters?.softPreferences?.workStyle || 'hybrid',
+            };
+
+            await updateDoc(doc(db, 'engagements', engagement.id), updates);
+            alert("Engagement successfully reset from Intake data.");
+
+        } catch (error) {
+            console.error("Failed to reset from intake:", error);
+            alert("Failed to reset data. Check console.");
+        } finally {
+            setIsResetting(false);
         }
     };
 
@@ -284,11 +367,20 @@ export default function ClientDetail() {
                     </div>
                 </div>
                 <button
-                    onClick={handleOpenEdit}
+                    onClick={() => openMasterFile('profile')}
                     className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-300 hover:text-white border border-slate-700 rounded-sm text-xs font-bold uppercase tracking-widest transition-colors"
                 >
                     <Edit className="h-4 w-4" />
                     <span>Edit Client File</span>
+                </button>
+                <button
+                    onClick={handleResetFromIntake}
+                    disabled={isResetting}
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-red-400 hover:bg-slate-800 hover:text-red-300 border border-slate-700/50 rounded-sm text-xs font-bold uppercase tracking-widest transition-colors"
+                    title="Reset data from original Intake Form"
+                >
+                    <Database className="h-4 w-4" />
+                    <span>{isResetting ? 'Resetting...' : 'Reset from Intake'}</span>
                 </button>
             </div >
 
@@ -376,90 +468,121 @@ export default function ClientDetail() {
                     </div>
 
 
-                    {/* Pending Recommendations Section */}
-                    {(loadingRecs || (recommendations && recommendations.length > 0)) && (
-                        <div className="border-t border-slate-200 pt-8">
-                            <h3 className="text-lg font-bold text-oxford-green mb-4">Pending Recommendations</h3>
-                            {loadingRecs ? (
-                                <div className="text-sm text-slate-400">Loading recommendations...</div>
-                            ) : (
-                                <div className="bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
-                                    <table className="w-full text-left">
-                                        <thead className="bg-slate-50 border-b border-slate-100 text-xs uppercase text-slate-500">
-                                            <tr>
-                                                <th className="p-4 font-bold">Company</th>
-                                                <th className="p-4 font-bold">Role</th>
-                                                <th className="p-4 font-bold">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-50">
-                                            {recommendations.map((rec: any) => (
-                                                <tr key={rec.id} className="hover:bg-slate-50 transition-colors">
-                                                    <td className="p-4 font-bold text-slate-800">{rec.target?.company || 'Unknown'}</td>
-                                                    <td className="p-4 text-sm text-slate-600">{rec.target?.role || 'Unknown'}</td>
-                                                    <td className="p-4">
-                                                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
-                                                            {rec.status.replace('_', ' ')}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                        </div>
-                    )}
 
-
-                    {/* Job Pursuits Section */}
-                    <div className="border-t border-slate-200 pt-8">
-                        <h3 className="text-lg font-bold text-oxford-green mb-4">Job Pursuits</h3>
-                        <div className="bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
-                            {loadingPursuits ? (
-                                <div className="p-8 text-center text-slate-400 text-sm">Loading pursuits...</div>
-                            ) : (pursuits && pursuits.length > 0) ? (
-                                <table className="w-full text-left">
-                                    <thead className="bg-slate-50 border-b border-slate-100 text-xs uppercase text-slate-500">
-                                        <tr>
-                                            <th className="p-4 font-bold">Company</th>
-                                            <th className="p-4 font-bold">Role</th>
-                                            <th className="p-4 font-bold">Status</th>
-                                            <th className="p-4 font-bold">Value (Net)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-50">
-                                        {pursuits.map((pursuit: any) => (
-                                            <tr key={pursuit.id} className="hover:bg-slate-50 transition-colors group">
-                                                <td className="p-4 font-bold text-slate-800">{pursuit.company}</td>
-                                                <td className="p-4 text-sm text-slate-600">{pursuit.role}</td>
-                                                <td className="p-4">
-                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${pursuit.status === 'offer' ? 'bg-green-100 text-green-700' :
-                                                        pursuit.status === 'interviewing' ? 'bg-blue-50 text-blue-600' :
-                                                            'bg-slate-100 text-slate-500'
-                                                        }`}>
-                                                        {pursuit.status}
-                                                    </span>
-                                                </td>
-                                                <td className="p-4 text-sm font-mono text-slate-500">
-                                                    ${((pursuit.financials?.rep_net_value || 0) / 1000).toFixed(1)}k
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            ) : (
-                                <div className="p-8 text-center text-slate-400 text-sm italic">
-                                    No active job pursuits for this client.
-                                </div>
-                            )}
+                    {/* Main Content Tabs */}
+                    <div className="border-t border-slate-200 pt-6">
+                        <div className="flex items-center gap-6 border-b border-slate-200 mb-6">
+                            <button
+                                onClick={() => setActiveTab('overview')}
+                                className={`pb-2 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'overview' ? 'border-signal-orange text-oxford-green' : 'border-transparent text-slate-400 hover:text-slate-600'
+                                    }`}
+                            >
+                                Overview
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('job_hunt')}
+                                className={`pb-2 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === 'job_hunt' ? 'border-signal-orange text-oxford-green' : 'border-transparent text-slate-400 hover:text-slate-600'
+                                    }`}
+                            >
+                                Job Hunt <span className="ml-1 bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full text-[10px]">{MOCK_DELIVERY_ITEMS.length}</span>
+                            </button>
                         </div>
+
+                        {activeTab === 'overview' ? (
+                            <div className="space-y-8 animate-fadeIn">
+                                {/* Original Job Pursuits Table */}
+                                <div>
+                                    <h3 className="text-lg font-bold text-oxford-green mb-4">Active Pursuits</h3>
+                                    <div className="bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
+                                        {loadingPursuits ? (
+                                            <div className="p-8 text-center text-slate-400 text-sm">Loading pursuits...</div>
+                                        ) : (pursuits && pursuits.length > 0) ? (
+                                            <table className="w-full text-left">
+                                                <thead className="bg-slate-50 border-b border-slate-100 text-xs uppercase text-slate-500">
+                                                    <tr>
+                                                        <th className="p-4 font-bold">Company</th>
+                                                        <th className="p-4 font-bold">Role</th>
+                                                        <th className="p-4 font-bold">Status</th>
+                                                        <th className="p-4 font-bold">Value (Net)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-slate-50">
+                                                    {pursuits.map((pursuit: any) => (
+                                                        <tr key={pursuit.id} className="hover:bg-slate-50 transition-colors group">
+                                                            <td className="p-4 font-bold text-slate-800">{pursuit.company}</td>
+                                                            <td className="p-4 text-sm text-slate-600">{pursuit.role}</td>
+                                                            <td className="p-4">
+                                                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${pursuit.status === 'offer' ? 'bg-green-100 text-green-700' :
+                                                                    pursuit.status === 'interviewing' ? 'bg-blue-50 text-blue-600' :
+                                                                        'bg-slate-100 text-slate-500'
+                                                                    }`}>
+                                                                    {pursuit.status}
+                                                                </span>
+                                                            </td>
+                                                            <td className="p-4 text-sm font-mono text-slate-500">
+                                                                ${((pursuit.financials?.rep_net_value || 0) / 1000).toFixed(1)}k
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        ) : (
+                                            <div className="p-8 text-center text-slate-400 text-sm italic">
+                                                No active job pursuits for this client.
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Pending Client Actions (Recommendations) */}
+                                {(loadingRecs || (recommendations && recommendations.filter((r: any) => r.status === 'pending_client').length > 0)) && (
+                                    <div>
+                                        <h3 className="text-lg font-bold text-oxford-green mb-4">Pending Client Actions</h3>
+                                        {loadingRecs ? (
+                                            <div className="text-sm text-slate-400">Loading recommendations...</div>
+                                        ) : (
+                                            <div className="bg-white border border-slate-200 rounded-sm overflow-hidden shadow-sm">
+                                                <table className="w-full text-left">
+                                                    <thead className="bg-slate-50 border-b border-slate-100 text-xs uppercase text-slate-500">
+                                                        <tr>
+                                                            <th className="p-4 font-bold">Company</th>
+                                                            <th className="p-4 font-bold">Role</th>
+                                                            <th className="p-4 font-bold">Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-slate-50">
+                                                        {recommendations.filter((rec: any) => rec.status === 'pending_client').map((rec: any) => (
+                                                            <tr key={rec.id} className="hover:bg-slate-50 transition-colors">
+                                                                <td className="p-4 font-bold text-slate-800">{rec.target?.company || 'Unknown'}</td>
+                                                                <td className="p-4 text-sm text-slate-600">{rec.target?.role || 'Unknown'}</td>
+                                                                <td className="p-4">
+                                                                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
+                                                                        Pending Client
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="h-[600px] bg-slate-50 border border-slate-200 rounded-lg overflow-hidden animate-fadeIn">
+                                <PipelineBoard
+                                    definitionId="delivery_v1"
+                                    items={MOCK_DELIVERY_ITEMS}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 {/* Right Column: Deal Parameters & Activities (1 col wide, full height) */}
                 <div className="space-y-6">
-                    <DealCard engagement={engagement} onEdit={() => setIsDealParamsModalOpen(true)} />
+                    <DealCard engagement={engagement} onEdit={() => openMasterFile('parameters')} />
 
                     {/* Activity Context Panel */}
                     <div className="h-[600px]">
@@ -471,136 +594,15 @@ export default function ClientDetail() {
                 </div>
             </div>
 
-            {/* Deal Params Edit Modal */}
-            <DealParamsModal
-                isOpen={isDealParamsModalOpen}
-                onClose={() => setIsDealParamsModalOpen(false)}
-                engagement={engagement}
-            />
-
-
-
-
-
-            {/* Edit Modal */}
-            <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Client Engagement">
-                <form onSubmit={handleSaveProfile} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">First Name (Read Only)</label>
-                            <div className="relative">
-                                <input
-                                    readOnly
-                                    className="w-full p-2 border border-slate-200 rounded-sm text-sm bg-slate-100 text-slate-500 cursor-not-allowed"
-                                    value={engagement.profile?.firstName || ''}
-                                />
-                                <div className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
-                                    <span className="text-[10px] font-bold">LOCKED</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Last Name (Read Only)</label>
-                            <div className="relative">
-                                <input
-                                    readOnly
-                                    className="w-full p-2 border border-slate-200 rounded-sm text-sm bg-slate-100 text-slate-500 cursor-not-allowed"
-                                    value={engagement.profile?.lastName || ''}
-                                />
-                                <div className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
-                                    <span className="text-[10px] font-bold">LOCKED</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Headline / Title</label>
-                        <input
-                            className="w-full p-2 border border-slate-300 rounded-sm text-sm"
-                            value={editForm.headline}
-                            onChange={e => setEditForm({ ...editForm, headline: e.target.value })}
-                        />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Pod / Industry</label>
-                            <select
-                                className="w-full p-2 border border-slate-300 rounded-sm text-sm bg-white"
-                                value={editForm.pod}
-                                onChange={e => setEditForm({ ...editForm, pod: e.target.value })}
-                            >
-                                <option value="FinTech">FinTech</option>
-                                <option value="Crypto">Crypto</option>
-                                <option value="Consumer">Consumer</option>
-                                <option value="Enterprise">Enterprise</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Status</label>
-                            <select
-                                className="w-full p-2 border border-slate-300 rounded-sm text-sm bg-white"
-                                value={editForm.status}
-                                onChange={e => setEditForm({ ...editForm, status: e.target.value })}
-                            >
-                                <option value="active">Active</option>
-                                <option value="searching">Searching</option>
-                                <option value="negotiating">Negotiating</option>
-                                <option value="placed">Placed</option>
-                                <option value="paused">Paused</option>
-                                <option value="alumni">Alumni</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">ISA Rate (%)</label>
-                            <input
-                                type="number"
-                                min="0"
-                                max="100"
-                                step="0.1"
-                                className="w-full p-2 border border-slate-300 rounded-sm text-sm"
-                                value={editForm.isaPercentage}
-                                onChange={e => setEditForm({ ...editForm, isaPercentage: parseFloat(e.target.value) || 0 })}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Starte Date</label>
-                            <input
-                                type="date"
-                                className="w-full p-2 border border-slate-300 rounded-sm text-sm"
-                                value={editForm.startDate}
-                                onChange={e => setEditForm({ ...editForm, startDate: e.target.value })}
-                            />
-                        </div>
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Bio / Notes Stub</label>
-                        <textarea
-                            rows={3}
-                            className="w-full p-2 border border-slate-300 rounded-sm text-sm resize-none"
-                            value={editForm.bio_short}
-                            onChange={e => setEditForm({ ...editForm, bio_short: e.target.value })}
-                        />
-                    </div>
-                    <div className="pt-4 flex gap-2">
-                        <button
-                            type="button"
-                            onClick={() => setIsEditModalOpen(false)}
-                            className="flex-1 py-2 border border-slate-300 text-slate-500 font-bold text-xs uppercase tracking-widest rounded-sm"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={isSaving}
-                            className="flex-1 py-2 bg-oxford-green text-white font-bold text-xs uppercase tracking-widest rounded-sm hover:bg-opacity-90"
-                        >
-                            {isSaving ? 'Saving...' : 'Save Changes'}
-                        </button>
-                    </div>
-                </form>
-            </Modal>
+            {/* Master File Modal */}
+            {engagement && (
+                <ClientMasterFileModal
+                    isOpen={isMasterFileOpen}
+                    onClose={() => setIsMasterFileOpen(false)}
+                    engagement={engagement}
+                    initialTab={masterFileTab}
+                />
+            )}
         </div >
     );
 }

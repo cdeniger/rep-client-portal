@@ -78,7 +78,7 @@ export default function LoginPage() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="w-full p-3 border border-gray-200 rounded-sm focus:outline-none focus:border-signal-orange transition-colors text-sm"
-                            placeholder="client@example.com"
+                            placeholder="alex.mercer@example.com"
                             required
                         />
                     </div>
@@ -106,7 +106,7 @@ export default function LoginPage() {
                     <button
                         onClick={async () => {
                             // Client: Alex Mercer
-                            await handleDevLogin('eng_user_alex_mercer', 'alex.mercer@example.com', 'client', 'Alex Mercer');
+                            await handleDevLogin('user_alex_mercer', 'alex.mercer@example.com', 'client', 'Alex Mercer');
                             // Auto-seed disabled to persist edits
                             /* 
                             try {

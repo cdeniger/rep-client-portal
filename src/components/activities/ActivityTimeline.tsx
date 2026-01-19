@@ -85,7 +85,7 @@ export default function ActivityTimeline({ associationId, associationType, assoc
             <LogActivityModal
                 isOpen={isModalOpen}
                 onClose={handleClose}
-                associations={associationData}
+                associations={editingActivity?.associations || associationData}
                 initialData={editingActivity}
                 currentUser={{ uid: user.uid, email: user.email || '' }}
             />

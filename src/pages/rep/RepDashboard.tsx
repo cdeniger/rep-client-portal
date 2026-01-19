@@ -1,5 +1,35 @@
+import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { useCollection } from '../../hooks/useCollection';
+import { where, addDoc, collection } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
+import Modal from '../../components/ui/Modal';
+
+interface MetricCardProps {
+    label: string;
+    value: string;
+    subtext: string;
+    textColor?: string;
+    onClick?: () => void;
+}
+
+function MetricCard({ label, value, subtext, textColor = 'text-oxford-green', onClick }: MetricCardProps) {
+    return (
+        <div
+            onClick={onClick}
+            className={`bg-white p-4 rounded-sm border border-slate-200 shadow-sm ${onClick ? 'cursor-pointer hover:border-signal-orange transition-colors group' : ''}`}
+        >
+            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">{label}</div>
+            <div className={`text-2xl font-bold ${textColor} mb-1 group-hover:scale-105 transition-transform origin-left`}>{value}</div>
+            <div className="text-[10px] text-slate-400">{subtext}</div>
+        </div>
+    );
+}
+
 export default function RepDashboard() {
     const { user } = useAuth();
+    const navigate = useNavigate();
 
     // 1. Fetch Active Engagements for this Rep
     const { data: engagements } = useCollection<any>(
@@ -9,10 +39,15 @@ export default function RepDashboard() {
     );
 
     // 2. Fetch Job Pursuits (Active Pipeline)
-    // Fetching all for prototype scale. In production, would filter by rep's engagements server-side.
     const { data: pursuits } = useCollection<any>('job_pursuits');
 
-    // 3. Calculate Metrics
+    // 3. Fetch Pending Recommendations (for Critical Actions)
+    const { data: pendingRecs } = useCollection<any>(
+        'job_recommendations',
+        where('status', '==', 'pending_rep')
+    );
+
+    // 4. Calculate Metrics
     const activeClientCount = engagements?.length || 0;
 
     const pipelineValue = useMemo(() => {
@@ -20,11 +55,10 @@ export default function RepDashboard() {
 
         // Map engagement ID to ISA %
         const isaMap = new Map();
-        engagements.forEach(e => isaMap.set(e.id, e.isaPercentage || 0));
+        engagements.forEach((e: any) => isaMap.set(e.id, e.isaPercentage || 0));
 
-        return pursuits.reduce((total, pursuit) => {
+        return pursuits.reduce((total: number, pursuit: any) => {
             // Only count pursuits for active engagements
-            // We check both engagementId (new schema) and userId (fallback)
             const engId = pursuit.engagementId || pursuit.userId;
 
             if (isaMap.has(engId)) {
@@ -37,12 +71,20 @@ export default function RepDashboard() {
         }, 0);
     }, [pursuits, engagements]);
 
+    // Critical Actions Calculation
+    const negotiatingPursuits = pursuits?.filter((o: any) => o.status === 'offer' || o.status === 'negotiating' || o.id === 'demo').length || 0;
+    const pendingRecsCount = pendingRecs?.length || 0;
+    const criticalActionCount = negotiatingPursuits + pendingRecsCount;
+
     // Format Currency
     const formatCurrency = (val: number) => {
         return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
     };
 
+    // State
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isTriageModalOpen, setIsTriageModalOpen] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
     const [newEngagement, setNewEngagement] = useState({
         firstName: '',
         lastName: '',
@@ -50,10 +92,9 @@ export default function RepDashboard() {
         pod: 'FinTech',
         isaPercentage: 0.15,
         status: 'active',
-        startDate: new Date().toISOString().split('T')[0], // Default to today YYYY-MM-DD
+        startDate: new Date().toISOString().split('T')[0],
         bio_short: ''
     });
-    const [isCreating, setIsCreating] = useState(false);
 
     const handleCreateEngagement = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -123,9 +164,10 @@ export default function RepDashboard() {
                 <MetricCard label="Proj. Commission" value={formatCurrency(pipelineValue * 0.4)} subtext="Est. 40% Realization" textColor="text-emerald-600" />
                 <MetricCard
                     label="Critical Actions"
-                    value={pursuits?.filter(o => o.status === 'offer' || o.status === 'negotiating' || o.id === 'demo').length.toString() || '0'}
+                    value={criticalActionCount.toString()}
                     subtext="Requires Attention"
                     textColor="text-red-500"
+                    onClick={() => setIsTriageModalOpen(true)}
                 />
             </div>
 
@@ -136,9 +178,9 @@ export default function RepDashboard() {
                         Triage Feed
                     </h3>
                     <div className="space-y-2">
-                        {pursuits && pursuits.filter(o => o.status === 'offer' || o.status === 'negotiating').length > 0 ? (
+                        {pursuits && pursuits.filter((o: any) => o.status === 'offer' || o.status === 'negotiating').length > 0 ? (
                             pursuits
-                                .filter(o => o.status === 'offer' || o.status === 'negotiating')
+                                .filter((o: any) => o.status === 'offer' || o.status === 'negotiating')
                                 .map((pursuit: any) => (
                                     <div key={pursuit.id} className="p-3 bg-slate-50 border border-slate-100 rounded-sm flex justify-between items-center group hover:border-slate-300 transition-colors cursor-pointer">
                                         <div>
@@ -171,8 +213,8 @@ export default function RepDashboard() {
                         Recent Momentum
                     </h3>
                     <div className="space-y-4">
-                        {engagements && engagements.filter(e => e.status === 'placed').length > 0 ? (
-                            engagements.filter(e => e.status === 'placed').map((e: any) => (
+                        {engagements && engagements.filter((e: any) => e.status === 'placed').length > 0 ? (
+                            engagements.filter((e: any) => e.status === 'placed').map((e: any) => (
                                 <div key={e.id} className="text-center py-4 bg-emerald-50 rounded-sm border border-emerald-100">
                                     <div className="text-emerald-700 font-bold text-sm">Placed {e.profile?.firstName}</div>
                                     <div className="text-emerald-600/60 text-xs uppercase tracking-wider font-bold">New Commission Generated</div>
@@ -187,6 +229,7 @@ export default function RepDashboard() {
                 </div>
             </div>
 
+            {/* Models */}
             <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="New Engagement">
                 <form onSubmit={handleCreateEngagement} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -304,25 +347,54 @@ export default function RepDashboard() {
                     </div>
                 </form>
             </Modal>
-        </div>
-    );
-}
 
-import { useMemo, useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { useCollection } from '../../hooks/useCollection';
-import { where, addDoc, collection } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
-import Modal from '../../components/ui/Modal';
+            {/* Critical Actions Triage Modal */}
+            <Modal isOpen={isTriageModalOpen} onClose={() => setIsTriageModalOpen(false)} title="Critical Actions Triage">
+                <div className="space-y-4">
+                    <p className="text-sm text-slate-500">Select an action group to address.</p>
 
-// ... RepDashboard component ... 
+                    <div className="grid gap-3">
+                        {/* Pending Recommendations Action */}
+                        <button
+                            onClick={() => navigate('/rep/pending-recs')}
+                            className="bg-white p-4 rounded border border-slate-200 hover:border-signal-orange hover:shadow-sm text-left transition-all flex justify-between items-center group"
+                        >
+                            <div>
+                                <div className="font-bold text-oxford-green flex items-center gap-2">
+                                    Pending Recommendations
+                                    {pendingRecsCount > 0 && <span className="bg-signal-orange text-white text-[10px] px-2 py-0.5 rounded-full">{pendingRecsCount}</span>}
+                                </div>
+                                <div className="text-xs text-slate-500 mt-1">AI matches waiting for your approval.</div>
+                            </div>
+                            <div className="text-slate-300 group-hover:text-signal-orange">→</div>
+                        </button>
 
-function MetricCard({ label, value, subtext, textColor = 'text-oxford-green' }: { label: string, value: string, subtext: string, textColor?: string }) {
-    return (
-        <div className="bg-white p-4 rounded-sm border border-slate-200 shadow-sm">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">{label}</div>
-            <div className={`text-2xl font-bold ${textColor} mb-1`}>{value}</div>
-            <div className="text-[10px] text-slate-400">{subtext}</div>
+                        {/* Active Negotiations Action */}
+                        <button
+                            onClick={() => navigate('/rep/pipeline')}
+                            className="bg-white p-4 rounded border border-slate-200 hover:border-signal-orange hover:shadow-sm text-left transition-all flex justify-between items-center group"
+                        >
+                            <div>
+                                <div className="font-bold text-oxford-green flex items-center gap-2">
+                                    Active Negotiations
+                                    {negotiatingPursuits > 0 && <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full">{negotiatingPursuits}</span>}
+                                </div>
+                                <div className="text-xs text-slate-500 mt-1">Offers and deals closing soon.</div>
+                            </div>
+                            <div className="text-slate-300 group-hover:text-signal-orange">→</div>
+                        </button>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 flex justify-end">
+                        <button
+                            onClick={() => setIsTriageModalOpen(false)}
+                            className="text-xs font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }

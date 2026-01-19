@@ -1,4 +1,7 @@
+import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
 import {
     Frame,
@@ -10,13 +13,26 @@ import {
     Hexagon,
     Contact,
     Building2,
-    Activity
+    Activity,
+    Kanban
 } from 'lucide-react';
 import Logo from '../components/ui/Logo';
 
 export default function RepLayout() {
     const { logout } = useAuth();
     const navigate = useNavigate();
+    const [pendingCount, setPendingCount] = useState(0);
+
+    // Listen for global pending_rep recommendations
+    useEffect(() => {
+        const q = query(collection(db, 'job_recommendations'), where('status', '==', 'pending_rep'));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            setPendingCount(snapshot.size);
+        }, (error) => {
+            console.error("Error listening to pending recs:", error);
+        });
+        return () => unsubscribe();
+    }, []);
 
     const handleLogout = async () => {
         try {
@@ -38,7 +54,7 @@ export default function RepLayout() {
                 <nav className="flex-1 px-2 space-y-1">
                     <NavItem to="/rep" icon={Frame} label="Command Ctr" end />
                     <NavItem to="/rep/roster" icon={Users} label="Client Roster" />
-                    <NavItem to="/rep/pending-recs" icon={Hexagon} label="Pending Recs" />
+                    <NavItem to="/rep/pending-recs" icon={Hexagon} label="Pending Recs" badge={pendingCount} />
                     <NavItem to="/rep/pipeline" icon={List} label="Job Targets" />
                     <NavItem to="/rep/deals" icon={DollarSign} label="Deal Desk" />
                     <NavItem to="/rep/invoices" icon={FileText} label="Invoices" />
@@ -50,6 +66,7 @@ export default function RepLayout() {
                         <NavItem to="/rep/contacts" icon={Contact} label="Contacts" />
                         <NavItem to="/rep/companies" icon={Building2} label="Companies" />
                         <NavItem to="/rep/activities" icon={Activity} label="Activities" />
+                        <NavItem to="/rep/sales-pipeline" icon={Kanban} label="Pipelines" />
                     </div>
 
                     <div className="pt-4 mt-4 border-t border-white/10">
@@ -103,20 +120,38 @@ export default function RepLayout() {
     );
 }
 
-function NavItem({ to, icon: Icon, label, end = false }: { to: string, icon: any, label: string, end?: boolean }) {
+function NavItem({ to, icon: Icon, label, end = false, badge }: { to: string, icon: any, label: string, end?: boolean, badge?: number }) {
     return (
         <NavLink
             to={to}
             end={end}
             className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-sm transition-all ${isActive
+                `flex items-center gap-3 px-3 py-2 rounded-sm transition-all relative ${isActive
                     ? 'bg-signal-orange text-white border-r-2 border-white'
                     : 'text-gray-400 hover:bg-white/5 hover:text-white'
                 }`
             }
         >
             <Icon className="h-4 w-4" />
-            <span className="hidden md:block text-xs font-bold uppercase tracking-widest">{label}</span>
+            <span className="hidden md:block text-xs font-bold uppercase tracking-widest flex-1">{label}</span>
+            {badge !== undefined && badge > 0 && (
+                <span className={`hidden md:flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-[10px] font-bold ${
+                    // If active (Orange BG), make badge White with Orange Text. Else Orange with White Text.
+                    // But we can't easily read 'isActive' here without moving this logic inside the render prop or using specific classes.
+                    // simpler: Just use a contrasting color. If active is Orange, White badge looks good.
+                    // If inactive (Dark Green), Orange badge looks good.
+                    // We can rely on CSS cascade or just pick a color that works on both or use NavLink render prop properly?
+                    // Let's use NavLink render prop for clean class logic? No, className string is easier.
+                    // Let's assume Orange Badge on Dark, and White Badge on Orange?
+                    // Actually, let's just use White text on Red/Orange background.
+                    // If row is active (Orange), Red badge might clash.
+                    // Let's try: Inactive -> Orange Badge. Active -> White Badge (Text Orange).
+                    // I will stick to a fixed Orange Badge for now to match client portal, unless it looks bad.
+                    'bg-signal-orange text-white ring-1 ring-oxford-green' // Ring helps separation
+                    }`}>
+                    {badge}
+                </span>
+            )}
         </NavLink>
     );
 }

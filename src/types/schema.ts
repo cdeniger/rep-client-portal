@@ -235,6 +235,7 @@ export interface Engagement {
     status: 'active' | 'searching' | 'negotiating' | 'placed' | 'paused' | 'alumni';
     startDate?: string;
     isaPercentage?: number;
+    monthlyRetainer?: number;
     assets?: Array<{
         name: string;
         url: string;

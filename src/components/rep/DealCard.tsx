@@ -19,7 +19,15 @@ interface DealCardProps {
 
 export default function DealCard({ engagement, onEdit }: DealCardProps) {
     // Fallback if data is missing (graceful degradation)
-    const criteria = engagement.searchCriteria || {
+    const criteria = engagement.targetParameters ? {
+        minBase: engagement.targetParameters.minBase,
+        targetTotal: engagement.targetParameters.minTotalComp,
+        locationType: engagement.targetParameters.workStyle,
+        targetLocations: engagement.targetParameters.preferredIndustries, // Mapping Ind. to Loc for display
+        primaryFunction: engagement.targetParameters.preferredFunctions?.[0] || 'Not Set',
+        minLevel: engagement.targetParameters.minLevel,
+        excludedIndustries: engagement.targetParameters.avoidIndustries
+    } : {
         minBase: 0,
         targetTotal: 0,
         locationType: 'Not Set',

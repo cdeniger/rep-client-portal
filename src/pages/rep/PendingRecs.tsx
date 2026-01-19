@@ -143,7 +143,7 @@ export default function PendingRecs() {
 
     return (
         <div className="space-y-8 p-6">
-            <h1 className="text-2xl font-bold text-oxford-green">Pending Recommendations</h1>
+            <h1 className="text-2xl font-bold text-oxford-green">Job Recommendations Pending Rep Approval</h1>
             <p className="text-slate-500">Review and approve AI-generated matches before they are sent to clients.</p>
 
             {recs.length === 0 && (

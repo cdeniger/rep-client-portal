@@ -14,6 +14,7 @@ export default function Activities() {
     const [filterType, setFilterType] = useState<string | 'all'>('all');
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingActivity, setEditingActivity] = useState<Activity | undefined>(undefined);
     const { user } = useAuth();
 
     // 1. Fetch Definitions
@@ -68,6 +69,12 @@ export default function Activities() {
         return Array.from(groupsMap.entries());
     }, [filteredActivities]);
 
+
+
+    const handleEdit = (activity: Activity) => {
+        setEditingActivity(activity);
+        setIsModalOpen(true);
+    };
 
     if (loading) return <div className="p-8 text-slate-400">Loading feed...</div>;
 
@@ -134,6 +141,7 @@ export default function Activities() {
                                         key={act.id}
                                         activity={act}
                                         definition={definitions.find(d => d.id === act.type)}
+                                        onClick={handleEdit}
                                     />
                                 ))}
                             </div>
@@ -153,9 +161,13 @@ export default function Activities() {
             {user && (
                 <LogActivityModal
                     isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    associations={{}} // General log, no specific associations pre-filled
+                    onClose={() => {
+                        setIsModalOpen(false);
+                        setEditingActivity(undefined);
+                    }}
+                    associations={editingActivity?.associations || {}} // Use existing associations if editing, else empty
                     currentUser={{ uid: user.uid, email: user.email || '' }}
+                    initialData={editingActivity}
                 />
             )}
         </div>

@@ -9,6 +9,8 @@ const stripeService = new StripeService();
 // Constants
 const ISA_PRICE_ID = 'price_isa_placeholder'; // This would come from config/env
 
+export { onIntakeCreated } from './triggers/onIntakeCreated';
+
 export const onClientPlaced = functions.firestore
     .document('users/{userId}')
     .onUpdate(async (change, context) => {

@@ -119,8 +119,19 @@ export default function LogActivityModal({ isOpen, onClose, associations, initia
             // 2. Preserve Zone B (Dynamic) fields defined in the configuration
             if (currentDef && currentDef.fields) {
                 currentDef.fields.forEach(field => {
-                    if (data.metadata[field.key] !== undefined) {
-                        cleanMetadata[field.key] = data.metadata[field.key];
+                    let val = data.metadata[field.key];
+
+                    // Sanitize Numbers: "NaN" or empty string -> null
+                    if (field.type === 'number') {
+                        if (val === '' || val === null || val === undefined || isNaN(Number(val))) {
+                            val = null;
+                        } else {
+                            val = Number(val);
+                        }
+                    }
+
+                    if (val !== undefined) {
+                        cleanMetadata[field.key] = val;
                     }
                 });
             }

@@ -42,4 +42,5 @@ const readEngagement = async (id: string) => {
     process.exit(0);
 };
 
-readEngagement('bZXcZX6MGfPDmXwMmk1T');
+const id = process.argv[2] || 'eng_user_alex_mercer';
+readEngagement(id);

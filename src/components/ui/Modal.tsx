@@ -6,9 +6,10 @@ interface ModalProps {
     onClose: () => void;
     title: string;
     children: React.ReactNode;
+    maxWidth?: string;
 }
 
-export default function Modal({ isOpen, onClose, title, children }: ModalProps) {
+export default function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-lg' }: ModalProps) {
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === 'Escape') onClose();
@@ -30,7 +31,7 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-oxford-green/80 backdrop-blur-sm">
             <div
-                className="bg-white w-full max-w-lg rounded-sm shadow-xl relative animate-in fade-in zoom-in duration-200"
+                className={`bg-white w-full ${maxWidth} rounded-sm shadow-xl relative animate-in fade-in zoom-in duration-200`}
                 role="dialog"
                 aria-modal="true"
             >

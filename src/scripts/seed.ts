@@ -413,12 +413,13 @@ export const seedRepData = async (uid: string) => {
 export const seedDatabase = seedClientData;
 
 // Execute Seeding for Rep Jordan Only if running as script
+/*
 if (typeof process !== 'undefined' && process.versions && process.versions.node) {
     Promise.all([
         seedRepData('rep_jordan'),
         seedAdminData(),
         seedRepData('rep_admin'),
-        seedClientData('eng_user_alex_mercer')
+        seedClientData('user_alex_mercer')
     ])
         .then(() => process.exit(0))
         .catch((error) => {
@@ -426,3 +427,4 @@ if (typeof process !== 'undefined' && process.versions && process.versions.node)
             process.exit(1);
         });
 }
+*/

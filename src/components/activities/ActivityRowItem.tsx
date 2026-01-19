@@ -33,9 +33,10 @@ const ICON_MAP: Record<string, any> = {
 interface ActivityRowItemProps {
     activity: Activity;
     definition?: ActivityDefinition;
+    onClick?: (activity: Activity) => void;
 }
 
-export default function ActivityRowItem({ activity, definition }: ActivityRowItemProps) {
+export default function ActivityRowItem({ activity, definition, onClick }: ActivityRowItemProps) {
     const color = definition?.color || '#cbd5e1'; // default slate-300
     const IconComponent = definition?.icon && ICON_MAP[definition.icon] ? ICON_MAP[definition.icon] : ActivityIcon;
 
@@ -85,6 +86,51 @@ export default function ActivityRowItem({ activity, definition }: ActivityRowIte
         </span>
     );
 
+    // --- Dynamic Field Renderer (Zone B) ---
+    const renderDynamicFields = () => {
+        if (!definition || !definition.fields || definition.fields.length === 0) return null;
+
+        return (
+            <div className="flex flex-wrap gap-2 mt-1">
+                {definition.fields.map(field => {
+                    const val = (activity.metadata as any)?.[field.key];
+                    if (val === undefined || val === null || val === '') return null;
+
+                    // Skip Core Fields that are already rendered by specific renderers
+                    if (['round', 'rating', 'interviewers', 'outcome', 'durationMinutes', 'subject', 'recipientEmail', 'direction', 'pipelineKey', 'fromStage', 'toStage'].includes(field.key)) {
+                        return null;
+                    }
+
+                    if (field.type === 'boolean') {
+                        return val ? (
+                            <span key={field.key} className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold border border-slate-200">
+                                {field.label}
+                            </span>
+                        ) : null;
+                    }
+
+                    if (field.type === 'rating') {
+                        return (
+                            <div key={field.key} className="flex items-center gap-1 bg-yellow-50 text-yellow-700 px-2 py-0.5 rounded-full text-xs font-bold border border-yellow-100">
+                                <span className="text-[10px] uppercase tracking-wide opacity-75">{field.label}:</span>
+                                <Star className="w-3 h-3 fill-current" />
+                                {val}
+                            </div>
+                        );
+                    }
+
+                    // Default (Text, Select, Number)
+                    return (
+                        <div key={field.key} className="flex items-center gap-1 text-xs text-slate-600 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+                            <span className="font-semibold text-slate-500">{field.label}:</span>
+                            <span className="font-medium text-slate-800">{String(val)}</span>
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    };
+
     // --- Main Render Switch ---
 
     const renderContent = () => {
@@ -99,7 +145,8 @@ export default function ActivityRowItem({ activity, definition }: ActivityRowIte
 
     return (
         <div
-            className="flex items-center gap-4 py-3 px-4 bg-white border border-slate-100 rounded-lg shadow-sm hover:shadow-md transition-shadow group relative overflow-hidden"
+            onClick={() => onClick && onClick(activity)}
+            className={`flex items-center gap-4 py-3 px-4 bg-white border border-slate-100 rounded-lg shadow-sm hover:shadow-md transition-shadow group relative overflow-hidden ${onClick ? 'cursor-pointer' : ''}`}
         >
             {/* Colored Stripe */}
             <div
@@ -122,6 +169,7 @@ export default function ActivityRowItem({ activity, definition }: ActivityRowIte
             {/* Dynamic Content Zone */}
             <div className="flex-1 min-w-0">
                 {renderContent()}
+                {renderDynamicFields()}
             </div>
 
             {/* Associations (Context) - Simple version for now */}
