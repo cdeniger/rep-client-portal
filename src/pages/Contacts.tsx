@@ -31,6 +31,7 @@ export default function Contacts() {
     const [activeFilter, setActiveFilter] = useState('all');
     const [groupByCompany, setGroupByCompany] = useState(false);
     const [selectedContact, setSelectedContact] = useState<EnrichedContact | null>(null);
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
 
     // Fetch Data
     useEffect(() => {
@@ -126,7 +127,10 @@ export default function Contacts() {
                         <h1 className="text-2xl font-bold text-oxford-green font-display">Global Contacts</h1>
                         <p className="text-sm text-gray-500 mt-1">Manage network relationships across all entities.</p>
                     </div>
-                    <button className="bg-oxford-green text-white px-4 py-2 rounded-md text-sm font-bold shadow-sm hover:bg-oxford-green/90 transition-all flex items-center gap-2">
+                    <button
+                        onClick={() => setIsCreateOpen(true)}
+                        className="bg-oxford-green text-white px-4 py-2 rounded-md text-sm font-bold shadow-sm hover:bg-oxford-green/90 transition-all flex items-center gap-2"
+                    >
                         <Plus className="h-4 w-4" /> Add Contact
                     </button>
                 </div>
@@ -246,8 +250,11 @@ export default function Contacts() {
             <ContactDrawer
                 contact={selectedContact}
                 company={selectedContact?.companyId && companies[selectedContact.companyId] ? companies[selectedContact.companyId] : undefined}
-                isOpen={!!selectedContact}
-                onClose={() => setSelectedContact(null)}
+                isOpen={!!selectedContact || isCreateOpen}
+                onClose={() => {
+                    setSelectedContact(null);
+                    setIsCreateOpen(false);
+                }}
             />
 
         </div>

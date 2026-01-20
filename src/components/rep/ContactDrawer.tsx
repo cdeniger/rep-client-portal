@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Mail, Phone, Linkedin, Building2, Calendar, User, Edit2, Save, Trash2 } from 'lucide-react';
-import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, updateDoc, deleteDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import type { Contact, Company } from '../../types/schema';
 
@@ -16,6 +16,8 @@ export default function ContactDrawer({ contact, company, isOpen, onClose }: Con
     const [formData, setFormData] = useState<Partial<Contact>>({});
     const [saving, setSaving] = useState(false);
 
+    const isCreateMode = !contact;
+
     // Reset state when contact changes or drawer opens
     useEffect(() => {
         if (contact) {
@@ -28,13 +30,23 @@ export default function ContactDrawer({ contact, company, isOpen, onClose }: Con
                 type: contact.type
             });
             setIsEditing(false);
+        } else if (isOpen) {
+            // Create Mode
+            setFormData({
+                firstName: '',
+                lastName: '',
+                email: '',
+                phone: '',
+                linkedInUrl: '',
+                type: 'client'
+            });
+            setIsEditing(true);
         }
     }, [contact, isOpen]);
 
-    if (!contact) return null;
+    // if (!contact) return null; // Logic handled by isOpen now
 
     const handleSave = async () => {
-        if (!contact.id) return;
         setSaving(true);
         // Sanitize data: Firestore rejects 'undefined' values
         const updates = Object.fromEntries(
@@ -42,10 +54,18 @@ export default function ContactDrawer({ contact, company, isOpen, onClose }: Con
         );
 
         try {
-            await updateDoc(doc(db, 'contacts', contact.id), updates);
-            setIsEditing(false);
+            if (isCreateMode) {
+                await addDoc(collection(db, 'contacts'), {
+                    ...updates,
+                    createdAt: serverTimestamp()
+                });
+                onClose();
+            } else if (contact?.id) {
+                await updateDoc(doc(db, 'contacts', contact.id), updates);
+                setIsEditing(false);
+            }
         } catch (error) {
-            console.error("Error updating contact:", error);
+            console.error("Error saving contact:", error);
             alert("Failed to save changes.");
         } finally {
             setSaving(false);
@@ -53,7 +73,8 @@ export default function ContactDrawer({ contact, company, isOpen, onClose }: Con
     };
 
     const handleDelete = async () => {
-        if (!contact.id || !window.confirm("Are you sure you want to delete this contact? This cannot be undone.")) return;
+        if (!contact?.id) return;
+        if (!window.confirm("Are you sure you want to delete this contact? This cannot be undone.")) return;
         try {
             await deleteDoc(doc(db, 'contacts', contact.id));
             onClose();
@@ -80,9 +101,9 @@ export default function ContactDrawer({ contact, company, isOpen, onClose }: Con
                 <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100 bg-gray-50/50">
                     <div className="flex items-center gap-3">
                         <h2 className="text-sm font-bold uppercase tracking-widest text-gray-500">
-                            {isEditing ? 'Editing Contact' : 'Contact Details'}
+                            {isCreateMode ? 'New Contact' : isEditing ? 'Editing Contact' : 'Contact Details'}
                         </h2>
-                        {isEditing && (
+                        {!isCreateMode && isEditing && (
                             <button
                                 onClick={handleDelete}
                                 className="text-red-400 hover:text-red-600 transition-colors p-1"
@@ -94,15 +115,17 @@ export default function ContactDrawer({ contact, company, isOpen, onClose }: Con
                     </div>
 
                     <div className="flex items-center gap-2">
-                        {isEditing ? (
+                        {isEditing || isCreateMode ? (
                             <>
-                                <button
-                                    onClick={() => setIsEditing(false)}
-                                    className="px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-700 transition-colors"
-                                    disabled={saving}
-                                >
-                                    Cancel
-                                </button>
+                                {!isCreateMode && (
+                                    <button
+                                        onClick={() => setIsEditing(false)}
+                                        className="px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-700 transition-colors"
+                                        disabled={saving}
+                                    >
+                                        Cancel
+                                    </button>
+                                )}
                                 <button
                                     onClick={handleSave}
                                     className="bg-oxford-green text-white px-3 py-1.5 rounded-md text-xs font-bold shadow-sm hover:bg-oxford-green/90 transition-all flex items-center gap-1.5"
@@ -137,10 +160,10 @@ export default function ContactDrawer({ contact, company, isOpen, onClose }: Con
                     {/* Identity Header */}
                     <div className="flex items-start gap-5 mb-8">
                         <div className="h-16 w-16 rounded-full bg-oxford-green text-white flex items-center justify-center text-xl font-bold shrink-0">
-                            {contact.avatar ? (
+                            {(!isCreateMode && contact?.avatar) ? (
                                 <img src={contact.avatar} alt={contact.firstName} className="h-full w-full rounded-full object-cover" />
                             ) : (
-                                <span>{(contact.firstName?.[0] || '?')}{(contact.lastName?.[0] || '?')}</span>
+                                <span>{(formData.firstName?.[0] || '?')}{(formData.lastName?.[0] || '?')}</span>
                             )}
                         </div>
                         <div className="flex-1">
@@ -163,7 +186,7 @@ export default function ContactDrawer({ contact, company, isOpen, onClose }: Con
                                 </div>
                             ) : (
                                 <h1 className="text-2xl font-bold text-oxford-green mb-1">
-                                    {contact.firstName} {contact.lastName}
+                                    {contact?.firstName} {contact?.lastName}
                                 </h1>
                             )}
 
@@ -180,11 +203,11 @@ export default function ContactDrawer({ contact, company, isOpen, onClose }: Con
                                         <option value="influencer">Influencer</option>
                                     </select>
                                 ) : (
-                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border ${contact.type === 'client' ? 'bg-signal-orange/10 text-signal-orange border-signal-orange/20' :
-                                        contact.type === 'hiring_manager' ? 'bg-blue-50 text-blue-600 border-blue-200' :
+                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border ${contact?.type === 'client' ? 'bg-signal-orange/10 text-signal-orange border-signal-orange/20' :
+                                        contact?.type === 'hiring_manager' ? 'bg-blue-50 text-blue-600 border-blue-200' :
                                             'bg-gray-100 text-gray-600 border-gray-200'
                                         }`}>
-                                        {contact.type?.replace('_', ' ') || 'Unknown'}
+                                        {contact?.type?.replace('_', ' ') || 'Unknown'}
                                     </span>
                                 )}
 
@@ -215,7 +238,7 @@ export default function ContactDrawer({ contact, company, isOpen, onClose }: Con
                                         placeholder="email@example.com"
                                     />
                                 ) : (
-                                    <div className="text-sm font-medium text-oxford-green truncate">{contact.email || '--'}</div>
+                                    <div className="text-sm font-medium text-oxford-green truncate">{contact?.email || '--'}</div>
                                 )}
                             </div>
                         </div>
@@ -236,7 +259,7 @@ export default function ContactDrawer({ contact, company, isOpen, onClose }: Con
                                         placeholder="+1 (555) 000-0000"
                                     />
                                 ) : (
-                                    <div className="text-sm font-medium text-oxford-green truncate">{contact.phone || '--'}</div>
+                                    <div className="text-sm font-medium text-oxford-green truncate">{contact?.phone || '--'}</div>
                                 )}
                             </div>
                         </div>
@@ -258,7 +281,7 @@ export default function ContactDrawer({ contact, company, isOpen, onClose }: Con
                                     />
                                 ) : (
                                     <div className="text-sm font-medium text-oxford-green truncate">
-                                        {contact.linkedInUrl ? (
+                                        {contact?.linkedInUrl ? (
                                             <a href={contact.linkedInUrl} target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">
                                                 View Profile
                                             </a>
@@ -273,11 +296,11 @@ export default function ContactDrawer({ contact, company, isOpen, onClose }: Con
                     <div className="border-t border-gray-100 pt-6">
                         <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
                             <span className="flex items-center gap-2"><Calendar className="h-3 w-3" /> Added</span>
-                            <span>{contact.createdAt && typeof contact.createdAt.toDate === 'function' ? contact.createdAt.toDate().toLocaleDateString() : 'Unknown'}</span>
+                            <span>{contact?.createdAt && typeof contact.createdAt.toDate === 'function' ? contact.createdAt.toDate().toLocaleDateString() : 'New Contact'}</span>
                         </div>
                         <div className="flex items-center justify-between text-xs text-gray-400">
                             <span className="flex items-center gap-2"><User className="h-3 w-3" /> ID</span>
-                            <span className="font-mono">{contact.id.slice(0, 8)}...</span>
+                            <span className="font-mono">{contact?.id ? contact.id.slice(0, 8) + '...' : 'Generating...'}</span>
                         </div>
                     </div>
 
