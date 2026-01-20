@@ -3,7 +3,9 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import Modal from '../ui/Modal';
 import type { Engagement } from '../../types/schema';
-import { User, Map, Target, Shield, DollarSign, CheckCircle } from 'lucide-react';
+import LinkContactModal from './client/LinkContactModal';
+import { useDocument } from '../../hooks/useDocument';
+import { User, Map, Target, Shield, DollarSign, CheckCircle, Contact as ContactIcon, Mail, Phone, Linkedin, ExternalLink, Link as LinkIcon, AlertCircle } from 'lucide-react';
 
 interface ClientMasterFileModalProps {
     isOpen: boolean;
@@ -12,11 +14,18 @@ interface ClientMasterFileModalProps {
     initialTab?: 'profile' | 'parameters' | 'strategy';
 }
 
-type TabType = 'profile' | 'parameters' | 'strategy';
+type TabType = 'profile' | 'parameters' | 'strategy' | 'contact';
 
 export default function ClientMasterFileModal({ isOpen, onClose, engagement, initialTab = 'profile' }: ClientMasterFileModalProps) {
     const [activeTab, setActiveTab] = useState<TabType>(initialTab);
     const [isLoading, setIsLoading] = useState(false);
+    const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+
+    // Fetch Linked Contact Data
+    const { document: linkedContact } = useDocument(
+        'contacts',
+        engagement?.profile?.contactId || ''
+    );
 
     // Reset tab when opening
     useEffect(() => {
@@ -178,6 +187,13 @@ export default function ClientMasterFileModal({ isOpen, onClose, engagement, ini
             >
                 <Map className="h-4 w-4" />
                 Strategy
+            </button>
+            <button
+                onClick={() => setActiveTab('contact')}
+                className={`flex items-center gap-2 px-6 py-3 text-sm font-bold uppercase tracking-wider transition-colors border-b-2 ${activeTab === 'contact' ? 'border-oxford-green text-oxford-green' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+            >
+                <ContactIcon className="h-4 w-4" />
+                Contact
             </button>
         </div>
     );
@@ -411,6 +427,95 @@ export default function ClientMasterFileModal({ isOpen, onClose, engagement, ini
                             </div>
                         </div>
                     )}
+
+                    {activeTab === 'contact' && (
+                        <div className="space-y-6">
+                            {linkedContact ? (
+                                <div className="bg-white border border-slate-200 rounded-lg p-6 max-w-2xl mx-auto shadow-sm">
+                                    <div className="flex items-start gap-6">
+                                        {/* Avatar / Initials */}
+                                        <div className="h-20 w-20 rounded-full bg-slate-100 flex items-center justify-center text-2xl font-bold text-slate-400 border border-slate-200 overflow-hidden shrink-0">
+                                            {linkedContact.avatar ? (
+                                                <img src={linkedContact.avatar} alt="Contact" className="h-full w-full object-cover" />
+                                            ) : (
+                                                <span>{(linkedContact.firstName?.[0] || '') + (linkedContact.lastName?.[0] || '')}</span>
+                                            )}
+                                        </div>
+
+                                        {/* Details */}
+                                        <div className="flex-1 space-y-4">
+                                            <div>
+                                                <h3 className="text-xl font-bold text-slate-800">{linkedContact.firstName} {linkedContact.lastName}</h3>
+                                                <div className="text-sm text-slate-500 font-medium flex items-center gap-2">
+                                                    {linkedContact.title}
+                                                    {linkedContact.companyId && <span className="text-slate-300">•</span>}
+                                                    {/* We could fetch company name here if we had it, for now rely on denormalization if available or just title */}
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 gap-3 pt-2">
+                                                <div className="flex items-center gap-3 text-sm text-slate-600">
+                                                    <Mail className="h-4 w-4 text-slate-400" />
+                                                    {linkedContact.email ? (
+                                                        <a href={`mailto:${linkedContact.email}`} className="hover:text-oxford-green hover:underline">
+                                                            {linkedContact.email}
+                                                        </a>
+                                                    ) : <span className="text-slate-400 italic">No email</span>}
+                                                </div>
+                                                <div className="flex items-center gap-3 text-sm text-slate-600">
+                                                    <Phone className="h-4 w-4 text-slate-400" />
+                                                    {linkedContact.phone ? (
+                                                        <a href={`tel:${linkedContact.phone}`} className="hover:text-oxford-green hover:underline">
+                                                            {linkedContact.phone}
+                                                        </a>
+                                                    ) : <span className="text-slate-400 italic">No phone</span>}
+                                                </div>
+                                                <div className="flex items-center gap-3 text-sm text-slate-600">
+                                                    <Linkedin className="h-4 w-4 text-slate-400" />
+                                                    {linkedContact.linkedInUrl ? (
+                                                        <a href={linkedContact.linkedInUrl} target="_blank" rel="noopener noreferrer" className="hover:text-oxford-green hover:underline flex items-center gap-1">
+                                                            LinkedIn Profile <ExternalLink className="h-3 w-3" />
+                                                        </a>
+                                                    ) : <span className="text-slate-400 italic">No LinkedIn URL</span>}
+                                                </div>
+                                            </div>
+
+                                            <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+                                                <div className="text-xs text-slate-400">
+                                                    Linked on {new Date().toLocaleDateString()} {/* Placeholder for actual link date if we tracked it */}
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setIsLinkModalOpen(true)}
+                                                    className="text-xs text-oxford-green hover:underline font-bold"
+                                                >
+                                                    Change Linked Contact
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center p-12 bg-slate-50 border border-slate-200 border-dashed rounded-lg text-center">
+                                    <div className="bg-amber-100 p-4 rounded-full mb-4">
+                                        <AlertCircle className="h-8 w-8 text-amber-600" />
+                                    </div>
+                                    <h3 className="text-lg font-bold text-slate-700 mb-2">No Contact Linked</h3>
+                                    <p className="text-slate-500 text-sm max-w-md mb-8">
+                                        Link this engagement to a "Golden Source" contact record to sync emails, phone numbers, and social profiles.
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsLinkModalOpen(true)}
+                                        className="px-6 py-3 bg-amber-500 text-white font-bold text-sm uppercase tracking-widest rounded shadow-sm hover:bg-amber-600 transition-colors flex items-center gap-2"
+                                    >
+                                        <LinkIcon className="h-4 w-4" />
+                                        Link Golden Record
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </form>
 
                 <div className="pt-4 mt-4 border-t border-slate-200 flex justify-end gap-2">
@@ -437,6 +542,16 @@ export default function ClientMasterFileModal({ isOpen, onClose, engagement, ini
                     </button>
                 </div>
             </div>
+            {/* Link Contact Modal */}
+            <LinkContactModal
+                isOpen={isLinkModalOpen}
+                onClose={() => setIsLinkModalOpen(false)}
+                engagement={engagement}
+                onLinkSuccess={() => {
+                    // Start fresh or show toast
+                    setIsLinkModalOpen(false);
+                }}
+            />
         </Modal>
     );
 }
