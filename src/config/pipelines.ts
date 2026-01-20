@@ -42,7 +42,7 @@ export const PIPELINE_DEFS: Record<string, PipelineDefinition> = {
     },
     delivery_v1: {
         id: 'delivery_v1',
-        label: 'Delivery Pipeline',
+        label: 'Job Pursuit Pipeline',
         category: 'delivery',
         stages: [
             {
