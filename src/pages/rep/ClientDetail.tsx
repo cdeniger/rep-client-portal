@@ -6,12 +6,13 @@ import { useAuth } from '../../context/AuthContext';
 import { doc, updateDoc, where, arrayUnion, getDoc, query, collection, getDocs } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../lib/firebase';
-import { ChevronLeft, Edit, Calendar, DollarSign, FileText, Database, Upload, File, Download } from 'lucide-react';
+import { ChevronLeft, Edit, Calendar, DollarSign, FileText, Database, Upload, File, Download, Link2, CheckCircle2, AlertCircle, Edit2 } from 'lucide-react';
 import DealCard from '../../components/rep/DealCard';
 import ClientMasterFileModal from '../../components/rep/ClientMasterFileModal';
 import Modal from '../../components/ui/Modal';
 import OpportunityForm from '../../components/forms/OpportunityForm';
 import ActivityContextPanel from '../../components/activities/ActivityContextPanel';
+import LinkContactModal from '../../components/rep/client/LinkContactModal';
 import type { Engagement, JobRecommendation, IntakeResponse } from '../../types/schema';
 import type { JobPursuit } from '../../types/pipeline';
 import PipelineBoard from '../../components/pipeline/PipelineBoard';
@@ -86,6 +87,13 @@ export default function ClientDetail() {
     // Master File Edit State
     const [isMasterFileOpen, setIsMasterFileOpen] = useState(false);
     const [isAssetsModalOpen, setIsAssetsModalOpen] = useState(false);
+    const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+
+    // Fetch Linked Contact if exists
+    const { document: linkedContact } = useDocument(
+        'contacts',
+        engagement?.profile?.contactId || ''
+    );
     const [masterFileTab, setMasterFileTab] = useState<'profile' | 'parameters' | 'strategy'>('profile');
     const [isUploading, setIsUploading] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
@@ -345,13 +353,35 @@ export default function ClientDetail() {
                         )}
                     </div>
                 </div>
-                <button
-                    onClick={() => openMasterFile('profile')}
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-300 hover:text-white border border-slate-700 rounded-sm text-xs font-bold uppercase tracking-widest transition-colors"
-                >
-                    <Edit className="h-4 w-4" />
-                    <span>Edit Client File</span>
-                </button>
+                <div className="flex items-center gap-2">
+                    {/* Identity Link Button */}
+                    <button
+                        onClick={() => setIsLinkModalOpen(true)}
+                        className={`px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wider flex items-center gap-2 border transition-colors ${engagement.profile?.contactId
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                            : 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100'
+                            }`}
+                    >
+                        {engagement.profile?.contactId ? (
+                            <>
+                                <CheckCircle2 className="h-3.5 w-3.5" />
+                                {linkedContact ? `${linkedContact.firstName} ${linkedContact.lastName}` : 'Identity Linked'}
+                            </>
+                        ) : (
+                            <>
+                                <AlertCircle className="h-3.5 w-3.5" />
+                                Link Identity
+                            </>
+                        )}
+                    </button>
+                    <button
+                        onClick={() => openMasterFile('profile')}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-300 hover:text-white border border-slate-700 rounded-sm text-xs font-bold uppercase tracking-widest transition-colors"
+                    >
+                        <Edit className="h-4 w-4" />
+                        <span>Edit Client File</span>
+                    </button>
+                </div>
                 <button
                     onClick={handleResetFromIntake}
                     disabled={isResetting}
@@ -615,6 +645,18 @@ export default function ClientDetail() {
                     hideStatus={false} // Allow changing stage here
                 />
             </Modal>
+
+            {/* Link Contact Modal */}
+            {engagement && (
+                <LinkContactModal
+                    isOpen={isLinkModalOpen}
+                    onClose={() => setIsLinkModalOpen(false)}
+                    engagement={engagement}
+                    onLinkSuccess={() => {
+                        // Optional: Show toast or handle post-link actions
+                    }}
+                />
+            )}
         </div >
     );
 }

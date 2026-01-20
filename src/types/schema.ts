@@ -264,6 +264,8 @@ export interface Engagement {
             target: string;
             visibilityChannels: string[];
         };
+
+        contactId?: string; // Link to "contacts" collection
     };
 
     // --- Strategy: The "Soft" Psychology ---
