@@ -9,6 +9,8 @@ import { db, storage } from '../../lib/firebase';
 import { ChevronLeft, Edit, Calendar, DollarSign, FileText, Database } from 'lucide-react';
 import DealCard from '../../components/rep/DealCard';
 import ClientMasterFileModal from '../../components/rep/ClientMasterFileModal';
+import Modal from '../../components/ui/Modal';
+import OpportunityForm from '../../components/forms/OpportunityForm';
 import ActivityContextPanel from '../../components/activities/ActivityContextPanel';
 import type { Engagement, JobRecommendation, IntakeResponse } from '../../types/schema';
 import type { JobPursuit } from '../../types/pipeline';
@@ -86,7 +88,34 @@ export default function ClientDetail() {
     const [masterFileTab, setMasterFileTab] = useState<'profile' | 'parameters' | 'strategy'>('profile');
     const [isUploading, setIsUploading] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
+
     const [activeTab, setActiveTab] = useState<'overview' | 'history'>('overview');
+
+    // Edit Pursuit State
+    const [editingPursuit, setEditingPursuit] = useState<any | null>(null);
+    const [isUpdatingPursuit, setIsUpdatingPursuit] = useState(false);
+
+    const handleUpdatePursuit = async (data: any) => {
+        if (!editingPursuit?.id) return;
+        setIsUpdatingPursuit(true);
+        try {
+            const docRef = doc(db, 'job_pursuits', editingPursuit.id);
+            // Remove helper fields used for UI form if they exist
+            const { assignClientId, ...cleanData } = data;
+
+            await updateDoc(docRef, {
+                ...cleanData,
+                updatedAt: new Date().toISOString()
+            });
+
+            setEditingPursuit(null);
+        } catch (error) {
+            console.error("Failed to update pursuit:", error);
+            alert("Failed to update opportunity.");
+        } finally {
+            setIsUpdatingPursuit(false);
+        }
+    };
 
     const openMasterFile = (tab: 'profile' | 'parameters' | 'strategy') => {
         setMasterFileTab(tab);
@@ -472,6 +501,7 @@ export default function ClientDetail() {
                                     roleTitle: p.role,
                                     dealValue: p.financials?.rep_net_value || 0,
                                 }))}
+                                onItemClick={(item) => setEditingPursuit(item)}
                             />
                         </div>
                     </div>
@@ -504,6 +534,21 @@ export default function ClientDetail() {
                     initialTab={masterFileTab}
                 />
             )}
+
+            {/* Edit Opportunity Modal */}
+            <Modal
+                isOpen={!!editingPursuit}
+                onClose={() => setEditingPursuit(null)}
+                title="Edit Opportunity"
+            >
+                <OpportunityForm
+                    initialData={editingPursuit}
+                    onSubmit={handleUpdatePursuit}
+                    onCancel={() => setEditingPursuit(null)}
+                    isSubmitting={isUpdatingPursuit}
+                    hideStatus={false} // Allow changing stage here
+                />
+            </Modal>
         </div >
     );
 }
