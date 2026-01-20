@@ -5,6 +5,9 @@ import { useCollection } from '../../hooks/useCollection';
 import { where, addDoc, collection } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import Modal from '../../components/ui/Modal';
+import MasterPipelineTable from '../../components/rep/dashboard/MasterPipelineTable';
+import RosterHealthGrid from '../../components/rep/dashboard/RosterHealthGrid';
+import CommandFeed from '../../components/rep/dashboard/CommandFeed';
 
 interface MetricCardProps {
     label: string;
@@ -171,61 +174,37 @@ export default function RepDashboard() {
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Triage Feed */}
-                <div className="lg:col-span-2 bg-white rounded-sm border border-slate-200 p-4 shadow-sm">
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 border-b border-slate-100 pb-2">
-                        Triage Feed
-                    </h3>
-                    <div className="space-y-2">
-                        {pursuits && pursuits.filter((o: any) => o.status === 'offer' || o.status === 'negotiating').length > 0 ? (
-                            pursuits
-                                .filter((o: any) => o.status === 'offer' || o.status === 'negotiating')
-                                .map((pursuit: any) => (
-                                    <div key={pursuit.id} className="p-3 bg-slate-50 border border-slate-100 rounded-sm flex justify-between items-center group hover:border-slate-300 transition-colors cursor-pointer">
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <span className="h-1.5 w-1.5 rounded-full bg-red-500"></span>
-                                                <span className="text-red-500 text-[10px] font-bold uppercase tracking-wider">
-                                                    {pursuit.status === 'offer' ? 'Offer Received' : 'Active Negotiation'}
-                                                </span>
-                                            </div>
-                                            <div className="text-sm font-bold text-slate-800">
-                                                {pursuit.company} - {pursuit.role}
-                                            </div>
-                                        </div>
-                                        <div className="text-slate-400 text-xs">
-                                            {pursuit.financials?.base ? `$${(pursuit.financials.base / 1000).toFixed(0)}k Base` : 'Comp Pending'}
-                                        </div>
-                                    </div>
-                                ))
-                        ) : (
-                            <div className="text-center py-8 text-slate-400 italic text-xs">
-                                No urgent items requiring attention.
-                            </div>
-                        )}
+            {/* Command Center Grid Layout */}
+            <div className="grid grid-cols-12 gap-6 h-auto lg:h-[800px]">
+                {/* Zone 1: Operations (Cols 1-8) */}
+                <div className="col-span-12 lg:col-span-8 flex flex-col gap-6 h-full">
+
+                    {/* Component A: Master Pipeline Table */}
+                    <div className="flex-1 min-h-[300px]">
+                        <MasterPipelineTable
+                            engagements={engagements || []}
+                            pursuits={pursuits || []}
+                        />
+                    </div>
+
+                    {/* Component B: Roster Health Grid */}
+                    <div className="flex-initial">
+                        <RosterHealthGrid
+                            engagements={engagements || []}
+                            pursuits={pursuits || []}
+                        />
                     </div>
                 </div>
 
-                {/* Recent Wins */}
-                <div className="bg-white rounded-sm border border-slate-200 p-4 shadow-sm">
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 border-b border-slate-100 pb-2">
-                        Recent Momentum
-                    </h3>
-                    <div className="space-y-4">
-                        {engagements && engagements.filter((e: any) => e.status === 'placed').length > 0 ? (
-                            engagements.filter((e: any) => e.status === 'placed').map((e: any) => (
-                                <div key={e.id} className="text-center py-4 bg-emerald-50 rounded-sm border border-emerald-100">
-                                    <div className="text-emerald-700 font-bold text-sm">Placed {e.profile?.firstName}</div>
-                                    <div className="text-emerald-600/60 text-xs uppercase tracking-wider font-bold">New Commission Generated</div>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="text-center py-8 text-slate-400 italic text-xs">
-                                No recent wins recorded.
-                            </div>
-                        )}
-                    </div>
+                {/* Zone 2: Triage (Cols 9-12) */}
+                <div className="col-span-12 lg:col-span-4 h-full">
+                    {/* Component C: Command Feed */}
+                    <CommandFeed
+                        engagements={engagements || []}
+                        pursuits={pursuits || []}
+                        pendingRecs={pendingRecs || []}
+                        onTriageClick={() => setIsTriageModalOpen(true)}
+                    />
                 </div>
             </div>
 
