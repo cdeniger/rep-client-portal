@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { doc, updateDoc, where, arrayUnion, getDoc, query, collection, getDocs } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../lib/firebase';
-import { ChevronLeft, Edit, Calendar, DollarSign, FileText, Database } from 'lucide-react';
+import { ChevronLeft, Edit, Calendar, DollarSign, FileText, Database, Upload, File, Download } from 'lucide-react';
 import DealCard from '../../components/rep/DealCard';
 import ClientMasterFileModal from '../../components/rep/ClientMasterFileModal';
 import Modal from '../../components/ui/Modal';
@@ -85,6 +85,7 @@ export default function ClientDetail() {
 
     // Master File Edit State
     const [isMasterFileOpen, setIsMasterFileOpen] = useState(false);
+    const [isAssetsModalOpen, setIsAssetsModalOpen] = useState(false);
     const [masterFileTab, setMasterFileTab] = useState<'profile' | 'parameters' | 'strategy'>('profile');
     const [isUploading, setIsUploading] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
@@ -400,7 +401,10 @@ export default function ClientDetail() {
                                 icon={<Calendar className="h-4 w-4" />}
                             />
 
-                            <div className="bg-white border border-slate-200 p-4 rounded-sm shadow-sm flex flex-col justify-between relative group hover:border-slate-300 transition-colors cursor-pointer">
+                            <div
+                                onClick={() => setIsAssetsModalOpen(true)}
+                                className="bg-white border border-slate-200 p-4 rounded-sm shadow-sm flex flex-col justify-between relative group hover:border-slate-300 transition-colors cursor-pointer"
+                            >
                                 <div className="flex justify-between items-start">
                                     <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Client Assets</div>
                                     <div className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500 font-bold">{engagement.assets?.length || 0}</div>
@@ -410,16 +414,8 @@ export default function ClientDetail() {
                                     <span>{engagement.assets?.length || 0} Files</span>
                                 </div>
                                 <div className="absolute inset-0 bg-slate-50/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]">
-                                    <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">View All</span>
+                                    <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Manage Assets</span>
                                 </div>
-                                {/* Hidden File Input for quick upload if needed, or just link to modal */}
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    onChange={handleFileUpload}
-                                    className="hidden"
-                                    accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
-                                />
                             </div>
 
                             {/* Row 2 */}
@@ -534,6 +530,76 @@ export default function ClientDetail() {
                     initialTab={masterFileTab}
                 />
             )}
+
+            {/* Client Assets Modal */}
+            <Modal
+                isOpen={isAssetsModalOpen}
+                onClose={() => setIsAssetsModalOpen(false)}
+                title="Client Assets"
+            >
+                <div className="space-y-4">
+                    {/* Hidden Input (Moved here) */}
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+                    />
+
+                    {/* File List */}
+                    <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                        {engagement?.assets && engagement.assets.length > 0 ? (
+                            engagement.assets.map((asset: any, idx: number) => (
+                                <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-sm hover:bg-slate-100 transition-colors">
+                                    <div className="flex items-center gap-3 overflow-hidden">
+                                        <div className="p-2 bg-white rounded border border-slate-200 text-slate-400">
+                                            <File className="h-4 w-4" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <div className="text-sm font-bold text-slate-700 truncate">{asset.name}</div>
+                                            <div className="text-[10px] text-slate-400">
+                                                Uploaded {new Date(asset.uploadedAt).toLocaleDateString()}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <a
+                                        href={asset.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="p-2 text-slate-400 hover:text-oxford-green hover:bg-white rounded transition-colors"
+                                        title="Download / View"
+                                    >
+                                        <Download className="h-4 w-4" />
+                                    </a>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="text-center py-8 text-slate-400 text-sm italic border-2 border-dashed border-slate-200 rounded-lg">
+                                No assets uploaded yet.
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Upload Action */}
+                    <div className="pt-4 border-t border-slate-100">
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading}
+                            className="w-full py-3 bg-oxford-green text-white font-bold uppercase text-xs tracking-widest rounded-sm hover:bg-opacity-90 flex items-center justify-center gap-2"
+                        >
+                            {isUploading ? (
+                                <span>Uploading...</span>
+                            ) : (
+                                <>
+                                    <Upload className="h-4 w-4" />
+                                    <span>Upload Document</span>
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </div>
+            </Modal>
 
             {/* Edit Opportunity Modal */}
             <Modal
