@@ -74,7 +74,7 @@ export default function GlobalPipeline() {
                 companyId: companyId,
                 company: selectedOpp.company,
                 role: selectedOpp.role,
-                status: 'interviewing', // Default start status for assignment
+                stageId: 'interview_loop', // Default start stage for assignment
                 stage_detail: 'Responded to Outreach',
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
@@ -173,7 +173,7 @@ export default function GlobalPipeline() {
                         companyId: companyId,
                         company: data.company,
                         role: data.role,
-                        status: 'outreach',
+                        stageId: 'outreach_execution',
                         stage_detail: data.stage_detail,
                         createdAt: new Date().toISOString(),
                         updatedAt: new Date().toISOString(),
@@ -510,8 +510,8 @@ function InventoryTable({
 }
 
 function PipelineBoard({ data }: { data: any[] }) {
-    const active = data.filter(o => o.status === 'interviewing' || o.status === 'negotiating');
-    const offers = data.filter(o => o.status === 'offer');
+    const active = data.filter(o => ['target_locked', 'outreach_execution', 'engagement', 'interview_loop'].includes(o.stageId));
+    const offers = data.filter(o => ['offer_pending', 'placed'].includes(o.stageId));
 
     return (
         <div className="p-6 grid grid-cols-2 gap-8">
@@ -549,7 +549,7 @@ function PipelineCard({ opp }: { opp: any }) {
                     <div className="font-bold text-slate-800">{opp.company}</div>
                     <div className="text-xs text-slate-500">{opp.role}</div>
                 </div>
-                <div className={`w-2 h-2 rounded-full ${opp.status === 'offer' ? 'bg-green-500' : 'bg-blue-400'}`} />
+                <div className={`w-2 h-2 rounded-full ${opp.stageId === 'offer_pending' ? 'bg-green-500' : 'bg-blue-400'}`} />
             </div>
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-50">
                 <div className="text-xs font-mono text-slate-400">

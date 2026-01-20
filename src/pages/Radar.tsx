@@ -57,7 +57,7 @@ export default function Radar() {
                 engagementId: engagementId,
                 company: signal.company,
                 role: 'Target Role via Radar',
-                status: 'outreach_execution', // Updated to match schema
+                stageId: 'outreach_execution', // Updated to match schema
                 stage_detail: `Sourced from ${signal.source}: ${signal.type}`,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),

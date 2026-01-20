@@ -80,7 +80,7 @@ export default function JobRecs() {
                 await addDoc(collection(db, 'job_pursuits'), {
                     targetId: rec.targetId,
                     engagementId: rec.engagementId,
-                    status: 'outreach', // Initial stage
+                    stageId: 'outreach_execution', // Initial stage
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString()
                 });

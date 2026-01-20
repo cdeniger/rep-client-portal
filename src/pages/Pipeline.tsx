@@ -76,7 +76,7 @@ export default function Pipeline() {
                     companyId: companyId, // Linked Company Record
                     company: data.company,
                     role: data.role,
-                    status: data.status || 'target_locked',
+                    stageId: data.stageId || 'target_locked',
                     stage_detail: data.stage_detail,
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
@@ -124,7 +124,7 @@ export default function Pipeline() {
             {/* Grouped List */}
             <div className="space-y-8">
                 {statusGroups.map(group => {
-                    const groupOpps = opportunities.filter(o => o.status === group.id);
+                    const groupOpps = opportunities.filter(o => o.stageId === group.id);
                     if (groupOpps.length === 0) return null;
 
                     return (
@@ -157,7 +157,7 @@ export default function Pipeline() {
 
                                         <div className="flex items-center gap-6">
                                             <div className="text-right">
-                                                <div className="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1">Current Stage</div>
+                                                <div className="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1">Current St. Detail</div>
                                                 <div className="text-sm font-medium text-oxford-green">{opp.stage_detail}</div>
                                             </div>
                                             {opp.financials && opp.financials.base > 0 && (
@@ -183,7 +183,7 @@ export default function Pipeline() {
                 {/* Legacy / Unclassified Items */}
                 {(() => {
                     const knownStatuses = new Set(statusGroups.map(g => g.id));
-                    const unclassifiedOpps = opportunities.filter(o => !knownStatuses.has(o.status));
+                    const unclassifiedOpps = opportunities.filter(o => !knownStatuses.has(o.stageId));
 
                     if (unclassifiedOpps.length === 0) return null;
 
@@ -212,7 +212,7 @@ export default function Pipeline() {
                                                     <Briefcase className="h-3 w-3" />
                                                     {opp.role}
                                                 </div>
-                                                <div className="text-[10px] text-red-400 mt-1 font-mono">Status: {opp.status}</div>
+                                                <div className="text-[10px] text-red-400 mt-1 font-mono">Stage ID: {opp.stageId} (Status: {opp.status})</div>
                                             </div>
                                         </div>
 

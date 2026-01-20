@@ -202,7 +202,7 @@ export interface JobPursuit {
     companyId?: string; // Link to the 'companies' collection
     company: string; // Denormalized for easy display
     role: string;    // Denormalized for easy display
-    status: 'target_locked' | 'outreach_execution' | 'engagement' | 'interview_loop' | 'offer_pending' | 'placed' | 'closed_lost' | 'closed_by_market';
+    stageId: 'target_locked' | 'outreach_execution' | 'engagement' | 'interview_loop' | 'offer_pending' | 'placed' | 'closed_lost' | 'closed_by_market';
     stage_detail: string;
     createdAt: string;
     updatedAt: string;

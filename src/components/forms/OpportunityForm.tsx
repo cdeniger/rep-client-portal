@@ -19,7 +19,7 @@ export default function OpportunityForm({ initialData, onSubmit, onCancel, isSub
         company: '',
         role: '',
         stage_detail: '',
-        status: 'target_locked',
+        stageId: 'target_locked',
         financials: { base: 0, bonus: 0, equity: '', rep_net_value: 0 },
         locationId: '', // New field
         ...initialData
@@ -228,11 +228,11 @@ export default function OpportunityForm({ initialData, onSubmit, onCancel, isSub
             </div>
             {!hideStatus && (
                 <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Status</label>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Stage</label>
                     <select
                         className="w-full p-2 border border-gray-200 rounded-sm text-sm focus:border-signal-orange outline-none bg-white"
-                        value={formData.status}
-                        onChange={e => setFormData({ ...formData, status: e.target.value as any })}
+                        value={formData.stageId}
+                        onChange={e => setFormData({ ...formData, stageId: e.target.value as any })}
                     >
                         <option value="target_locked">Target Locked</option>
                         <option value="outreach_execution">Outreach Execution</option>

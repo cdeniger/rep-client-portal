@@ -48,7 +48,7 @@ export default function ClientDetail() {
         if (!pursuits || !engagement) return 0;
         return pursuits.reduce((acc: number, pursuit: any) => {
             // Only count active pursuits
-            if (['offer', 'negotiating', 'interviewing'].includes(pursuit.status)) {
+            if (['offer_pending', 'interview_loop', 'engagement'].includes(pursuit.stageId)) {
                 const base = pursuit.financials?.base || 0;
                 const isaPct = engagement.isaPercentage || 0;
                 return acc + (base * isaPct);
@@ -462,7 +462,16 @@ export default function ClientDetail() {
                         <div className="h-[600px] bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
                             <PipelineBoard
                                 definitionId="delivery_v1"
-                                items={pursuits || []}
+                                items={(pursuits || []).map((p: any) => ({
+                                    ...p,
+                                    stageId: p.stageId,
+                                    id: p.id,
+                                    index: p.index || 0,
+                                    type: 'job_pursuit',
+                                    companyName: p.company,
+                                    roleTitle: p.role,
+                                    dealValue: p.financials?.rep_net_value || 0,
+                                }))}
                             />
                         </div>
                     </div>
