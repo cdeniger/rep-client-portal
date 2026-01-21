@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCollection } from '../hooks/useCollection';
-import { where, addDoc, collection, doc, updateDoc, query, getDocs } from 'firebase/firestore';
+import { addDoc, collection, where, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { findOrCreateCompany } from '../lib/companies';
 import type { JobPursuit } from '../types/schema';
@@ -15,10 +15,17 @@ export default function Pipeline() {
     const [editingOpp, setEditingOpp] = useState<JobPursuit | undefined>(undefined);
     const [processing, setProcessing] = useState(false);
 
-    // Fetch Job Pursuits (Active Pipeline)
+    // 1. Fetch Active Engagement (Context Root)
+    const { data: engagements } = useCollection<any>(
+        'engagements',
+        where('userId', '==', user?.uid || '')
+    );
+    const activeEngagement = engagements.find((e: any) => ['active', 'searching', 'negotiating', 'placed'].includes(e.status));
+
+    // 2. Fetch Job Pursuits (Scoped to Engagement)
     const { data: opportunities, loading } = useCollection<any>(
         'job_pursuits',
-        where('userId', '==', user?.uid || '')
+        where('engagementId', '==', activeEngagement?.id || 'no_op')
     );
 
     const handleOpenAdd = () => {
@@ -42,6 +49,11 @@ export default function Pipeline() {
             } else {
                 // Create Mode - Dual Creation Pattern
 
+                if (!activeEngagement) {
+                    alert("No active engagement found. Cannot create opportunity.");
+                    return;
+                }
+
                 // 1. Find or Create Company
                 const companyId = await findOrCreateCompany(data.company || 'Unknown');
 
@@ -57,21 +69,11 @@ export default function Pipeline() {
                 });
 
                 // 3. Create Job Pursuit (Client Application)
-
-                // Lookup Active Engagement
-                const engQuery = query(collection(db, 'engagements'), where('userId', '==', user.uid), where('status', 'in', ['active', 'searching', 'negotiating', 'placed']));
-                const engSnap = await getDocs(engQuery);
-                const engagementId = !engSnap.empty ? engSnap.docs[0].id : null;
-
                 await addDoc(collection(db, 'job_pursuits'), {
                     targetId: targetRef.id,
                     userId: user.uid,
-                    engagementId: engagementId || 'orphaned',
-                    // Note: We don't have engagementId easily available here in the Client view 
-                    // without fetching it first. For now, we rely on the Rep to "claim" or "link" it later,
-                    // OR we should ideally fetch the client's generic engagement ID. 
-                    // However, for the "My Pipeline" view, userId is sufficient for visibility.
-                    // To follow strict schema, we should try to find the engagementId.
+                    engagementId: activeEngagement.id,
+                    // Note: We adhere to the rule that Engagement ID is the primary relationship key.
 
                     companyId: companyId, // Linked Company Record
                     company: data.company,

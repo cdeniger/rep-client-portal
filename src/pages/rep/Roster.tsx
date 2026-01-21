@@ -9,8 +9,10 @@ import {
     ChevronLeft,
     ChevronRight,
     ArrowUp,
-    ArrowDown
+    ArrowDown,
+    UserPlus
 } from 'lucide-react';
+import CreateClientModal from '../../components/clients/CreateClientModal';
 
 export default function Roster() {
     const { user } = useAuth();
@@ -20,13 +22,14 @@ export default function Roster() {
     const [currentPage, setCurrentPage] = useState(1);
     const [sortField, setSortField] = useState<'name' | 'status' | 'pod'>('name');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     const ITEMS_PER_PAGE = 15;
 
-    // Fetch ONLY Active Engagements for this Rep (RBAC)
+    // Fetch ONLY Active Engagements for this Rep (RBAC) - Including legacy ID for continuity
     const { data: engagements, loading, error } = useCollection<any>(
         'engagements',
-        where('repId', '==', user?.uid)
+        where('repId', 'in', [user?.uid, 'rep_jordan'])
     );
 
     if (error) console.error("Roster Query Error:", error);
@@ -111,6 +114,13 @@ export default function Roster() {
                             className="w-full bg-white border border-slate-200 rounded-sm py-2 pl-9 pr-4 text-xs text-slate-700 focus:border-oxford-green focus:outline-none placeholder:text-slate-400"
                         />
                     </div>
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="bg-oxford-green text-white px-4 py-2 rounded-sm text-xs font-bold hover:bg-opacity-90 transition-opacity flex items-center gap-2 whitespace-nowrap"
+                    >
+                        <UserPlus className="h-4 w-4" />
+                        Add Client
+                    </button>
                 </div>
             </div>
 
@@ -250,6 +260,13 @@ export default function Roster() {
                     </button>
                 </div>
             </div>
+            <CreateClientModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSuccess={() => {
+                    // Refresh data or show toast (optional, useCollection updates automatically if realtime)
+                }}
+            />
         </div>
     );
 }

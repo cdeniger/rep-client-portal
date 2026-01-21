@@ -10,6 +10,8 @@ const stripeService = new StripeService();
 const ISA_PRICE_ID = 'price_isa_placeholder'; // This would come from config/env
 
 export { onIntakeCreated } from './triggers/onIntakeCreated';
+export { provisionClient } from './provisionClient';
+
 
 export const onClientPlaced = functions.firestore
     .document('users/{userId}')

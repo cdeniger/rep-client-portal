@@ -27,16 +27,20 @@ const firebaseConfig = {
     appId: getEnv('VITE_FIREBASE_APP_ID'),
 };
 
+import { getFunctions, type Functions } from "firebase/functions";
+
 let app: FirebaseApp;
 let auth: Auth;
 let db: Firestore;
 let storage: FirebaseStorage;
+let functions: Functions;
 
 try {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     db = getFirestore(app);
     storage = getStorage(app);
+    functions = getFunctions(app); // Default region is us-central1
 } catch (error) {
     console.error('Error initializing Firebase. Check your .env file.', error);
 }
@@ -47,4 +51,4 @@ if (typeof window !== 'undefined') {
     window.db = db;
 }
 
-export { app, auth, db, storage };
+export { app, auth, db, storage, functions };

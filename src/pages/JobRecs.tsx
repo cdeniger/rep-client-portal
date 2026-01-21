@@ -15,7 +15,6 @@ export default function JobRecs() {
     const { user } = useAuth();
     const [loading, setLoading] = useState(true);
     const [recommendations, setRecommendations] = useState<ExtendedRec[]>([]);
-    const [targets, setTargets] = useState<JobTarget[]>([]);
     const [selectedRec, setSelectedRec] = useState<ExtendedRec | null>(null);
 
     // Fetch Data
@@ -50,7 +49,6 @@ export default function JobRecs() {
             // Firestore 'in' query supports up to 10. Let's just fetch all targets for now as Client Portal load is low.
             const allTargetsSnap = await getDocs(collection(db, 'job_targets'));
             const allTargets = allTargetsSnap.docs.map(d => ({ id: d.id, ...d.data() })) as JobTarget[];
-            setTargets(allTargets);
 
             const extendedRecs = recs.map(r => ({
                 ...r,
@@ -77,10 +75,21 @@ export default function JobRecs() {
                 if (!rec || !rec.targetId || !rec.engagementId) return;
 
                 // Create Pursuit
+                // Create Pursuit
+                if (!user) return;
+
                 await addDoc(collection(db, 'job_pursuits'), {
                     targetId: rec.targetId,
+                    userId: user.uid,
                     engagementId: rec.engagementId,
+
+                    // Denormalized Display Fields (Crucial for Dashboard/Pipeline visibility)
+                    company: rec.target?.company || 'Unknown Company',
+                    role: rec.target?.role || 'Unknown Role',
+                    financials: rec.target?.financials || { base: 0, bonus: 0, equity: '', rep_net_value: 0 },
+
                     stageId: 'outreach_execution', // Initial stage
+                    stage_detail: 'Pursuit initiated from recommendations',
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString()
                 });

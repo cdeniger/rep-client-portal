@@ -237,7 +237,7 @@ export default function GlobalPipeline() {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-oxford-green">Job Opportunity Pipeline</h1>
+                    <h1 className="text-2xl font-bold text-oxford-green">Open Job Targets</h1>
                     <p className="text-slate-500 text-sm">Manage open market inventory and active client deals.</p>
                 </div>
                 <div className="flex gap-3">

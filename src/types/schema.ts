@@ -7,6 +7,7 @@ export interface UserProfile {
     uid: string;
     email: string;
     role: UserRole;
+    requiresPasswordChange?: boolean; // Enforce password reset on first login
     profile: {
         name: string;
         firstName?: string;

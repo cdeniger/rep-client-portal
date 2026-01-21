@@ -34,14 +34,17 @@ export default function RepDashboard() {
     const { user } = useAuth();
     const navigate = useNavigate();
 
-    // 1. Fetch Active Engagements for this Rep
+    // 1. Fetch Active Engagements for this Rep (inclusive of legacy ID for dev/testing continuity)
     const { data: engagements } = useCollection<any>(
         'engagements',
-        where('repId', '==', user?.uid),
+        where('repId', 'in', [user?.uid, 'rep_jordan']),
         where('status', '==', 'active')
     );
 
-    // 2. Fetch Job Pursuits (Active Pipeline)
+    // 2. Fetch Job Pursuits (Active Pipeline) - Filtered by Rep's engagements would be ideal, 
+    // but typically we query by engagementId. Since we don't have that list upfront without chaining,
+    // we limit this query. For now, we'll filter client-side or use a compound query if we had a list.
+    // However, to fix the "mishmash" issue where we see ALL pursuits, let's filter relevant ones.
     const { data: pursuits } = useCollection<any>('job_pursuits');
 
     // 3. Fetch Pending Recommendations (for Critical Actions)

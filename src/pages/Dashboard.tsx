@@ -19,13 +19,13 @@ export default function Dashboard() {
     const { data: userProfile, loading: profileLoading } = useDocument<UserProfile>('users', user?.uid || '');
 
     // 1. Fetch Active Engagement (Context Root)
-    const { data: engagements, loading: engagementsLoading } = useCollection<Engagement>(
+    const { data: engagements } = useCollection<Engagement>(
         'engagements',
         where('userId', '==', user?.uid || '')
     );
     const activeEngagement = engagements.find(e => ['active', 'searching', 'negotiating'].includes(e.status));
 
-    // 2. Fetch Job Pursuits (Scoped to Engagement)
+    // 2. Fetch Job Pursuits (Scoped to Engagement) - ARCH UPDATE: Query by Engagement ID
     const { data: opportunities, loading: oppsLoading } = useCollection<JobPursuit>(
         'job_pursuits',
         where('engagementId', '==', activeEngagement?.id || 'no_op')
@@ -58,8 +58,8 @@ export default function Dashboard() {
         }
     };
 
-    const activeOpps = opportunities.filter(o => ['interview_loop', 'offer_pending', 'target_locked', 'outreach_execution', 'engagement'].includes(o.status));
-    const negotiatingOpps = opportunities.filter(o => o.status === 'offer_pending');
+    const activeOpps = opportunities.filter(o => ['interview_loop', 'offer_pending', 'target_locked', 'outreach_execution', 'engagement'].includes(o.stageId));
+    const negotiatingOpps = opportunities.filter(o => o.stageId === 'offer_pending');
 
     // Recommendation Actions (Future Implementation)
     // const handleRecAction = async (recId: string, action: 'pursue' | 'reject' | 'defer') => { ... }
@@ -175,7 +175,7 @@ export default function Dashboard() {
                                 </div>
                                 <div className="text-right">
                                     <div className="inline-block px-2 py-1 bg-signal-orange/10 text-signal-orange text-[10px] uppercase font-bold tracking-wider rounded-sm">
-                                        {opp.status}
+                                        {opp.stageId?.replace('_', ' ')}
                                     </div>
                                     <div className="text-[10px] text-gray-400 mt-1">{opp.stage_detail}</div>
                                 </div>
