@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AdminService } from '../../services/AdminService';
 import type { PipelineDefinition, Stage } from '../../types/pipeline';
 import { Plus, Trash2, Save, MoveUp, MoveDown, Layout, DollarSign, Briefcase } from 'lucide-react';
@@ -55,7 +55,8 @@ export default function PipelineConfig() {
         const newStage: Stage = {
             id: `stage_${Date.now()}`,
             label: 'New Stage',
-            color: '#94a3b8'
+            color: '#94a3b8',
+            order: activePipeline.stages.length
         };
         updatePipelineStages([...activePipeline.stages, newStage]);
     };

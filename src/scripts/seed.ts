@@ -1,4 +1,4 @@
-import { collection, doc, writeBatch } from 'firebase/firestore';
+import { doc, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import type { UserProfile, IntakeResponse } from '../types/schema';
 
@@ -69,6 +69,21 @@ export const seedClientData = async (uid: string) => {
         assets: {
             linkedinUrl: 'https://linkedin.com/in/alexmercer',
             resumeFile: 'resume_v1.pdf'
+        },
+        filters: {
+            hardConstraints: {
+                minBase: 0,
+                minTotalComp: 0,
+                minLevel: 3,
+                maxCommuteMinutes: 45,
+                relocationWillingness: false
+            },
+            softPreferences: {
+                preferredIndustries: [],
+                avoidIndustries: [],
+                preferredFunctions: [],
+                workStyle: 'hybrid'
+            }
         }
     };
     batch.set(intakeRef, intakeData);

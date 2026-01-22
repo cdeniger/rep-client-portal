@@ -3,20 +3,19 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDocument } from '../../hooks/useDocument';
 import { useCollection } from '../../hooks/useCollection';
 import { useAuth } from '../../context/AuthContext';
-import { doc, updateDoc, where, arrayUnion, getDoc, query, collection, getDocs } from 'firebase/firestore';
+import { doc, updateDoc, where, getDoc, arrayUnion } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../../lib/firebase';
-import { ChevronLeft, Edit, Calendar, DollarSign, FileText, Database, Upload, File, Download, Link2, CheckCircle2, AlertCircle, Edit2 } from 'lucide-react';
+import { ChevronLeft, Edit, Calendar, DollarSign, FileText, Upload, File, Download, CheckCircle2, AlertCircle } from 'lucide-react';
 import DealCard from '../../components/rep/DealCard';
 import ClientMasterFileModal from '../../components/rep/ClientMasterFileModal';
 import Modal from '../../components/ui/Modal';
 import OpportunityForm from '../../components/forms/OpportunityForm';
 import ActivityContextPanel from '../../components/activities/ActivityContextPanel';
+import ActivityEditorModal from '../../components/rep/activities/ActivityEditorModal';
 import LinkContactModal from '../../components/rep/client/LinkContactModal';
-import type { Engagement, JobRecommendation, IntakeResponse } from '../../types/schema';
-import type { JobPursuit } from '../../types/pipeline';
+
 import PipelineBoard from '../../components/pipeline/PipelineBoard';
-import { Timestamp } from 'firebase/firestore';
 
 // MOCK_DELIVERY_ITEMS removed
 
@@ -29,14 +28,8 @@ export default function ClientDetail() {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Fetch Job Pursuits (Active Pipeline) for this Engagement
-    const { data: pursuits, loading: loadingPursuits } = useCollection<any>(
+    const { data: pursuits } = useCollection<any>(
         'job_pursuits',
-        where('engagementId', '==', id)
-    );
-
-    // Fetch Pending Recommendations
-    const { data: recommendations, loading: loadingRecs } = useCollection<any>(
-        'job_recommendations',
         where('engagementId', '==', id)
     );
 
@@ -88,6 +81,7 @@ export default function ClientDetail() {
     const [isMasterFileOpen, setIsMasterFileOpen] = useState(false);
     const [isAssetsModalOpen, setIsAssetsModalOpen] = useState(false);
     const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+    const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
 
     // Fetch Linked Contact if exists
     const { document: linkedContact } = useDocument(
@@ -96,7 +90,6 @@ export default function ClientDetail() {
     );
     const [masterFileTab, setMasterFileTab] = useState<'profile' | 'parameters' | 'strategy'>('profile');
     const [isUploading, setIsUploading] = useState(false);
-    const [isResetting, setIsResetting] = useState(false);
 
     const [activeTab, setActiveTab] = useState<'overview' | 'history'>('overview');
 
@@ -167,71 +160,7 @@ export default function ClientDetail() {
         }
     };
 
-    const handleResetFromIntake = async () => {
-        if (!engagement?.id || !engagement.userId) return;
 
-        if (!window.confirm("WARNING: This will OVERWRITE current engagement data with the original Intake Submission. This cannot be undone. Are you sure?")) {
-            return;
-        }
-
-        setIsResetting(true);
-        try {
-            // 1. Find the latest intake for this user
-            const q = query(collection(db, 'intake_responses'), where('userId', '==', engagement.userId)); // Might need ordering if multiple
-            const snapshot = await getDocs(q);
-
-            if (snapshot.empty) {
-                alert("No Intake Submission found for this user.");
-                setIsResetting(false);
-                return;
-            }
-
-            // Assume the first one is the one we want (or sort by date if needed)
-            // In a real scenario, we might want to order by createdAt desc
-            const intakeDoc = snapshot.docs[0];
-            const intakeData = intakeDoc.data() as IntakeResponse;
-
-            // 2. Hydrate Logic (Strict Duplicate of Server-Side Trigger)
-            const updates = {
-                // Profile Mapping
-                'profile.currentTitle': intakeData.profile?.currentTitle || '',
-                'profile.currentCompany': intakeData.profile?.currentCompany || '',
-                'profile.industry': intakeData.profile?.industry || '',
-                'profile.experienceBand': intakeData.profile?.experienceBand || '',
-                'profile.marketIdentity': intakeData.marketIdentity || {},
-
-                // Strategy Mapping (Direct copy of buckets)
-                'strategy.trajectory': intakeData.trajectory || {},
-                'strategy.horizon': intakeData.horizon || {},
-                'strategy.ownership': intakeData.ownership || {},
-                'strategy.authority': intakeData.authority || {},
-                'strategy.comp': intakeData.comp || {},
-
-                // Target Parameters (Hard & Soft Constraints)
-                // Hard Constraints
-                'targetParameters.minBase': intakeData.filters?.hardConstraints?.minBase || 0,
-                'targetParameters.minTotalComp': intakeData.filters?.hardConstraints?.minTotalComp || 0,
-                'targetParameters.minLevel': intakeData.filters?.hardConstraints?.minLevel || 3,
-                'targetParameters.maxCommuteMinutes': intakeData.filters?.hardConstraints?.maxCommuteMinutes || 45,
-                'targetParameters.relocationWillingness': intakeData.filters?.hardConstraints?.relocationWillingness || false,
-
-                // Soft Preferences
-                'targetParameters.preferredIndustries': intakeData.filters?.softPreferences?.preferredIndustries || [],
-                'targetParameters.avoidIndustries': intakeData.filters?.softPreferences?.avoidIndustries || [],
-                'targetParameters.preferredFunctions': intakeData.filters?.softPreferences?.preferredFunctions || [],
-                'targetParameters.workStyle': intakeData.filters?.softPreferences?.workStyle || 'hybrid',
-            };
-
-            await updateDoc(doc(db, 'engagements', engagement.id), updates);
-            alert("Engagement successfully reset from Intake data.");
-
-        } catch (error) {
-            console.error("Failed to reset from intake:", error);
-            alert("Failed to reset data. Check console.");
-        } finally {
-            setIsResetting(false);
-        }
-    };
 
     // Duplicate Detection Logic
     const [isDuplicate, setIsDuplicate] = useState(false);
@@ -300,7 +229,7 @@ export default function ClientDetail() {
         : `${engagement.profile?.headline || 'Client Detail'} | ${startDate}`;
 
     return (
-        <div className="space-y-6 pb-12">
+        <div className="space-y-6 pb-12 p-6">
 
             {/* Duplicate Warning Banner */}
             {isDuplicate && correctId && (
@@ -327,17 +256,17 @@ export default function ClientDetail() {
                 </div>
             )}
             {/* Header */}
-            <div className="flex items-center gap-4 border-b border-slate-700 pb-4">
+            <div className="flex items-center gap-4 border-b border-slate-200 pb-4 mb-6">
                 <button
                     onClick={() => navigate('/rep/roster')}
-                    className="p-2 -ml-2 text-slate-400 hover:text-white rounded-full hover:bg-slate-800 transition-colors"
+                    className="p-2 -ml-2 text-slate-400 hover:text-oxford-green rounded-full hover:bg-slate-100 transition-colors"
                 >
                     <ChevronLeft className="h-5 w-5" />
                 </button>
                 <div className="flex-1">
                     <h2 className="text-2xl font-bold text-oxford-green mb-1">{headerTitle}</h2>
                     <div className="flex items-center gap-2 text-xs text-slate-500 uppercase tracking-wider">
-                        <span className="font-mono">ID: {engagement.id}</span>
+                        <span className="font-mono">ID: {engagement.id.slice(0, 8)}</span>
                         <span>•</span>
                         <span>{engagement.profile?.pod || 'Unassigned'}</span>
                         <span>•</span>
@@ -345,53 +274,46 @@ export default function ClientDetail() {
                             }`}>
                             {engagement.status}
                         </span>
-                        {engagement.profile?.headline && (
-                            <>
-                                <span>•</span>
-                                <span>{engagement.profile.headline}</span>
-                            </>
-                        )}
+                        <span>•</span>
+                        {/* Contact Link Badge */}
+                        <button
+                            onClick={() => setIsLinkModalOpen(true)}
+                            className={`flex items-center gap-1 hover:underline ${engagement.profile?.contactId ? 'text-emerald-600 font-bold' : 'text-amber-500'}`}
+                        >
+                            {engagement.profile?.contactId ? (
+                                <>
+                                    <CheckCircle2 className="h-3 w-3" />
+                                    {linkedContact ? linkedContact.firstName : 'Linked'}
+                                </>
+                            ) : (
+                                <>
+                                    <AlertCircle className="h-3 w-3" />
+                                    Link Identity
+                                </>
+                            )}
+                        </button>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    {/* Identity Link Button */}
+                <div className="flex items-center gap-3">
+                    {/* Schedule Meeting Button */}
                     <button
-                        onClick={() => setIsLinkModalOpen(true)}
-                        className={`px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wider flex items-center gap-2 border transition-colors ${engagement.profile?.contactId
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                            : 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100'
-                            }`}
+                        onClick={() => setIsActivityModalOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-oxford-green text-white hover:bg-opacity-90 border border-transparent rounded-sm text-xs font-bold uppercase tracking-widest transition-colors shadow-sm"
                     >
-                        {engagement.profile?.contactId ? (
-                            <>
-                                <CheckCircle2 className="h-3.5 w-3.5" />
-                                {linkedContact ? `${linkedContact.firstName} ${linkedContact.lastName}` : 'Identity Linked'}
-                            </>
-                        ) : (
-                            <>
-                                <AlertCircle className="h-3.5 w-3.5" />
-                                Link Identity
-                            </>
-                        )}
+                        <Calendar className="h-4 w-4" />
+                        <span>Schedule</span>
                     </button>
+
+                    {/* Master File Button */}
                     <button
                         onClick={() => openMasterFile('profile')}
-                        className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-300 hover:text-white border border-slate-700 rounded-sm text-xs font-bold uppercase tracking-widest transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-white text-oxford-green hover:bg-slate-50 border border-slate-200 rounded-sm text-xs font-bold uppercase tracking-widest transition-colors shadow-sm"
                     >
                         <Edit className="h-4 w-4" />
-                        <span>Edit Client File</span>
+                        <span>Master File</span>
                     </button>
                 </div>
-                <button
-                    onClick={handleResetFromIntake}
-                    disabled={isResetting}
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-red-400 hover:bg-slate-800 hover:text-red-300 border border-slate-700/50 rounded-sm text-xs font-bold uppercase tracking-widest transition-colors"
-                    title="Reset data from original Intake Form"
-                >
-                    <Database className="h-4 w-4" />
-                    <span>{isResetting ? 'Resetting...' : 'Reset from Intake'}</span>
-                </button>
-            </div >
+            </div>
 
             {/* TABS HEADER */}
             <div className="flex items-center gap-6 border-b border-slate-700/50 mb-6">
@@ -514,7 +436,7 @@ export default function ClientDetail() {
 
                     {/* PIPELINE BOARD (Full Width) */}
                     <div>
-                        <div className="h-[600px] bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
+                        <div className="bg-slate-50 border border-slate-200 rounded-lg">
                             <PipelineBoard
                                 definitionId="delivery_v1"
                                 items={(pursuits || []).map((p: any) => ({
@@ -560,6 +482,14 @@ export default function ClientDetail() {
                     initialTab={masterFileTab}
                 />
             )}
+
+            {/* Activity Editor Modal */}
+            <ActivityEditorModal
+                isOpen={isActivityModalOpen}
+                onClose={() => setIsActivityModalOpen(false)}
+                engagementID={id}
+                ownerID={user?.uid}
+            />
 
             {/* Client Assets Modal */}
             <Modal

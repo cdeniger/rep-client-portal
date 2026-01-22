@@ -1,8 +1,7 @@
-
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AdminService } from '../../services/AdminService';
 import type { ActivityDefinition, ActivityFieldDefinition } from '../../types/activities';
-import { Plus, Save, Trash2, Edit2, Check, X } from 'lucide-react';
+import { Plus, Save, Trash2, Edit2 } from 'lucide-react';
 
 const CORE_TYPES = ['interview', 'call', 'stage_change', 'email', 'note'];
 

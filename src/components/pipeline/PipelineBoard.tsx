@@ -45,7 +45,7 @@ export default function PipelineBoard({ definitionId, items, onItemClick }: Pipe
     }, [items, definition]);
 
     return (
-        <div className="flex flex-col h-full bg-slate-50/30">
+        <div className="flex flex-col h-auto bg-slate-50/30">
             {/* Board Header - Simplified */}
             <div className="px-6 py-4 border-b border-slate-200 bg-white">
                 <h1 className="text-xl font-bold text-slate-800">{definition.label}</h1>
@@ -55,8 +55,8 @@ export default function PipelineBoard({ definitionId, items, onItemClick }: Pipe
             </div>
 
             {/* Scrolling Columns Container */}
-            <div className="flex-1 overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
-                <div className="flex h-full p-4 gap-4 min-w-max">
+            <div className="flex-1 overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
+                <div className="flex h-auto items-start p-4 gap-4 min-w-max">
                     {definition.stages
                         .filter(stage => !['placed', 'closed_won'].includes(stage.id))
                         .map(stage => (

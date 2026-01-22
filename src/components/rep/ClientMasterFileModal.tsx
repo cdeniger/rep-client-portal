@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import Modal from '../ui/Modal';
-import type { Engagement } from '../../types/schema';
+import type { Engagement, IntakeResponse } from '../../types/schema';
 import LinkContactModal from './client/LinkContactModal';
 import { useDocument } from '../../hooks/useDocument';
-import { User, Map, Target, Shield, DollarSign, CheckCircle, Contact as ContactIcon, Mail, Phone, Linkedin, ExternalLink, Link as LinkIcon, AlertCircle } from 'lucide-react';
+import { User, Map, Target, Shield, DollarSign, CheckCircle, Contact as ContactIcon, Mail, Phone, Linkedin, ExternalLink, Link as LinkIcon, AlertCircle, RefreshCw } from 'lucide-react';
 
 interface ClientMasterFileModalProps {
     isOpen: boolean;
@@ -160,6 +160,81 @@ export default function ClientMasterFileModal({ isOpen, onClose, engagement, ini
         } catch (err) {
             console.error("Failed to save client master file:", err);
             alert("Failed to save changes. Check console.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleResetFromIntake = async () => {
+        if (!engagement?.id || !engagement.userId) return;
+
+        if (!window.confirm("WARNING: This will OVERWRITE current engagement data with the original Intake Submission. This cannot be undone. Are you sure?")) {
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            // 1. Find the latest intake for this user
+            const q = query(collection(db, 'intake_responses'), where('userId', '==', engagement.userId));
+            const snapshot = await getDocs(q);
+
+            if (snapshot.empty) {
+                alert("No Intake Submission found for this user.");
+                setIsLoading(false);
+                return;
+            }
+
+            // Assume the first one is the one we want (or sort by date if needed)
+            const intakeDoc = snapshot.docs[0];
+            const intakeData = intakeDoc.data() as IntakeResponse;
+
+            // 2. Hydrate Logic (Strict Duplicate of Server-Side Trigger)
+            // We update the local form state first, then save everything with handleSave or just direct update?
+            // "Reset" usually implies resetting the DB record.
+            // Let's update the DB directly as the original function did, then close or reload.
+            // But wait, if we update the DB directly, the form state here might be stale if we don't close.
+            // Better to update formData and let the user click "Save"? 
+            // The original logic updated the doc directly. Let's do that for "Reset" semantics (hard reset).
+            // AND we should probably close the modal or refetch. 
+            // UseDocument hook in parent handles refetch. 
+
+            const updates = {
+                // Profile Mapping
+                'profile.currentTitle': intakeData.profile?.currentTitle || '',
+                'profile.currentCompany': intakeData.profile?.currentCompany || '',
+                'profile.industry': intakeData.profile?.industry || '',
+                'profile.experienceBand': intakeData.profile?.experienceBand || '',
+                'profile.marketIdentity': intakeData.marketIdentity || {},
+
+                // Strategy Mapping (Direct copy of buckets)
+                'strategy.trajectory': intakeData.trajectory || {},
+                'strategy.horizon': intakeData.horizon || {},
+                'strategy.ownership': intakeData.ownership || {},
+                'strategy.authority': intakeData.authority || {},
+                'strategy.comp': intakeData.comp || {},
+
+                // Target Parameters (Hard & Soft Constraints)
+                // Hard Constraints
+                'targetParameters.minBase': intakeData.filters?.hardConstraints?.minBase || 0,
+                'targetParameters.minTotalComp': intakeData.filters?.hardConstraints?.minTotalComp || 0,
+                'targetParameters.minLevel': intakeData.filters?.hardConstraints?.minLevel || 3,
+                'targetParameters.maxCommuteMinutes': intakeData.filters?.hardConstraints?.maxCommuteMinutes || 45,
+                'targetParameters.relocationWillingness': intakeData.filters?.hardConstraints?.relocationWillingness || false,
+
+                // Soft Preferences
+                'targetParameters.preferredIndustries': intakeData.filters?.softPreferences?.preferredIndustries || [],
+                'targetParameters.avoidIndustries': intakeData.filters?.softPreferences?.avoidIndustries || [],
+                'targetParameters.preferredFunctions': intakeData.filters?.softPreferences?.preferredFunctions || [],
+                'targetParameters.workStyle': intakeData.filters?.softPreferences?.workStyle || 'hybrid',
+            };
+
+            await updateDoc(doc(db, 'engagements', engagement.id), updates);
+            alert("Engagement successfully reset from Intake data.");
+            onClose(); // Close to force refresh/reflect changes
+
+        } catch (error) {
+            console.error("Failed to reset from intake:", error);
+            alert("Failed to reset data. Check console.");
         } finally {
             setIsLoading(false);
         }
@@ -518,28 +593,43 @@ export default function ClientMasterFileModal({ isOpen, onClose, engagement, ini
                     )}
                 </form>
 
-                <div className="pt-4 mt-4 border-t border-slate-200 flex justify-end gap-2">
+                <div className="pt-4 mt-4 border-t border-slate-200 flex justify-between items-center bg-slate-50 -mx-6 px-6 py-4 rounded-b-lg">
+                    {/* Left Side: Danger Zone */}
                     <button
                         type="button"
-                        onClick={onClose}
-                        className="px-6 py-2 border border-slate-300 text-slate-500 font-bold text-xs uppercase tracking-widest rounded-sm hover:bg-slate-50"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={handleSave}
+                        onClick={handleResetFromIntake}
                         disabled={isLoading}
-                        className="px-6 py-2 bg-oxford-green text-white font-bold text-xs uppercase tracking-widest rounded-sm hover:bg-opacity-90 disabled:opacity-50 flex items-center gap-2"
+                        className="text-xs text-red-400 hover:text-red-600 font-bold uppercase tracking-widest flex items-center gap-2 transition-colors opacity-90 hover:opacity-100"
+                        title="Overwrite all fields with original Intake Form data"
                     >
-                        {isLoading ? (
-                            <>Saving...</>
-                        ) : (
-                            <>
-                                <CheckCircle className="h-4 w-4" />
-                                Save Master File
-                            </>
-                        )}
+                        <RefreshCw className="h-3 w-3" />
+                        Reset from Intake
                     </button>
+
+                    {/* Right Side: Actions */}
+                    <div className="flex gap-2">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="px-6 py-2 border border-slate-300 text-slate-500 font-bold text-xs uppercase tracking-widest rounded-sm hover:bg-slate-50"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            disabled={isLoading}
+                            className="px-6 py-2 bg-oxford-green text-white font-bold text-xs uppercase tracking-widest rounded-sm hover:bg-opacity-90 disabled:opacity-50 flex items-center gap-2"
+                        >
+                            {isLoading ? (
+                                <>Saving...</>
+                            ) : (
+                                <>
+                                    <CheckCircle className="h-4 w-4" />
+                                    Save Master File
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </div>
             </div>
             {/* Link Contact Modal */}

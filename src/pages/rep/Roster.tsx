@@ -37,7 +37,7 @@ export default function Roster() {
     // Filter & Sort Logic
     const filteredClients = useMemo(() => {
         if (!engagements) return [];
-        let result = engagements.filter(e => {
+        const result = engagements.filter(e => {
             const term = searchTerm.toLowerCase();
             const firstName = (e.profile?.firstName || '').toLowerCase();
             const lastName = (e.profile?.lastName || '').toLowerCase();
@@ -93,7 +93,7 @@ export default function Roster() {
     ];
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 p-6">
             {/* Header / Controls */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-4">
                 <div>

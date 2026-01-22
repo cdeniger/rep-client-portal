@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityService } from '../../services/ActivityService';
 import type { Activity, ActivityAssociations } from '../../types/activities';
 import ActivityCardFactory from './ActivityCardFactory';

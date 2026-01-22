@@ -147,7 +147,7 @@ export default function RepDashboard() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 p-6">
             <div className="flex justify-between items-end border-b border-slate-700 pb-4">
                 <div>
                     <h2 className="text-2xl font-bold text-oxford-green mb-1">Command Center</h2>
@@ -203,7 +203,6 @@ export default function RepDashboard() {
                 <div className="col-span-12 lg:col-span-4 h-full">
                     {/* Component C: Command Feed */}
                     <CommandFeed
-                        engagements={engagements || []}
                         pursuits={pursuits || []}
                         pendingRecs={pendingRecs || []}
                         onTriageClick={() => setIsTriageModalOpen(true)}

@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useDocument } from '../hooks/useFirestore';
 import { useCollection } from '../hooks/useCollection';
-import { where, doc, updateDoc } from 'firebase/firestore';
+import { where, doc, updateDoc, query, collection, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import type { UserProfile, JobPursuit, Engagement, JobRecommendation } from '../types/schema';
 import { ArrowRight, Trophy, Target, Calendar, Edit2, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Modal from '../components/ui/Modal';
 import ProfileForm from '../components/forms/ProfileForm';
+import MeetingDrawer from '../components/client/MeetingDrawer';
 
 export default function Dashboard() {
     const { user } = useAuth();
@@ -36,6 +37,41 @@ export default function Dashboard() {
         'job_recommendations',
         where('engagementId', '==', activeEngagement?.id || 'no_op')
     );
+
+    // 4. Fetch Next Meeting
+    const [nextMeeting, setNextMeeting] = useState<any | null>(null);
+    const [isMeetingDrawerOpen, setIsMeetingDrawerOpen] = useState(false);
+
+    useEffect(() => {
+        if (!activeEngagement?.id) return;
+
+        const fetchNextMeeting = async () => {
+            const q = query(
+                collection(db, 'activities'),
+                where('associations.engagementId', '==', activeEngagement.id),
+                where('type', '==', 'meeting'),
+                where('status', '==', 'scheduled')
+            );
+
+            try {
+                const snap = await getDocs(q);
+                const meetings = snap.docs
+                    .map((d: any) => ({ id: d.id, ...d.data() } as any))
+                    .filter((m: any) => m.metadata?.isVisibleToClient);
+
+                // Sort in memory to avoid complex index
+                meetings.sort((a: any, b: any) => a.performedAt.toMillis() - b.performedAt.toMillis());
+
+                // Find first one in future
+                const now = Date.now();
+                const upcoming = meetings.find((m: any) => m.performedAt.toMillis() > now);
+                setNextMeeting(upcoming || null);
+            } catch (e) {
+                console.error("Error fetching meetings", e);
+            }
+        };
+        fetchNextMeeting();
+    }, [activeEngagement?.id]);
 
     if (profileLoading || oppsLoading) {
         return <div className="text-gray-400 text-sm animate-pulse">Loading Dashboard...</div>;
@@ -199,26 +235,50 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Next Sync (Moved) */}
+                {/* Next Sync (Dynamic) */}
                 <div className="bg-white p-6 rounded-sm border border-gray-200 shadow-sm bg-oxford-green/5">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-xs font-bold uppercase tracking-widest text-oxford-green">Next Sync</h3>
                         <Calendar className="text-oxford-green h-5 w-5" />
                     </div>
-                    <div className="flex items-baseline gap-2">
-                        <span className="text-xl font-bold text-oxford-green">Thursday, 2pm</span>
-                    </div>
-                    <div className="mt-2 text-sm text-gray-600">
-                        Topic: Offer Analysis (Stripe)
-                    </div>
-                    <button className="mt-4 w-full py-2 bg-oxford-green text-white text-xs font-bold uppercase tracking-widest rounded-sm hover:bg-opacity-90">
-                        View Agenda
-                    </button>
+                    {nextMeeting ? (
+                        <>
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-xl font-bold text-oxford-green">
+                                    {new Date(nextMeeting.performedAt.toMillis()).toLocaleDateString('en-US', { weekday: 'long' })},&nbsp;
+                                    {new Date(nextMeeting.performedAt.toMillis()).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                                </span>
+                            </div>
+                            <div className="mt-2 text-sm text-gray-600 truncate">
+                                Topic: {nextMeeting.metadata?.title || 'Check-in'}
+                            </div>
+                            <button
+                                onClick={() => setIsMeetingDrawerOpen(true)}
+                                className="mt-4 w-full py-2 bg-oxford-green text-white text-xs font-bold uppercase tracking-widest rounded-sm hover:bg-opacity-90 transition-colors"
+                            >
+                                View Agenda
+                            </button>
+                        </>
+                    ) : (
+                        <div className="py-4 text-center">
+                            <p className="text-sm text-gray-500 italic mb-4">No upcoming meetings scheduled.</p>
+                            <button className="w-full py-2 border border-gray-300 text-gray-400 text-xs font-bold uppercase tracking-widest rounded-sm cursor-not-allowed">
+                                View Agenda
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 
 
 
+
+            {/* Meeting Drawer */}
+            <MeetingDrawer
+                isOpen={isMeetingDrawerOpen}
+                onClose={() => setIsMeetingDrawerOpen(false)}
+                meeting={nextMeeting}
+            />
 
             {/* Edit Profile Modal */}
             <Modal

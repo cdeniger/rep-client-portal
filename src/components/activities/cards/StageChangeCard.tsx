@@ -1,10 +1,9 @@
 
-import React from 'react';
 import type { StageChangeActivity } from '../../../types/activities';
-import { ArrowRight, GitCommit } from 'lucide-react';
+import { GitCommit } from 'lucide-react';
 
 export default function StageChangeCard({ activity }: { activity: StageChangeActivity }) {
-    const { fromStage, toStage, pipelineKey } = activity.metadata;
+    const { toStage, pipelineKey } = activity.metadata;
 
     return (
         <div className="relative flex items-center justify-center py-4">

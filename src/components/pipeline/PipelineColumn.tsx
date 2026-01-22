@@ -23,7 +23,7 @@ export default function PipelineColumn({ stage, items, onItemClick }: PipelineCo
     const headerBorderClass = borderColorMap[stage.color] || 'border-t-slate-300';
 
     return (
-        <div className="flex flex-col h-full min-w-[260px] w-[260px] bg-slate-50/50 rounded-lg shrink-0">
+        <div className="flex flex-col h-fit min-w-[260px] w-[260px] bg-slate-50/50 rounded-lg shrink-0">
             {/* Header */}
             <div className={`p-3 border-t-4 ${headerBorderClass} bg-white rounded-t-lg shadow-sm mb-2`}>
                 <div className="flex justify-between items-center">
@@ -36,8 +36,8 @@ export default function PipelineColumn({ stage, items, onItemClick }: PipelineCo
                 </div>
             </div>
 
-            {/* Scrollable Card Area */}
-            <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-2">
+            {/* Elastic Card Area - No internal scroll */}
+            <div className="flex-1 px-2 pb-2 space-y-2">
                 {items.map(item => (
                     <PipelineCard
                         key={item.id}

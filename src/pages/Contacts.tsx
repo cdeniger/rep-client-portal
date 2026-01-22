@@ -118,7 +118,7 @@ export default function Contacts() {
 
 
     return (
-        <div className="flex flex-col h-[calc(100vh-theme(spacing.24))]"> {/* Full height minus header/padding approx */}
+        <div className="flex flex-col h-[calc(100vh-theme(spacing.24))] p-6"> {/* Full height minus header/padding approx */}
 
             {/* --- Header --- */}
             <div className="flex flex-col gap-6 mb-8">

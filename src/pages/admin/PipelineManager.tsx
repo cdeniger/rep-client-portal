@@ -1,7 +1,7 @@
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AdminService } from '../../services/AdminService';
-import type { PipelineDefinition, PipelineStage } from '../../types/activities';
+import type { PipelineDefinition, Stage } from '../../types/pipeline';
 import { Plus, Trash2, Save, MoveUp, MoveDown, RefreshCcw } from 'lucide-react';
 
 export default function PipelineManager() {
@@ -33,13 +33,13 @@ export default function PipelineManager() {
     const handleSeedDefaults = async () => {
         if (!confirm("This will overwrite existing 'Job Search' and 'Client Origination' pipelines. Continue?")) return;
         setLoading(true);
-        await AdminService.initializeDefaultPipelines();
+        // await AdminService.initializeDefaultPipelines();
         await loadPipelines();
     };
 
     const activePipeline = pipelines.find(p => p.id === selectedPipelineId);
 
-    const updateStage = (stageId: string, updates: Partial<PipelineStage>) => {
+    const updateStage = (stageId: string, updates: Partial<Stage>) => {
         if (!activePipeline) return;
         const newStages = activePipeline.stages.map(s =>
             s.id === stageId ? { ...s, ...updates } : s
@@ -49,7 +49,7 @@ export default function PipelineManager() {
 
     const addStage = () => {
         if (!activePipeline) return;
-        const newStage: PipelineStage = {
+        const newStage: Stage = {
             id: `stage_${Date.now()}`,
             label: 'New Stage',
             color: '#94a3b8',
@@ -76,7 +76,7 @@ export default function PipelineManager() {
         updatePipelineStages(ordered);
     };
 
-    const updatePipelineStages = (stages: PipelineStage[]) => {
+    const updatePipelineStages = (stages: Stage[]) => {
         setPipelines(prev => prev.map(p =>
             p.id === selectedPipelineId ? { ...p, stages } : p
         ));

@@ -1,10 +1,11 @@
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ActivityService } from '../../services/ActivityService';
 import type { ActivityDefinition, ActivityAssociations, Activity, PipelineDefinition } from '../../types/activities';
 import { X, Save, Star, Clock } from 'lucide-react';
-import { Timestamp } from 'firebase/firestore';
+import { doc, getDoc, Timestamp } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
 
 interface LogActivityModalProps {
     isOpen: boolean;
@@ -136,6 +137,51 @@ export default function LogActivityModal({ isOpen, onClose, associations, initia
                 });
             }
 
+            // --- Hydration Guard: Ensure Denormalized Names Exist ---
+            const finalAssociations = { ...associations };
+
+            // 1. Contact Name
+            if (finalAssociations.contactId && !finalAssociations.contactName) {
+                try {
+                    const snap = await getDoc(doc(db, 'contacts', finalAssociations.contactId));
+                    if (snap.exists()) {
+                        const d = snap.data();
+                        finalAssociations.contactName = `${d.firstName || ''} ${d.lastName || ''}`.trim();
+                    }
+                } catch (err) { console.warn("Failed to hydrate contact name", err); }
+            }
+
+            // 2. Company Name
+            if (finalAssociations.companyId && !finalAssociations.companyName) {
+                try {
+                    const snap = await getDoc(doc(db, 'companies', finalAssociations.companyId));
+                    if (snap.exists()) finalAssociations.companyName = snap.data().name;
+                } catch (err) { console.warn("Failed to hydrate company name", err); }
+            }
+
+            // 3. Pursuit Title
+            if (finalAssociations.pursuitId && !finalAssociations.pursuitTitle) {
+                try {
+                    const snap = await getDoc(doc(db, 'job_pursuits', finalAssociations.pursuitId));
+                    if (snap.exists()) {
+                        const d = snap.data();
+                        finalAssociations.pursuitTitle = `${d.role} @ ${d.company}`;
+                    }
+                } catch (err) { console.warn("Failed to hydrate pursuit title", err); }
+            }
+
+            // 4. Target Title
+            if (finalAssociations.targetId && !finalAssociations.targetTitle) {
+                try {
+                    const snap = await getDoc(doc(db, 'job_targets', finalAssociations.targetId));
+                    if (snap.exists()) {
+                        const d = snap.data();
+                        finalAssociations.targetTitle = `${d.role} @ ${d.company}`;
+                    }
+                } catch (err) { console.warn("Failed to hydrate target title", err); }
+            }
+
+
             // Structure payload properly
             const payload = {
                 ownerId: currentUser.uid,
@@ -144,7 +190,7 @@ export default function LogActivityModal({ isOpen, onClose, associations, initia
                 status: data.status,
                 performedAt,
                 metadata: cleanMetadata, // Use cleaned metadata
-                associations // Ensure associations are attached
+                associations: finalAssociations // Use Hydrated associations
             };
 
             if (isEditMode && initialData) {

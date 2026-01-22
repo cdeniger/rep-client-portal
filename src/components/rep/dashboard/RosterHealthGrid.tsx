@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { MessageSquare, Clock } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 
 interface RosterHealthGridProps {
     engagements: any[];
@@ -37,10 +37,6 @@ export default function RosterHealthGrid({ engagements, pursuits }: RosterHealth
     const getCoverage = (engagementId: string) => {
         const clientPursuits = pursuits.filter(p => p.engagementId === engagementId);
         const active = clientPursuits.filter(p => !['placed', 'lost', 'passed', 'rejected'].includes(p.stageId)).length;
-        const stalled = clientPursuits.filter(p => {
-            // Simple stalled logic: active but no update > 7 days (mock logic for now if updated isn't available, rely on count)
-            return false;
-        }).length;
 
         // Count offers specifically
         const offers = clientPursuits.filter(p => ['offer_pending', 'offer'].includes(p.stageId)).length;

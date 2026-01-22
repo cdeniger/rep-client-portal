@@ -1,7 +1,7 @@
 
 import React from 'react';
 import type { Activity } from '../../../types/activities';
-import { Phone, Mail, FileText, CheckCircle2 } from 'lucide-react';
+import { Phone, Mail, FileText } from 'lucide-react';
 
 const ICONS: Record<string, React.ReactNode> = {
     call: <Phone size={16} />,

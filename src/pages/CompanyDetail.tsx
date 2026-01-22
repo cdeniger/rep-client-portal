@@ -3,12 +3,17 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDocument } from '../hooks/useDocument';
 import { useCollection } from '../hooks/useCollection';
 import { where } from 'firebase/firestore';
+import ActivityContextPanel from '../components/activities/ActivityContextPanel';
+import ContactDrawer from '../components/rep/ContactDrawer';
+import Modal from '../components/ui/Modal';
+
 import {
     MapPin, Globe, Linkedin, Users, Briefcase,
-    History, StickyNote, ChevronLeft, Edit
+    History, StickyNote, ChevronLeft, Edit, Plus
 } from 'lucide-react';
 import type { Contact, JobTarget, JobPursuit } from '../types/schema';
 import CompanyDrawer from '../components/companies/CompanyDrawer';
+import LinkContactModal from '../components/companies/LinkContactModal';
 import LocationManager from '../components/companies/LocationManager';
 import ContactManager from '../components/companies/ContactManager';
 
@@ -18,6 +23,11 @@ export default function CompanyDetail() {
     const { document: company, loading, error } = useDocument('companies', id);
     const [activeTab, setActiveTab] = useState<'people' | 'locations' | 'history' | 'jobs' | 'notes'>('people');
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+    // New Actions State
+    const [isContactDrawerOpen, setIsContactDrawerOpen] = useState(false);
+    const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+    const [isJobModalOpen, setIsJobModalOpen] = useState(false);
 
     // Fetch Contacts (Always linked by companyId)
     const { data: contacts } = useCollection<Contact>(
@@ -44,13 +54,13 @@ export default function CompanyDetail() {
 
     const isTarget = company.type === 'target' || !company.type; // Default to target
     const activePursuitsCount = jobPursuits ? jobPursuits.filter(p =>
-        ['outreach', 'interviewing', 'offer', 'negotiating'].includes(p.status)
+        ['outreach', 'interviewing', 'offer', 'negotiating'].includes(p.stageId)
     ).length : 0;
 
     const showHeatmap = isTarget && activePursuitsCount > 0;
 
     return (
-        <div className="space-y-6 pb-12">
+        <div className="space-y-6 pb-12 p-6">
             {/* Header / Breadcrumb */}
             <div className="flex items-center gap-4 border-b border-slate-700 pb-4">
                 <button
@@ -201,18 +211,18 @@ export default function CompanyDetail() {
                                 <Briefcase className="h-4 w-4" /> Active Pursuits
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {jobPursuits?.filter(p => !['closed_lost', 'closed_by_market', 'placed'].includes(p.status)).map(pursuit => (
+                                {jobPursuits?.filter(p => !['closed_lost', 'closed_by_market', 'placed'].includes(p.stageId)).map(pursuit => (
                                     <div key={pursuit.id} className="bg-white border border-slate-200 p-4 rounded-sm shadow-sm flex flex-col justify-between hover:border-slate-300 transition-colors cursor-pointer">
                                         <div className="flex justify-between items-start mb-2">
                                             <div>
                                                 <div className="text-xs text-slate-500 font-mono mb-1">Engagement ID: {pursuit.engagementId?.slice(0, 6)}...</div>
                                                 <div className="font-bold text-slate-800">{pursuit.role}</div>
                                             </div>
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${pursuit.status === 'offer' ? 'bg-green-100 text-green-700' :
-                                                pursuit.status === 'interviewing' ? 'bg-blue-50 text-blue-600' :
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${pursuit.stageId === 'offer_pending' ? 'bg-green-100 text-green-700' :
+                                                pursuit.stageId === 'interview_loop' ? 'bg-blue-50 text-blue-600' :
                                                     'bg-slate-100 text-slate-500'
                                                 }`}>
-                                                {pursuit.status}
+                                                {pursuit.stageId}
                                             </span>
                                         </div>
                                         <div className="text-xs text-slate-400 mt-2">
@@ -277,6 +287,18 @@ export default function CompanyDetail() {
                             {/* PEOPLE TAB */}
                             {activeTab === 'people' && (
                                 <div className="">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                            <Users className="h-4 w-4" /> Key Contacts
+                                        </h3>
+                                        <button
+                                            onClick={() => setIsLinkModalOpen(true)}
+                                            className="text-xs font-bold text-oxford-green bg-white border border-slate-200 px-3 py-1.5 rounded-sm shadow-sm hover:border-oxford-green hover:bg-slate-50 transition-all flex items-center gap-2"
+                                        >
+                                            <Plus className="h-3.5 w-3.5" />
+                                            Add Contact
+                                        </button>
+                                    </div>
                                     <ContactManager
                                         companyId={company.id}
                                         contacts={contacts || []}
@@ -291,9 +313,14 @@ export default function CompanyDetail() {
                                 </div>
                             )}
 
-                            {/* HISTORY / NOTES Placeholders */}
+                            {/* HISTORY / NOTES */}
                             {activeTab === 'history' && (
-                                <div className="text-center py-12 text-slate-400 italic">History tracking implementation pending.</div>
+                                <div className="h-[600px]">
+                                    <ActivityContextPanel
+                                        entityType="company"
+                                        entityId={company.id}
+                                    />
+                                </div>
                             )}
 
                             {/* JOBS TAB */}
@@ -342,6 +369,39 @@ export default function CompanyDetail() {
                     </div>
                 </main>
             </div>
+            {/* Link Contact Modal (Step 1) */}
+            <LinkContactModal
+                company={company}
+                isOpen={isLinkModalOpen}
+                onClose={() => setIsLinkModalOpen(false)}
+                onCreateNew={() => {
+                    setIsLinkModalOpen(false);
+                    setIsContactDrawerOpen(true);
+                }}
+                onContactLinked={() => {
+                    // No-op, realtime update will show it
+                }}
+            />
+
+            {/* Contact Creation Drawer (Step 2) */}
+            <ContactDrawer
+                contact={null} // Create Mode
+                company={company} // Pre-link this company
+                isOpen={isContactDrawerOpen}
+                onClose={() => setIsContactDrawerOpen(false)}
+            />
+
+            {/* Create Job Target Modal */}
+            <Modal
+                isOpen={isJobModalOpen}
+                onClose={() => setIsJobModalOpen(false)}
+                title="New Job Target"
+            >
+                {/* Logic for Job Creation would go here. For now, placeholder or form */}
+                <div className="p-6 text-center text-slate-500 italic">
+                    Job Target Creation Form (Coming in Step 3)
+                </div>
+            </Modal>
         </div>
     );
 }

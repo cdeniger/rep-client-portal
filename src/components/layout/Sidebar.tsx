@@ -18,7 +18,7 @@ const navigation = [
     { name: 'Diagnostic', href: '/diagnostic', icon: FileText },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ onItemClick }: { onItemClick?: () => void }) {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { data: userProfile } = useDocument<UserProfile>('users', user?.uid || 'guest');
@@ -82,6 +82,7 @@ export default function Sidebar() {
                                     <li key={item.name}>
                                         <NavLink
                                             to={item.href}
+                                            onClick={onItemClick} // Close mobile menu on click
                                             className={({ isActive }) =>
                                                 `group flex gap-x-3 rounded-sm p-2 text-sm leading-6 font-semibold tracking-wide transition-colors ${isActive
                                                     ? 'bg-signal-orange text-white'

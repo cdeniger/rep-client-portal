@@ -95,7 +95,7 @@ async function dedupeCompanies() {
             console.log(`  Winner: ${winner.name} (${winner.id}) - Locs: ${winner.locations?.length || 0}`);
 
             // Merge locations from losers
-            let mergedLocations = [...(winner.locations || [])];
+            const mergedLocations = [...(winner.locations || [])];
             const existingLocIds = new Set(mergedLocations.map((l: any) => l.id));
 
             for (const loser of losers) {

@@ -13,10 +13,19 @@ export type ActivityType =
 // --- Associations ---
 export interface ActivityAssociations {
     contactId?: string;
+    contactName?: string; // Denormalized Name
+
     companyId?: string;
+    companyName?: string; // Denormalized Name
+
     engagementId?: string;
+    engagementTitle?: string; // e.g., "Full Search - Acme"
+
     targetId?: string; // Links to JobTarget
+    targetTitle?: string;
+
     pursuitId?: string; // Links to JobPursuit
+    pursuitTitle?: string;
 }
 
 // --- Base Activity ---

@@ -107,7 +107,7 @@ export default function Pipeline() {
     if (loading) return <div className="text-gray-400 text-sm animate-pulse">Loading Pipeline...</div>;
 
     return (
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-5xl mx-auto p-6">
             {/* Header */}
             <div className="flex justify-between items-center mb-8">
                 <div>

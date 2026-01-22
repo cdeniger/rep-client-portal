@@ -1,7 +1,7 @@
 
-import React from 'react';
+
 import type { InterviewActivity } from '../../../types/activities';
-import { Star, Users, Calendar, MapPin } from 'lucide-react';
+import { Star, Users, MapPin } from 'lucide-react';
 
 export default function InterviewCard({ activity }: { activity: InterviewActivity }) {
     const { round, rating, interviewers, location } = activity.metadata;

@@ -101,8 +101,8 @@ export default function RepLayout() {
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 overflow-auto bg-bone">
-                <header className="h-12 border-b border-gray-200 flex items-center justify-between px-6 bg-white/50 backdrop-blur-sm sticky top-0 z-10">
+            <main className="flex-1 flex flex-col bg-bone overflow-hidden">
+                <header className="h-12 border-b border-gray-200 flex items-center justify-between px-6 bg-white/50 backdrop-blur-sm shrink-0 z-10">
                     <div className="flex items-center gap-4">
                         <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
                         <span className="text-xs uppercase tracking-widest font-bold text-oxford-green">System Online</span>
@@ -113,7 +113,7 @@ export default function RepLayout() {
                     </div>
                 </header>
 
-                <div className="p-6">
+                <div className="flex-1 flex flex-col overflow-y-auto">
                     <Outlet />
                 </div>
             </main>

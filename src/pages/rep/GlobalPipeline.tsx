@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, query, getDocs, addDoc, writeBatch, updateDoc, doc } from 'firebase/firestore';
+import { collection, query, getDocs, addDoc, writeBatch, doc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { findOrCreateCompany } from '../../lib/companies';
 import { Search, Filter, Briefcase, List as ListIcon, Kanban, Loader2, CheckSquare, Square } from 'lucide-react';
@@ -234,7 +234,7 @@ export default function GlobalPipeline() {
         : `Suggest ${checkedCount} Opportunities`;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 p-6">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-oxford-green">Open Job Targets</h1>

@@ -1,3 +1,4 @@
+import ActivityContextPanel from '../activities/ActivityContextPanel';
 import { useState, useEffect } from 'react';
 import { X, Mail, Phone, Linkedin, Building2, Calendar, User, Edit2, Save, Trash2 } from 'lucide-react';
 import { doc, updateDoc, deleteDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
@@ -303,6 +304,18 @@ export default function ContactDrawer({ contact, company, isOpen, onClose }: Con
                             <span className="font-mono">{contact?.id ? contact.id.slice(0, 8) + '...' : 'Generating...'}</span>
                         </div>
                     </div>
+
+                    {/* Activity History */}
+                    {!isCreateMode && contact?.id && (
+                        <div className="border-t border-gray-100 pt-6 mt-6 pb-20">
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">Activity History</h3>
+                            <ActivityContextPanel
+                                entityType="contact"
+                                entityId={contact.id}
+                                compactMode={true}
+                            />
+                        </div>
+                    )}
 
                 </div>
             </div>

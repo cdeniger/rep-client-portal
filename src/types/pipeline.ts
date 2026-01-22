@@ -23,6 +23,7 @@ export interface Stage {
     id: string;
     label: string;
     color: string; // Hex or generic color name
+    order: number;
     automationTrigger?: string; // Key for backend automation scripts
 }
 

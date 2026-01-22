@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { DollarSign } from 'lucide-react';
+
 
 interface MasterPipelineTableProps {
     engagements: any[];
