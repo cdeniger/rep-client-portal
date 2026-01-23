@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useCollection } from '../../hooks/useCollection';
+import type { Engagement } from '../../types/schema';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { where } from 'firebase/firestore';
+
 import { useRepScope } from '../../hooks/useRepScope';
 import {
     Search,
@@ -16,7 +17,7 @@ import {
 import CreateClientModal from '../../components/clients/CreateClientModal';
 
 export default function Roster() {
-    const { user } = useAuth();
+    useAuth();
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('active');
@@ -29,7 +30,7 @@ export default function Roster() {
 
     // Fetch Active Engagements (RBAC Scoped)
     const { scope } = useRepScope();
-    const { data: engagements, loading, error } = useCollection<any>(
+    const { data: engagements, loading, error } = useCollection<Engagement>(
         'engagements',
         scope!
     );
@@ -57,8 +58,20 @@ export default function Roster() {
         });
 
         result.sort((a, b) => {
-            const valA = (a.profile?.[sortField] || '').toLowerCase();
-            const valB = (b.profile?.[sortField] || '').toLowerCase();
+            let valA = '';
+            let valB = '';
+
+            if (sortField === 'name') {
+                valA = (a.profile?.firstName || a.profile?.headline || '').toLowerCase();
+                valB = (b.profile?.firstName || b.profile?.headline || '').toLowerCase();
+            } else if (sortField === 'status') {
+                valA = (a.status || '').toLowerCase();
+                valB = (b.status || '').toLowerCase();
+            } else if (sortField === 'pod') {
+                valA = (a.profile?.pod || '').toLowerCase();
+                valB = (b.profile?.pod || '').toLowerCase();
+            }
+
             if (valA < valB) return sortDir === 'asc' ? -1 : 1;
             if (valA > valB) return sortDir === 'asc' ? 1 : -1;
             return 0;
@@ -171,7 +184,7 @@ export default function Roster() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                        {paginatedClients.map((client: any) => (
+                        {paginatedClients.map((client: Engagement) => (
                             <tr
                                 key={client.id}
                                 onClick={() => navigate(`/rep/client/${client.id}`)}

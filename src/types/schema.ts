@@ -250,6 +250,7 @@ export interface Engagement {
         type: 'pdf' | 'other';
         uploadedAt: string;
     }>;
+    lastActivity?: string;
 
     // --- Profile: The Identity ---
     profile?: {

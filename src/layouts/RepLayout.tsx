@@ -24,7 +24,7 @@ import Logo from '../components/ui/Logo';
 export default function RepLayout() {
     const { logout, user } = useAuth();
     const navigate = useNavigate();
-    const { document: userProfile } = useDocument<any>('users', user?.uid);
+    const { document: userProfile } = useDocument('users', user?.uid);
     const isAdmin = userProfile?.role === 'admin';
     const [pendingCount, setPendingCount] = useState(0);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

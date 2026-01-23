@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { doc, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import type { UserProfile, IntakeResponse, Pod } from '../types/schema';
+import type { UserProfile, IntakeResponse } from '../types/schema';
 
 export const seedPods = async () => {
     console.log("Seeding Pods Structure...");
@@ -470,6 +470,7 @@ export const seedNewRepAdmin = async () => {
 export const seedDatabase = seedClientData;
 
 // Execute Seeding
+// @ts-ignore
 if (typeof process !== 'undefined' && process.versions && process.versions.node) {
     Promise.all([
         seedPods(),
@@ -481,10 +482,12 @@ if (typeof process !== 'undefined' && process.versions && process.versions.node)
     ])
         .then(() => {
             console.log("Seeding Complete.");
+            // @ts-ignore
             process.exit(0);
         })
         .catch((error) => {
             console.error("Seeding Failed:", error);
+            // @ts-ignore
             process.exit(1);
         });
 }

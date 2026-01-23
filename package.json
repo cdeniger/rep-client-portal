@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "seed": "npx tsx src/scripts/seed.ts"
+    "seed": "npx tsx src/scripts/seed.ts",
+    "deploy:prod": "npm run build && npx firebase-tools deploy --project rep-client-portal-firebase --only hosting"
   },
   "dependencies": {
     "@types/uuid": "^10.0.0",

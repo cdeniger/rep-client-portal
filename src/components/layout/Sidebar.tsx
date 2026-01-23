@@ -63,7 +63,7 @@ export default function Sidebar({ onItemClick }: { onItemClick?: () => void }) {
     };
 
     return (
-        <div className="flex w-64 flex-col bg-oxford-green text-bone min-h-screen border-r border-oxford-green/10">
+        <div className="flex w-64 flex-col bg-oxford-green text-bone h-full border-r border-oxford-green/10">
             <div className="flex h-16 shrink-0 items-center px-6 border-b border-white/10 justify-between">
                 <Logo subtitle="Client Portal" />
                 {isRep && (
@@ -73,7 +73,7 @@ export default function Sidebar({ onItemClick }: { onItemClick?: () => void }) {
                 )}
             </div>
 
-            <div className="flex grow flex-col gap-y-5 overflow-y-auto px-6 pb-4 mt-8">
+            <div className="flex grow flex-col gap-y-5 overflow-y-auto px-6 pb-24 md:pb-4 mt-8">
                 <nav className="flex flex-1 flex-col">
                     <ul role="list" className="flex flex-1 flex-col gap-y-7">
                         <li>
