@@ -8,7 +8,8 @@ export const useDocument = (collectionName: string, id: string | undefined) => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!id) {
+        if (!id || !db) {
+            if (!db) console.warn("Firestore 'db' not initialized in useDocument");
             setLoading(false);
             return;
         }

@@ -1,23 +1,32 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-
-// TODO: Move this to environment variable or Firestore config in production
-const ALLOWED_ADMINS = [
-    'alex.mercer@test.com',
-    'clay.deniger@gmail.com', // Assuming this might be the dev
-    'admin@rep.com',
-    'admin@repteam.com'
-];
+import { useDocument } from '../../hooks/useDocument';
+import type { UserProfile } from '../../types/schema';
 
 export default function AdminGuard() {
-    const { user, loading } = useAuth();
+    const { user, loading: authLoading } = useAuth();
+    const { document: userProfile, loading: profileLoading } = useDocument('users', user?.uid);
 
-    if (loading) {
-        return <div className="p-10 text-center text-gray-500">Verifying Access...</div>;
+    if (authLoading || (user && profileLoading)) {
+        return <div className="p-10 text-center text-gray-500">Verifying Admin Access...</div>;
     }
 
-    if (!user || (!ALLOWED_ADMINS.includes(user.email || '') && !user.email?.endsWith('@rep.com'))) {
-        console.warn(`Unauthorized Admin Access Attempt: ${user?.email}`);
+    if (!user) {
+        return <Navigate to="/" replace />;
+    }
+
+    const profile = userProfile as UserProfile | null;
+
+    if (!profile) {
+        // If user exists but profile not yet loaded (race condition), wait.
+        // If truly missing, useDocument should have returned null with loading=false from its own internal logic,
+        // but let's be safe.
+        return <div className="p-10 text-center text-gray-400">Loading Profile...</div>;
+    }
+
+    // Check for explicit 'admin' role in Firestore
+    if (profile.role !== 'admin') {
+        console.warn(`[AdminGuard] Unauthorized Admin Access Attempt: ${user.email} (Role: ${profile?.role})`);
         return <Navigate to="/" replace />;
     }
 

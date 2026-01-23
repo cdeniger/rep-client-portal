@@ -1,10 +1,37 @@
+import 'dotenv/config';
 import { doc, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import type { UserProfile, IntakeResponse } from '../types/schema';
+import type { UserProfile, IntakeResponse, Pod } from '../types/schema';
+
+export const seedPods = async () => {
+    console.log("Seeding Pods Structure...");
+    const batch = writeBatch(db);
+
+    const pods = [
+        { id: 'pod_1', name: 'Pod 1' },
+        { id: 'pod_2', name: 'Pod 2' },
+        { id: 'pod_3', name: 'Pod 3' },
+        { id: 'pod_4', name: 'Pod 4' }
+    ];
+
+    pods.forEach(pod => {
+        const ref = doc(db, 'pods', pod.id);
+        batch.set(ref, {
+            id: pod.id,
+            name: pod.name,
+            createdAt: new Date().toISOString()
+        });
+    });
+
+    await batch.commit();
+    console.log("Seeded 4 Stable Pods.");
+};
 
 export const seedClientData = async (uid: string) => {
     if (!uid) throw new Error("No User ID provided for seeding.");
     const batch = writeBatch(db);
+    // ... rest of function ...
+
 
     // 1. Seed User Profile (Client: Alex Mercer)
     const userRef = doc(db, 'users', uid);
@@ -15,7 +42,8 @@ export const seedClientData = async (uid: string) => {
         profile: {
             name: 'Alex Mercer',
             status: 'searching',
-            pod: '04 (M. Ross)',
+            podId: 'pod_1',
+            pod: 'Pod 1',
             headline: 'Senior Product Manager @ FinTech',
             bio_long: 'Senior PM with 7 years experience in payments infrastructure...',
             bio_short: 'Product Leader in Payments',
@@ -285,8 +313,20 @@ export const seedAdminData = async () => {
     batch.set(userRef, {
         uid,
         email: 'admin@repteam.com',
-        role: 'rep', // Role 'rep' allows access to internal portal
-        contactId: `contact_${uid}`
+        role: 'admin', // Role 'admin' for full access
+        profile: {
+            name: 'Admin User',
+            firstName: 'Admin',
+            lastName: 'User',
+            status: 'active',
+            podId: 'pod_admin',
+            pod: 'Admin', // Admin has access to everything, but we can tag them
+            headline: 'System Administrator',
+            bio_long: 'System Administrator',
+            bio_short: 'Admin',
+            pitch: 'Admin',
+            contactId: `contact_${uid}`
+        }
     });
 
     // 2. Seed Admin Contact Info
@@ -318,7 +358,19 @@ export const seedRepData = async (uid: string) => {
         uid,
         email: 'jordan.wolf@rep.com',
         role: 'rep',
-        contactId: `contact_${uid}` // Self-reference for Rep's own contact info
+        profile: {
+            name: 'Jordan Wolf',
+            firstName: 'Jordan',
+            lastName: 'Wolf',
+            status: 'active',
+            podId: 'pod_1', // LINKED TO POD 1
+            pod: 'Pod 1',
+            headline: 'Senior Talent Agent',
+            bio_long: 'Top performing agent with 10 years in tech placements.',
+            bio_short: 'Senior Talent Agent',
+            pitch: 'I find the best talent.',
+            contactId: `contact_${uid}`
+        }
     });
 
     // 2. Seed Rep Contact Info
@@ -371,22 +423,68 @@ export const seedRepData = async (uid: string) => {
     console.log(`Seeded Rep ${uid} data (No Mock Clients)`);
 };
 
+export const seedNewRepAdmin = async () => {
+    const uid = 'rep_patrick';
+    console.log(`Starting Rep Admin Seeding for: ${uid}`);
+    const batch = writeBatch(db);
+
+    // 1. Seed Rep User (Patrick Deniger)
+    const userRef = doc(db, 'users', uid);
+    batch.set(userRef, {
+        uid,
+        email: 'patrick@repteam.com', // Updated email
+        role: 'admin', // Requested as "Rep Admin", interpreting as role=admin
+        profile: {
+            name: 'Patrick Deniger',
+            firstName: 'Patrick',
+            lastName: 'Deniger',
+            status: 'active',
+            podId: 'unassigned', // Explicitly unassigned as requested
+            pod: 'Unassigned',
+            headline: 'Rep Admin',
+            bio_long: 'Rep Admin',
+            bio_short: 'Admin',
+            pitch: 'Admin',
+            contactId: `contact_${uid}`
+        }
+    });
+
+    // 2. Seed Contact Info
+    const contactRef = doc(db, 'contacts', `contact_${uid}`);
+    batch.set(contactRef, {
+        id: `contact_${uid}`,
+        userId: uid,
+        firstName: 'Patrick',
+        lastName: 'Deniger',
+        email: 'patrick@repteam.com', // Updated email
+        headline: 'Rep Admin',
+        bio: 'Rep Admin',
+        avatarUrl: null
+    });
+
+    await batch.commit();
+    console.log("Seeded Patrick Deniger as Rep Admin.");
+};
+
 // Default export for backward compatibility if needed, but preferred to be explicit
 export const seedDatabase = seedClientData;
 
-// Execute Seeding for Rep Jordan Only if running as script
-/*
+// Execute Seeding
 if (typeof process !== 'undefined' && process.versions && process.versions.node) {
     Promise.all([
+        seedPods(),
         seedRepData('rep_jordan'),
         seedAdminData(),
         seedRepData('rep_admin'),
-        seedClientData('user_alex_mercer')
+        seedClientData('user_alex_mercer'),
+        seedNewRepAdmin()
     ])
-        .then(() => process.exit(0))
+        .then(() => {
+            console.log("Seeding Complete.");
+            process.exit(0);
+        })
         .catch((error) => {
             console.error("Seeding Failed:", error);
             process.exit(1);
         });
 }
-*/

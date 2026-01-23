@@ -14,6 +14,7 @@ interface ProvisionClientData {
         country?: string;
     };
     pod: string;
+    podId: string;
     monthlyRetainer: number;
     isaPercentage?: number;
     startDate: string;
@@ -31,9 +32,9 @@ export const provisionClient = functions.https.onCall(async (data: ProvisionClie
         throw new functions.https.HttpsError('unauthenticated', 'The function must be called while authenticated.');
     }
 
-    const { firstName, lastName, email, phone, address, pod, monthlyRetainer, isaPercentage, startDate } = data;
+    const { firstName, lastName, email, phone, address, pod, podId, monthlyRetainer, isaPercentage, startDate } = data;
 
-    if (!email || !firstName || !lastName || !pod || !startDate) {
+    if (!email || !firstName || !lastName || !pod || !podId || !startDate) {
         throw new functions.https.HttpsError('invalid-argument', 'Missing required fields.');
     }
 
@@ -73,6 +74,7 @@ export const provisionClient = functions.https.onCall(async (data: ProvisionClie
                 name: `${firstName} ${lastName}`,
                 status: 'searching', // Default starting status
                 pod,
+                podId, // Added for RBAC
                 headline: `Client in ${pod}`, // Default headline
                 bio_long: '',
                 bio_short: '',
@@ -111,6 +113,7 @@ export const provisionClient = functions.https.onCall(async (data: ProvisionClie
                 lastName,
                 headline: `Client in ${pod}`,
                 pod,
+                podId, // Added for RBAC
                 contactId: contactId
             },
             strategy: {}, // Initialize empty containers

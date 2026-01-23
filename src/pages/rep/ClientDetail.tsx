@@ -185,7 +185,8 @@ export default function ClientDetail() {
     if (loading) return <div className="p-8 text-slate-500 font-mono">Loading Engagement...</div>;
     if (error || !engagement) return <div className="p-8 text-red-400 font-mono">Engagement not found.</div>;
 
-    if (engagement.repId !== user?.uid) {
+    // ALLOW ADMIN OVERRIDE (Hardcoded for Dev: 'rep_patrick')
+    if (engagement.repId !== user?.uid && user?.uid !== 'rep_patrick') {
         return (
             <div className="p-12 flex flex-col items-center justify-center h-full">
                 <div className="bg-red-50 border border-red-200 rounded-lg p-8 max-w-md text-center">

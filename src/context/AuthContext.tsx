@@ -6,7 +6,7 @@ import { auth } from '../lib/firebase';
 interface AuthContextType {
     user: FirebaseUser | null;
     loading: boolean;
-    devLogin: (uid?: string, email?: string, role?: 'client' | 'rep', name?: string) => void;
+    devLogin: (uid?: string, email?: string, role?: 'client' | 'rep' | 'admin', name?: string) => void;
     logout: () => Promise<void>;
 }
 
@@ -19,8 +19,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // Safety check if auth failed to initialize in lib/firebase.ts
         if (!auth) {
-            console.warn("Firebase Auth not initialized. Skipping real auth check.");
+            console.error("Firebase Auth not initialized. App may malfunction.");
             setLoading(false);
             return;
         }
@@ -41,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const devLogin = (
         userId = 'dev_user_mock',
         userEmail = 'dev@example.com',
-        userRole: 'client' | 'rep' = 'client',
+        userRole: 'client' | 'rep' | 'admin' = 'client',
         displayName = 'Dev User'
     ) => {
         console.log(`Activating Dev Mode Bypass for ${userId} (${userRole})...`);
@@ -92,6 +93,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return (
         <AuthContext.Provider value={{ user, loading, devLogin, logout }}>
+            {/* 
+              Safe Render: If loading is stuck (e.g. auth check never returns), 
+              we might want to render children anyway after a timeout, or a spinner.
+              For now, we'll trust loading=false is set by the useEffect above.
+             */}
             {!loading && children}
         </AuthContext.Provider>
     );

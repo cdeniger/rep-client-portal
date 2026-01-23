@@ -10,7 +10,8 @@ export function useCollection<T = DocumentData>(collectionName: string, ...query
     useEffect(() => {
         console.log(`[useCollection] Hook triggered for ${collectionName}`, queryConstraints);
         setLoading(true);
-        const q = query(collection(db, collectionName), ...queryConstraints);
+        const validConstraints = queryConstraints.filter(c => !!c);
+        const q = query(collection(db, collectionName), ...validConstraints);
 
         const unsub = onSnapshot(q,
             (querySnapshot) => {

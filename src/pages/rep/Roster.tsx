@@ -3,6 +3,7 @@ import { useCollection } from '../../hooks/useCollection';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { where } from 'firebase/firestore';
+import { useRepScope } from '../../hooks/useRepScope';
 import {
     Search,
     MoreHorizontal,
@@ -26,10 +27,11 @@ export default function Roster() {
 
     const ITEMS_PER_PAGE = 15;
 
-    // Fetch ONLY Active Engagements for this Rep (RBAC) - Including legacy ID for continuity
+    // Fetch Active Engagements (RBAC Scoped)
+    const { scope } = useRepScope();
     const { data: engagements, loading, error } = useCollection<any>(
         'engagements',
-        where('repId', 'in', [user?.uid, 'rep_jordan'])
+        scope!
     );
 
     if (error) console.error("Roster Query Error:", error);
@@ -90,6 +92,7 @@ export default function Roster() {
         { id: 'negotiating', label: 'Negotiating' },
         { id: 'placed', label: 'Placed' },
         { id: 'paused', label: 'Paused' },
+        { id: 'dropped', label: 'Dropped' },
     ];
 
     return (
@@ -279,6 +282,7 @@ function StatusBadge({ status }: { status: string }) {
         placed: 'bg-slate-100 text-slate-600 border-slate-200',
         alumni: 'bg-slate-100 text-slate-600 border-slate-200',
         paused: 'bg-amber-50 text-amber-700 border-amber-200',
+        dropped: 'bg-red-50 text-red-700 border-red-200',
         prospect: 'bg-slate-50 text-slate-500 border-slate-200'
     };
 

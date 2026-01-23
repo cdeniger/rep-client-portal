@@ -9,6 +9,8 @@ interface CreateClientModalProps {
     onSuccess?: () => void;
 }
 
+import { useCollection } from '../../hooks/useCollection';
+
 interface FormData {
     // Identity
     firstName: string;
@@ -24,6 +26,7 @@ interface FormData {
     };
     // Operations
     pod: string;
+    podId: string;
     monthlyRetainer: string;
     isaPercentage: string;
     startDate: string;
@@ -35,13 +38,12 @@ const INITIAL_DATA: FormData = {
     email: '',
     phone: '',
     address: { street: '', city: '', state: '', zip: '', country: '' },
-    pod: 'Tech',
+    pod: '',
+    podId: '',
     monthlyRetainer: '5000',
     isaPercentage: '15',
     startDate: new Date().toISOString().split('T')[0]
 };
-
-const POD_OPTIONS = ['Tech', 'Finance', 'Healthcare', 'Legal', 'Sales', 'Marketing', 'Executive'];
 
 export default function CreateClientModal({ isOpen, onClose, onSuccess }: CreateClientModalProps) {
     const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -49,6 +51,9 @@ export default function CreateClientModal({ isOpen, onClose, onSuccess }: Create
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<{ tempPassword: string; clientId: string } | null>(null);
+
+    // Fetch dynamic pods
+    const { data: pods } = useCollection('pods');
 
     if (!isOpen) return null;
 
@@ -67,6 +72,7 @@ export default function CreateClientModal({ isOpen, onClose, onSuccess }: Create
                 phone: data.phone,
                 address: data.address,
                 pod: data.pod,
+                podId: data.podId,
                 monthlyRetainer: Number(data.monthlyRetainer),
                 isaPercentage: Number(data.isaPercentage),
                 startDate: data.startDate
@@ -89,14 +95,15 @@ export default function CreateClientModal({ isOpen, onClose, onSuccess }: Create
         }
     };
 
+    // ... copyToClipboard and Success View remains same ...
+
+    // RENDER LOGIC
     const copyToClipboard = () => {
         if (result?.tempPassword) {
             navigator.clipboard.writeText(result.tempPassword);
-            // Could add toast here
         }
     };
 
-    // Success View
     if (result) {
         return (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -170,6 +177,7 @@ export default function CreateClientModal({ isOpen, onClose, onSuccess }: Create
                 <div className="p-6 overflow-y-auto">
                     {step === 1 && (
                         <div className="space-y-4">
+                            {/* Step 1 Content Omitted for Brevity (Same as before) */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-700 mb-1">First Name *</label>
@@ -265,10 +273,18 @@ export default function CreateClientModal({ isOpen, onClose, onSuccess }: Create
                                 <label className="block text-xs font-bold text-slate-700 mb-1">Industry Pod *</label>
                                 <select
                                     className="w-full border border-slate-300 rounded px-3 py-2 text-sm focus:border-oxford-green focus:outline-none"
-                                    value={data.pod}
-                                    onChange={e => updateData({ pod: e.target.value })}
+                                    value={data.podId}
+                                    onChange={e => {
+                                        const selectedId = e.target.value;
+                                        const selectedPod = pods?.find((p: any) => p.id === selectedId);
+                                        updateData({
+                                            podId: selectedId,
+                                            pod: selectedPod?.name || ''
+                                        });
+                                    }}
                                 >
-                                    {POD_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                                    <option value="">-- Select Pod --</option>
+                                    {pods?.map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
                                 </select>
                             </div>
                             <div className="grid grid-cols-2 gap-4">

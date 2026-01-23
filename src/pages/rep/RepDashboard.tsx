@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useCollection } from '../../hooks/useCollection';
 import { where, addDoc, collection } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { useRepScope } from '../../hooks/useRepScope';
 import Modal from '../../components/ui/Modal';
 import MasterPipelineTable from '../../components/rep/dashboard/MasterPipelineTable';
 import RosterHealthGrid from '../../components/rep/dashboard/RosterHealthGrid';
@@ -34,24 +35,44 @@ export default function RepDashboard() {
     const { user } = useAuth();
     const navigate = useNavigate();
 
-    // 1. Fetch Active Engagements for this Rep (inclusive of legacy ID for dev/testing continuity)
+    const { scope } = useRepScope();
+
+    // 1. Fetch Active Engagements (RBAC Scoped)
     const { data: engagements } = useCollection<any>(
         'engagements',
-        where('repId', 'in', [user?.uid, 'rep_jordan']),
+        scope!, // Apply RBAC Scope (Admin=null, Rep=Pod Filter)
         where('status', '==', 'active')
     );
 
-    // 2. Fetch Job Pursuits (Active Pipeline) - Filtered by Rep's engagements would be ideal, 
-    // but typically we query by engagementId. Since we don't have that list upfront without chaining,
-    // we limit this query. For now, we'll filter client-side or use a compound query if we had a list.
-    // However, to fix the "mishmash" issue where we see ALL pursuits, let's filter relevant ones.
-    const { data: pursuits } = useCollection<any>('job_pursuits');
+    // 2. Fetch Job Pursuits (Active Pipeline)
+    // RBAC: Since pursuits don't have 'pod', we fetch generic list and filter IN MEMORY
+    // by the engagements we have access to. 
+    // Optimization: In a real app with 10k pursuits, we'd need a backend function or denormalized 'pod' on pursuit.
+    const { data: allPursuits } = useCollection<any>('job_pursuits');
 
-    // 3. Fetch Pending Recommendations (for Critical Actions)
-    const { data: pendingRecs } = useCollection<any>(
+    const pursuits = useMemo(() => {
+        if (!allPursuits || !engagements) return [];
+        // If Admin (scope is null), maybe we want all? 
+        // But the 'engagements' list essentially defines our "World".
+        // If 'engagements' is scoped, pursuits should be too.
+        const allowedEngIds = new Set(engagements.map((e: any) => e.id));
+        return allPursuits.filter((p: any) =>
+            (p.engagementId && allowedEngIds.has(p.engagementId)) ||
+            (p.userId && engagements.some((e: any) => e.userId === p.userId)) // Fallback to userId link
+        );
+    }, [allPursuits, engagements]);
+
+    // 3. Fetch Pending Recommendations
+    const { data: allRecs } = useCollection<any>(
         'job_recommendations',
         where('status', '==', 'pending_rep')
     );
+
+    const pendingRecs = useMemo(() => {
+        if (!allRecs || !engagements) return [];
+        const allowedEngIds = new Set(engagements.map((e: any) => e.id));
+        return allRecs.filter((r: any) => allowedEngIds.has(r.engagementId));
+    }, [allRecs, engagements]);
 
     // 4. Calculate Metrics
     const activeClientCount = engagements?.length || 0;

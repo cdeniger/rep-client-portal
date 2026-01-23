@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { signInWithEmailAndPassword, updatePassword } from 'firebase/auth';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -28,10 +28,26 @@ export default function LoginPage() {
 
             try {
                 // Check Role & Status
-                const userDoc = await getDoc(doc(db, 'users', user.uid));
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
+                let userData;
 
+                // 1. Try Direct Lookup (Standard)
+                let userDoc = await getDoc(doc(db, 'users', user.uid));
+
+                if (userDoc.exists()) {
+                    userData = userDoc.data();
+                } else {
+                    // 2. Fallback: Lookup by Email (For Legacy/Manual/Seeded Accounts)
+                    // This handles cases where Auth UID != Firestore Doc ID (e.g. 'rep_jordan')
+                    const q = query(collection(db, 'users'), where('email', '==', user.email));
+                    const querySnapshot = await getDocs(q);
+
+                    if (!querySnapshot.empty) {
+                        userData = querySnapshot.docs[0].data();
+                        console.log('User found via email fallback:', userData);
+                    }
+                }
+
+                if (userData) {
                     // 1. Check for Forced Password Change
                     if (userData.requiresPasswordChange) {
                         setPendingUid(user.uid);
@@ -40,7 +56,7 @@ export default function LoginPage() {
                     }
 
                     // 2. Normal Routing
-                    if (userData.role === 'rep') {
+                    if (userData.role === 'rep' || userData.role === 'admin') {
                         navigate('/rep');
                         return;
                     }
@@ -224,6 +240,21 @@ export default function LoginPage() {
                                     Fill
                                 </span>
                             </div>
+                        </div>
+                        <div
+                            onClick={() => {
+                                devLogin('rep_patrick', 'patrick@repteam.com', 'admin', 'Patrick Deniger');
+                                navigate('/rep');
+                            }}
+                            className="group flex flex-1 items-center justify-between p-2 rounded-sm border border-transparent hover:border-violet-200 hover:bg-violet-50 cursor-pointer transition-all"
+                        >
+                            <div className="flex flex-col">
+                                <span className="text-xs font-bold text-violet-700">Admin: Patrick Deniger (DEV LOGIN)</span>
+                                <span className="text-[10px] text-slate-400 font-mono">patrick@repteam.com <span className="text-slate-300">|</span> (Bypasses Auth)</span>
+                            </div>
+                            <span className="text-[10px] text-violet-500 opacity-0 group-hover:opacity-100 font-bold uppercase tracking-wider">
+                                Login
+                            </span>
                         </div>
                     </div>
                 </div>

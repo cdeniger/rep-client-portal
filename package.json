@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "seed": "npx tsx src/scripts/seed.ts"
   },
   "dependencies": {
     "@types/uuid": "^10.0.0",

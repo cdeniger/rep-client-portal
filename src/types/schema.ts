@@ -3,6 +3,12 @@ import { Timestamp } from 'firebase/firestore';
 
 export type UserRole = 'client' | 'rep' | 'admin';
 
+export interface Pod {
+    id: string; // pod_1, pod_2
+    name: string; // "FinTech", "Enterprise"
+    createdAt?: Timestamp;
+}
+
 export interface UserProfile {
     uid: string;
     email: string;
@@ -12,8 +18,9 @@ export interface UserProfile {
         name: string;
         firstName?: string;
         lastName?: string;
-        status: 'searching' | 'negotiating' | 'placed';
-        pod: string;
+        status: 'searching' | 'negotiating' | 'placed' | 'active';
+        podId?: string; // STABLE LINK
+        pod: string; // Legacy / Display Name
         headline: string;
         bio_long: string;
         bio_short: string;
@@ -250,6 +257,7 @@ export interface Engagement {
         firstName?: string;
         lastName?: string;
         headline?: string;
+        podId?: string; // STABLE LINK
         pod?: string;
         bio_short?: string;
 

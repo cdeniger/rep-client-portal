@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { collection, query, getDocs, addDoc, writeBatch, doc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { useRepScope } from '../../hooks/useRepScope';
 import { findOrCreateCompany } from '../../lib/companies';
 import { Search, Filter, Briefcase, List as ListIcon, Kanban, Loader2, CheckSquare, Square } from 'lucide-react';
 import Modal from '../../components/ui/Modal';
@@ -34,16 +35,47 @@ export default function GlobalPipeline() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
 
-    useEffect(() => {
-        fetchData();
-        fetchClients();
-    }, []);
+    const { scope, loading: scopeLoading } = useRepScope();
 
-    const fetchClients = async () => {
-        // Fetch engagements as proxy for clients list
-        const snap = await getDocs(query(collection(db, 'engagements')));
-        // Ensure ID is captured even if missing in data fields
-        setClients(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    useEffect(() => {
+        if (!scopeLoading) {
+            fetchData();
+        }
+    }, [scope, scopeLoading]);
+
+    // Combined fetch to ensure strict scoping consistency
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            // 1. Fetch Clients (Engagements) - Scoped by RBAC
+            const constraints = scope ? [scope] : [];
+            const clientsSnap = await getDocs(query(collection(db, 'engagements'), ...constraints));
+            // Ensure ID is captured even if missing in data fields
+            const fetchedClients = clientsSnap.docs.map(d => ({ id: d.id, ...d.data() })) as any[];
+            setClients(fetchedClients);
+
+            // 2. Fetch Inventory (Job Targets) - Global Market View (Unscoped mostly, or filter later)
+            const targetsSnap = await getDocs(query(collection(db, 'job_targets')));
+            const targets = targetsSnap.docs.map(d => ({ id: d.id, ...d.data(), checked: false })) as any[];
+            setInventory(targets.filter(t => t.status === 'OPEN'));
+
+            // 3. Fetch Pipeline (Job Pursuits) & Filter by Access
+            const pursuitsSnap = await getDocs(collection(db, 'job_pursuits'));
+            const allPursuits = pursuitsSnap.docs.map(d => ({ id: d.id, ...d.data() })) as any[];
+
+            // Filter pursuits to only those belonging to visible clients
+            const clientIds = new Set(fetchedClients.map(c => c.id));
+            const filteredPursuits = allPursuits.filter(p =>
+                (p.engagementId && clientIds.has(p.engagementId)) ||
+                (p.userId && fetchedClients.some(c => c.userId === p.userId))
+            );
+            setPipeline(filteredPursuits);
+
+        } catch (error) {
+            console.error("Failed to fetch pipeline data", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleAssign = async (e: React.FormEvent) => {
@@ -194,25 +226,7 @@ export default function GlobalPipeline() {
         }
     };
 
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            // 1. Fetch Inventory (Job Targets)
-            const targetsSnap = await getDocs(query(collection(db, 'job_targets')));
-            const targets = targetsSnap.docs.map(d => ({ id: d.id, ...d.data(), checked: false })) as any[];
 
-            // 2. Fetch Pipeline (Job Pursuits)
-            const pursuitsSnap = await getDocs(collection(db, 'job_pursuits'));
-            const pursuits = pursuitsSnap.docs.map(d => ({ id: d.id, ...d.data() })) as any[];
-
-            setInventory(targets.filter(t => t.status === 'OPEN'));
-            setPipeline(pursuits);
-        } catch (error) {
-            console.error("Failed to fetch pipeline data", error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     // Toggle Check Logic
     const toggleCheck = (id: string) => {

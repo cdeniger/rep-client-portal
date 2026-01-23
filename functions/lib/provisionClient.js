@@ -36,8 +36,8 @@ exports.provisionClient = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'The function must be called while authenticated.');
     }
-    const { firstName, lastName, email, phone, address, pod, monthlyRetainer, isaPercentage, startDate } = data;
-    if (!email || !firstName || !lastName || !pod || !startDate) {
+    const { firstName, lastName, email, phone, address, pod, podId, monthlyRetainer, isaPercentage, startDate } = data;
+    if (!email || !firstName || !lastName || !pod || !podId || !startDate) {
         throw new functions.https.HttpsError('invalid-argument', 'Missing required fields.');
     }
     try {
@@ -71,6 +71,7 @@ exports.provisionClient = functions.https.onCall(async (data, context) => {
                 name: `${firstName} ${lastName}`,
                 status: 'searching',
                 pod,
+                podId,
                 headline: `Client in ${pod}`,
                 bio_long: '',
                 bio_short: '',
@@ -107,6 +108,7 @@ exports.provisionClient = functions.https.onCall(async (data, context) => {
                 lastName,
                 headline: `Client in ${pod}`,
                 pod,
+                podId,
                 contactId: contactId
             },
             strategy: {},

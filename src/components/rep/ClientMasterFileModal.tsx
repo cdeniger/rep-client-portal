@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { doc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { useCollection } from '../../hooks/useCollection';
 import Modal from '../ui/Modal';
 import type { Engagement, IntakeResponse } from '../../types/schema';
 import LinkContactModal from './client/LinkContactModal';
@@ -27,6 +28,9 @@ export default function ClientMasterFileModal({ isOpen, onClose, engagement, ini
         engagement?.profile?.contactId || ''
     );
 
+    // Fetch Pods
+    const { data: pods } = useCollection<any>('pods');
+
     // Reset tab when opening
     useEffect(() => {
         if (isOpen) {
@@ -47,6 +51,7 @@ export default function ClientMasterFileModal({ isOpen, onClose, engagement, ini
         isaPercentage: 0,
         monthlyRetainer: 0,
         pod: '',
+        podId: '', // Added stable ID
         firstName: '',
         lastName: '',
         headline: '',
@@ -85,6 +90,7 @@ export default function ClientMasterFileModal({ isOpen, onClose, engagement, ini
                 isaPercentage: (engagement.isaPercentage || 0) * 100,
                 monthlyRetainer: engagement.monthlyRetainer || 0,
                 pod: engagement.profile?.pod || '',
+                podId: engagement.profile?.podId || '', // Hydrate ID
                 firstName: engagement.profile?.firstName || '',
                 lastName: engagement.profile?.lastName || '',
                 headline: engagement.profile?.headline || '',
@@ -131,6 +137,7 @@ export default function ClientMasterFileModal({ isOpen, onClose, engagement, ini
                 isaPercentage: Number(formData.isaPercentage) / 100,
                 monthlyRetainer: Number(formData.monthlyRetainer),
                 'profile.pod': formData.pod,
+                'profile.podId': formData.podId, // Save Stable ID
                 'profile.headline': formData.headline,
                 'profile.bio_short': formData.bio_short,
 
@@ -303,6 +310,7 @@ export default function ClientMasterFileModal({ isOpen, onClose, engagement, ini
                                                 <option value="placed">Placed</option>
                                                 <option value="paused">Paused</option>
                                                 <option value="alumni">Alumni</option>
+                                                <option value="dropped">Dropped</option>
                                             </select>
                                         </div>
                                         <div>
@@ -336,17 +344,28 @@ export default function ClientMasterFileModal({ isOpen, onClose, engagement, ini
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Pod</label>
+                                            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Pod Assignment</label>
                                             <select
                                                 className="w-full p-2 border border-slate-300 rounded-sm text-sm"
-                                                value={formData.pod}
-                                                onChange={e => setFormData({ ...formData, pod: e.target.value })}
+                                                value={formData.podId}
+                                                onChange={e => {
+                                                    const selectedId = e.target.value;
+                                                    const selectedPod = pods?.find((p: any) => p.id === selectedId);
+                                                    setFormData({
+                                                        ...formData,
+                                                        podId: selectedId,
+                                                        pod: selectedPod?.name || '' // Update display label automatically
+                                                    });
+                                                }}
                                             >
-                                                <option value="FinTech">FinTech</option>
-                                                <option value="Crypto">Crypto</option>
-                                                <option value="Consumer">Consumer</option>
-                                                <option value="Enterprise">Enterprise</option>
+                                                <option value="">-- Select Pod --</option>
+                                                {pods?.map((p: any) => (
+                                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                                ))}
                                             </select>
+                                            <div className="text-[10px] text-slate-400 mt-1">
+                                                ID: {formData.podId || 'None'}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
