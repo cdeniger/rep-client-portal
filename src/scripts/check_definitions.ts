@@ -1,1 +1,0 @@
-import { db } from '../lib/firebase'; import { collection, getDocs } from 'firebase/firestore'; (async () => { const snapshot = await getDocs(collection(db, 'activity_definitions')); console.log('Count:', snapshot.size); snapshot.forEach(doc => console.log(doc.id, doc.data())); })()
