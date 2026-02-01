@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is logged in
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Portal Collections
+    // ----------------------------------------------------
+    
+    // Users Collection
+    // Fix for Jordan: Allow 'read' (get and list) for all authenticated users.
+    // This supports the "lookup by email" fallback in useUserProfile hook.
+    // Write access restricted to owner.
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Core Business Data
+    
+    match /engagements/{engagementId} {
+      allow read, write: if isAuthenticated();
+    }
+    
+    match /job_pursuits/{pursuitId} {
+      allow read, write: if isAuthenticated();
+    }
+    
+    match /job_targets/{targetId} {
+        allow read, write: if isAuthenticated();
+    }
+
+    match /companies/{companyId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /contacts/{contactId} {
+      allow read, write: if isAuthenticated();
+    }
+    
+    match /activities/{activityId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /intake_responses/{responseId} {
+      allow read, write: if isAuthenticated();
+    }
+    
+    match /pods/{podId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Website Collections (Public Inputs)
+    // ----------------------------------------------------
+
+    match /applications/{applicationId} {
+      allow create: if true;
+      allow read, update, delete: if isAuthenticated();
+    }
+
+    match /leads/{leadId} {
+      allow create: if true;
+      allow read, update, delete: if isAuthenticated();
+    }
+    
+    match /job_recommendations/{recId} {
+        allow read, write: if isAuthenticated();
+    }
+  }
+}

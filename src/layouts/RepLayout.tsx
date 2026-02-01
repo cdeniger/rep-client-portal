@@ -17,7 +17,8 @@ import {
     Activity,
     Kanban,
     Menu,
-    X
+    X,
+    Inbox
 } from 'lucide-react';
 import Logo from '../components/ui/Logo';
 
@@ -27,6 +28,7 @@ export default function RepLayout() {
     const { document: userProfile } = useDocument('users', user?.uid);
     const isAdmin = userProfile?.role === 'admin';
     const [pendingCount, setPendingCount] = useState(0);
+    const [applicationCount, setApplicationCount] = useState(0);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     // Listen for global pending_rep recommendations
@@ -36,6 +38,17 @@ export default function RepLayout() {
             setPendingCount(snapshot.size);
         }, (error) => {
             console.error("Error listening to pending recs:", error);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    // Listen for new applications
+    useEffect(() => {
+        const q = query(collection(db, 'applications'), where('status', '==', 'new'));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            setApplicationCount(snapshot.size);
+        }, (error) => {
+            console.error("Error listening to new applications:", error);
         });
         return () => unsubscribe();
     }, []);
@@ -71,6 +84,13 @@ export default function RepLayout() {
                     <NavItem to="/rep/companies" icon={Building2} label="Companies" onClick={onItemClick} />
                     <NavItem to="/rep/activities" icon={Activity} label="Activities" onClick={onItemClick} />
                     <NavItem to="/rep/sales-pipeline" icon={Kanban} label="Pipelines" onClick={onItemClick} />
+                </div>
+
+                <div className="pt-4 mt-4 border-t border-white/10">
+                    <div className="px-3 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest block">
+                        Origination
+                    </div>
+                    <NavItem to="/rep/applications" icon={Inbox} label="Applications" badge={applicationCount} onClick={onItemClick} />
                 </div>
 
                 {isAdmin && (

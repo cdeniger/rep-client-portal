@@ -11,6 +11,7 @@ const ISA_PRICE_ID = 'price_isa_placeholder'; // This would come from config/env
 
 export { onIntakeCreated } from './triggers/onIntakeCreated';
 export { provisionClient } from './provisionClient';
+export { onApplicationCreate } from './triggers/onApplicationCreate';
 
 
 export const onClientPlaced = functions.firestore

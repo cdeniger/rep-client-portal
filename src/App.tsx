@@ -27,6 +27,7 @@ import ActivityTypes from './pages/admin/ActivityTypes';
 import Activities from './pages/Activities';
 import PodManager from './pages/admin/PodManager';
 import SalesPipeline from './pages/internal/SalesPipeline';
+import Applications from './pages/rep/applications/Applications';
 
 function App() {
   console.log("App Rendering...");
@@ -59,6 +60,7 @@ function App() {
               <Route path="activities" element={<Activities />} />
               <Route path="sales-pipeline" element={<SalesPipeline />} />
               <Route path="pending-recs" element={<PendingRecs />} />
+              <Route path="applications" element={<Applications />} />
               <Route path="deals" element={<div className="p-8 text-slate-500">Deal Desk Placeholder</div>} />
               <Route path="invoices" element={<div className="p-8 text-slate-500">Invoices Placeholder</div>} />
             </Route>

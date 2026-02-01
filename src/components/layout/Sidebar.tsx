@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, Target, Radio, DollarSign, FileText, LogOut, ShieldAlert, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Target, Radio, DollarSign, FileText, LogOut, ShieldAlert, Sparkles, Users } from 'lucide-react';
 import Logo from '../ui/Logo';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { auth, db } from '../../lib/firebase';
@@ -100,6 +100,23 @@ export default function Sidebar({ onItemClick }: { onItemClick?: () => void }) {
                                         </NavLink>
                                     </li>
                                 ))}
+                                {(isRep || userProfile?.role === 'admin') && (
+                                    <li>
+                                        <NavLink
+                                            to="/rep/applications"
+                                            onClick={onItemClick}
+                                            className={({ isActive }) =>
+                                                `group flex gap-x-3 rounded-sm p-2 text-sm leading-6 font-semibold tracking-wide transition-colors ${isActive
+                                                    ? 'bg-signal-orange text-white'
+                                                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                                }`
+                                            }
+                                        >
+                                            <Users className="h-5 w-5 shrink-0" aria-hidden="true" />
+                                            Applications
+                                        </NavLink>
+                                    </li>
+                                )}
                             </ul>
                         </li>
 

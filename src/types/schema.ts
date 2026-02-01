@@ -334,3 +334,26 @@ export interface Engagement {
         workStyle: 'remote' | 'hybrid' | 'onsite';
     };
 }
+
+export interface Application {
+    id: string; // Document ID
+    fullName: string;
+    email: string;
+    phone?: string;
+    linkedinUrl?: string;
+
+    // Professional
+    currentSalary?: string;
+    targetComp?: string;
+    experience?: string;
+    employmentStatus?: string;
+    resumeUrl?: string;
+
+    // Motivation
+    primaryMotivation?: string;
+    pipelineVelocity?: string;
+
+    // Metadata
+    status: 'new' | 'contacted' | 'archived';
+    submittedAt: Timestamp;
+}
