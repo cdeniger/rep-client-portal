@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onClientPlaced = exports.provisionClient = exports.onIntakeCreated = void 0;
+exports.onClientPlaced = exports.onApplicationCreate = exports.provisionClient = exports.onIntakeCreated = void 0;
 const functions = __importStar(require("firebase-functions"));
 const admin = __importStar(require("firebase-admin"));
 const stripeService_1 = require("./services/stripeService");
@@ -32,10 +32,13 @@ const db = admin.firestore();
 const stripeService = new stripeService_1.StripeService();
 // Constants
 const ISA_PRICE_ID = 'price_isa_placeholder'; // This would come from config/env
+// Triggers
 var onIntakeCreated_1 = require("./triggers/onIntakeCreated");
 Object.defineProperty(exports, "onIntakeCreated", { enumerable: true, get: function () { return onIntakeCreated_1.onIntakeCreated; } });
 var provisionClient_1 = require("./provisionClient");
 Object.defineProperty(exports, "provisionClient", { enumerable: true, get: function () { return provisionClient_1.provisionClient; } });
+var onApplicationCreate_1 = require("./triggers/onApplicationCreate");
+Object.defineProperty(exports, "onApplicationCreate", { enumerable: true, get: function () { return onApplicationCreate_1.onApplicationCreate; } });
 exports.onClientPlaced = functions.firestore
     .document('users/{userId}')
     .onUpdate(async (change, context) => {
