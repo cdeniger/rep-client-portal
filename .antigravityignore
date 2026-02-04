@@ -1,0 +1,13 @@
+# Antigravity Ignore Rules
+# This file decouples the Agent's visibility from .gitignore
+# It allows the Agent to see files that might be ignored by Git (like .env)
+
+# System & Deps
+node_modules/
+.git/
+.DS_Store
+dist/
+coverage/
+
+# Explicitly allow .env
+!.env

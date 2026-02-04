@@ -119,6 +119,15 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
                         </div>
                     </DetailSection>
 
+                    {/* Ideal Target */}
+                    {application.idealTarget && (
+                        <DetailSection title="Ideal Job Target" icon={Briefcase}>
+                            <div className="text-gray-100 font-medium whitespace-pre-wrap text-sm leading-relaxed">
+                                {application.idealTarget}
+                            </div>
+                        </DetailSection>
+                    )}
+
                     {/* Resume */}
                     {application.resumeUrl && (
                         <div className="mt-6 flex justify-end">

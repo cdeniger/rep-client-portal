@@ -68,6 +68,12 @@ const getInternalNotificationEmail = (application) => {
                 <span class="value">${primaryMotivation || 'N/A'}</span>
             </div>
 
+            ${application.idealTarget ? `
+            <div class="field">
+                <span class="label">Ideal Job Target</span>
+                <span class="value" style="white-space: pre-wrap;">${application.idealTarget}</span>
+            </div>` : ''}
+
              <div class="field">
                 <span class="label">Experience</span>
                 <span class="value">${experience || 'N/A'}</span>

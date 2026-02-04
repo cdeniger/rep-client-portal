@@ -351,6 +351,7 @@ export interface Application {
 
     // Motivation
     primaryMotivation?: string;
+    idealTarget?: string;
     pipelineVelocity?: string;
 
     // Metadata
