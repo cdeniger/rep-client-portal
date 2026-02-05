@@ -3,6 +3,7 @@ import { collection, query, orderBy, onSnapshot, updateDoc, doc } from 'firebase
 import { db } from '../../../lib/firebase';
 import type { Application } from '../../../types/schema';
 import { Search, Eye, Archive, CheckCircle, Inbox } from 'lucide-react';
+import { ApplicationResponseModal } from '../../../components/applications/ApplicationResponseModal';
 import { ApplicationDetailsModal } from '../../../components/applications/ApplicationDetailsModal';
 
 const Applications = () => {
@@ -11,6 +12,8 @@ const Applications = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedApp, setSelectedApp] = useState<Application | null>(null);
     const [statusFilter, setStatusFilter] = useState<'all' | 'new' | 'contacted' | 'archived'>('all');
+    const [replyModalOpen, setReplyModalOpen] = useState(false);
+    const [replyApplication, setReplyApplication] = useState<Application | null>(null);
 
     useEffect(() => {
         // Real-time listener for applications
@@ -42,6 +45,12 @@ const Applications = () => {
         } catch (error) {
             console.error("Error updating status:", error);
         }
+    };
+
+    const handleReply = (e: React.MouseEvent, application: Application) => {
+        e.stopPropagation();
+        setReplyApplication(application);
+        setReplyModalOpen(true);
     };
 
     const filteredApps = applications.filter(app => {
@@ -165,8 +174,14 @@ const Applications = () => {
                                     <td className="p-5 text-right">
                                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button
+                                                onClick={(e) => handleReply(e, app)}
+                                                className="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-md text-xs font-bold transition-colors"
+                                            >
+                                                Reply
+                                            </button>
+                                            <button
                                                 onClick={() => setSelectedApp(app)}
-                                                className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-md transition-colors"
+                                                className="p-1 px-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-md transition-colors"
                                                 title="View Details"
                                             >
                                                 <Eye size={16} />
@@ -199,6 +214,17 @@ const Applications = () => {
                     </tbody>
                 </table>
             </div>
+
+            {replyApplication && (
+                <ApplicationResponseModal
+                    isOpen={replyModalOpen}
+                    onClose={() => {
+                        setReplyModalOpen(false);
+                        setReplyApplication(null);
+                    }}
+                    application={replyApplication}
+                />
+            )}
 
             {selectedApp && (
                 <ApplicationDetailsModal

@@ -1,5 +1,9 @@
 import * as functions from 'firebase-functions/v1';
 import * as admin from 'firebase-admin';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+
 import { StripeService } from './services/stripeService';
 
 admin.initializeApp();
@@ -13,6 +17,8 @@ const ISA_PRICE_ID = 'price_isa_placeholder'; // This would come from config/env
 export { onIntakeCreated } from './triggers/onIntakeCreated';
 export { provisionClient } from './provisionClient';
 export { onApplicationCreate } from './triggers/onApplicationCreate';
+export { sendApplicationResponse } from './triggers/sendApplicationResponse';
+export { generateApplicationDraftTrigger as generateApplicationDraft } from './triggers/generateApplicationDraft';
 
 
 export const onClientPlaced = functions.firestore

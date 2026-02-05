@@ -100,7 +100,7 @@ class StripeService {
         return await cpfStripe.subscriptions.create({
             customer: customerId,
             items: [{ price: priceId }],
-            billing_cycle_anchor: startDate,
+            billing_cycle_anchor: startDate, // Start 30 days later logic would go here
             proration_behavior: 'none',
         });
     }

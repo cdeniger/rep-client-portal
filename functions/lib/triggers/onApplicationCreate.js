@@ -15,13 +15,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.onApplicationCreate = void 0;
 const functions = __importStar(require("firebase-functions/v1"));
@@ -51,9 +61,9 @@ exports.onApplicationCreate = functions.firestore
     // 4. Send Acknowledgement (To Candidate) - FROM the Advisor
     const candidateEmailPromise = (0, emailService_1.sendEmail)({
         to: application.email,
-        from: `"${advisor.name}" <hello@repteam.com>`,
-        replyTo: advisor.email,
-        subject: `Re: Your application to Rep.`,
+        from: `"${advisor.name}" <hello@repteam.com>`, // authenticated sender, but friendly name
+        replyTo: advisor.email, // replies go directly to the Rep
+        subject: `Re: Your application to Rep.`, // "Re:" implies personal follow-up
         html: candidateHtml
     });
     try {
@@ -61,7 +71,7 @@ exports.onApplicationCreate = functions.firestore
         console.log("Emails sent successfully.");
         // 5. Update Status & Metadata
         await snap.ref.update({
-            status: 'new',
+            status: 'new', // Ensure initialized
             assignedAdvisorId: advisor.id,
             emailStats: {
                 sentAt: admin.firestore.FieldValue.serverTimestamp(),

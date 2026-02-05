@@ -34,38 +34,33 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendEmail = void 0;
+exports.sendResponseEmail = void 0;
 const resend_1 = require("resend");
-const functions = __importStar(require("firebase-functions"));
-// Initialize Resend with API Key from Firebase Config
-// Config commands: firebase functions:config:set resend.api_key="re_123..."
-const resend = new resend_1.Resend(((_a = functions.config().resend) === null || _a === void 0 ? void 0 : _a.api_key) || process.env.RESEND_API_KEY);
-const sendEmail = async (options) => {
-    var _a;
+const functions = __importStar(require("firebase-functions/v1"));
+// Initialize Resend
+const resend = new resend_1.Resend(process.env.RESEND_API_KEY || ((_a = functions.config().resend) === null || _a === void 0 ? void 0 : _a.api_key));
+const sendResponseEmail = async (options) => {
     try {
-        // Validation: Verify API Key exists
-        if (!((_a = functions.config().resend) === null || _a === void 0 ? void 0 : _a.api_key) && !process.env.RESEND_API_KEY) {
-            console.error("Resend API Key is missing. Email will not be sent.");
-            return false;
-        }
+        const { to, subject, htmlBody, replyToName, replyToEmail } = options;
         const { data, error } = await resend.emails.send({
-            from: options.from || 'Rep Client Portal <hello@repteam.com>', // MUST be a verified domain
-            to: [options.to],
-            replyTo: options.replyTo,
-            subject: options.subject,
-            html: options.html,
+            from: `"${replyToName}" <hello@repteam.com>`, // Authorized domain sender
+            to: [to],
+            replyTo: replyToEmail, // Direct reply goes to the Rep
+            bcc: [replyToEmail], // Advisor gets a copy for their records
+            subject: subject,
+            html: htmlBody,
         });
         if (error) {
-            console.error("Error sending email via Resend:", error);
-            return false;
+            console.error("Error sending response email:", error);
+            return { success: false, error };
         }
-        console.log("Email sent successfully:", data === null || data === void 0 ? void 0 : data.id);
-        return true;
+        console.log("Response email sent successfully:", data === null || data === void 0 ? void 0 : data.id);
+        return { success: true, id: data === null || data === void 0 ? void 0 : data.id };
     }
-    catch (error) {
-        console.error("Exception in emailService:", error);
-        return false;
+    catch (err) {
+        console.error("Exception in sendResponseEmail:", err);
+        return { success: false, error: err };
     }
 };
-exports.sendEmail = sendEmail;
-//# sourceMappingURL=emailService.js.map
+exports.sendResponseEmail = sendResponseEmail;
+//# sourceMappingURL=responseService.js.map

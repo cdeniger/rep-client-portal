@@ -15,13 +15,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.onIntakeCreated = void 0;
 const functions = __importStar(require("firebase-functions/v1"));
@@ -52,15 +62,15 @@ exports.onIntakeCreated = functions.firestore
         // We assume intakeData matches the expected IntakeResponse structure
         const newEngagement = {
             userId: userId,
-            status: 'active',
+            status: 'active', // Default status
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
             // Profile Mapping
             profile: {
-                firstName: (_a = intakeData.profile) === null || _a === void 0 ? void 0 : _a.firstName,
+                firstName: (_a = intakeData.profile) === null || _a === void 0 ? void 0 : _a.firstName, // Assuming these might exist in intake, or we handle them gracefully
                 lastName: (_b = intakeData.profile) === null || _b === void 0 ? void 0 : _b.lastName,
-                headline: ((_c = intakeData.profile) === null || _c === void 0 ? void 0 : _c.headline) || ((_d = intakeData.profile) === null || _d === void 0 ? void 0 : _d.currentTitle),
-                pod: ((_e = intakeData.profile) === null || _e === void 0 ? void 0 : _e.industry) || 'General',
+                headline: ((_c = intakeData.profile) === null || _c === void 0 ? void 0 : _c.headline) || ((_d = intakeData.profile) === null || _d === void 0 ? void 0 : _d.currentTitle), // Fallback
+                pod: ((_e = intakeData.profile) === null || _e === void 0 ? void 0 : _e.industry) || 'General', // Fallback
                 // Direct Hydration
                 currentTitle: (_f = intakeData.profile) === null || _f === void 0 ? void 0 : _f.currentTitle,
                 currentCompany: (_g = intakeData.profile) === null || _g === void 0 ? void 0 : _g.currentCompany,

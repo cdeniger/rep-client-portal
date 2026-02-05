@@ -15,17 +15,29 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onClientPlaced = exports.onApplicationCreate = exports.provisionClient = exports.onIntakeCreated = void 0;
+exports.onClientPlaced = exports.generateApplicationDraft = exports.sendApplicationResponse = exports.onApplicationCreate = exports.provisionClient = exports.onIntakeCreated = void 0;
 const functions = __importStar(require("firebase-functions/v1"));
 const admin = __importStar(require("firebase-admin"));
+const dotenv = __importStar(require("dotenv"));
+dotenv.config();
 const stripeService_1 = require("./services/stripeService");
 admin.initializeApp();
 const db = admin.firestore();
@@ -39,6 +51,10 @@ var provisionClient_1 = require("./provisionClient");
 Object.defineProperty(exports, "provisionClient", { enumerable: true, get: function () { return provisionClient_1.provisionClient; } });
 var onApplicationCreate_1 = require("./triggers/onApplicationCreate");
 Object.defineProperty(exports, "onApplicationCreate", { enumerable: true, get: function () { return onApplicationCreate_1.onApplicationCreate; } });
+var sendApplicationResponse_1 = require("./triggers/sendApplicationResponse");
+Object.defineProperty(exports, "sendApplicationResponse", { enumerable: true, get: function () { return sendApplicationResponse_1.sendApplicationResponse; } });
+var generateApplicationDraft_1 = require("./triggers/generateApplicationDraft");
+Object.defineProperty(exports, "generateApplicationDraft", { enumerable: true, get: function () { return generateApplicationDraft_1.generateApplicationDraftTrigger; } });
 exports.onClientPlaced = functions.firestore
     .document('users/{userId}')
     .onUpdate(async (change, context) => {
@@ -88,7 +104,7 @@ exports.onClientPlaced = functions.firestore
             // 5. Update Firestore
             await subDoc.ref.update({
                 plan: 'isa_agreement',
-                status: 'active',
+                status: 'active', // or 'scheduled'
                 cpfStripeCustomerId: cpfCustomerId,
                 cpfStripeSubscriptionId: isaSub.id,
                 updatedAt: admin.firestore.FieldValue.serverTimestamp()
