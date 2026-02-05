@@ -1,5 +1,5 @@
 # 🗺️ Project Codebase Map
-> **Last Updated:** Wed Feb  4 12:50:31 MST 2026
+> **Last Updated:** Wed Feb  4 21:47:44 MST 2026
 > **Auto-Generated:** Do not edit manually. Run `.agent/scripts/update_map.py` to refresh.
 
 ## 🏗️ high-Level Structure
@@ -74,6 +74,12 @@
 │   │   ├── update_map.py (.py)
 │   │   └── verify_all.py (.py)
 │   ├── skills
+│   │   ├── ai-integration
+│   │   │   ├── SKILL.md
+│   │   │   ├── scripts
+│   │   │   │   └── diagnose_key.js (.js)
+│   │   │   └── templates
+│   │   │       └── aiService.ts (.ts)
 │   │   ├── api-patterns
 │   │   │   ├── SKILL.md
 │   │   │   ├── api-style.md
@@ -343,6 +349,7 @@
 ├── firestore.indexes.json
 ├── firestore.rules 🔑
 ├── functions
+│   ├── .env
 │   ├── .env.example
 │   ├── lib
 │   │   ├── config
@@ -359,8 +366,15 @@
 │   │   ├── restore_alex.js (.js)
 │   │   ├── restore_alex.js.map
 │   │   ├── services
+│   │   │   ├── aiService.js (.js)
+│   │   │   ├── aiService.js.map
+│   │   │   ├── ats
+│   │   │   │   ├── simulateAts.js (.js)
+│   │   │   │   └── simulateAts.js.map
 │   │   │   ├── emailService.js (.js)
 │   │   │   ├── emailService.js.map
+│   │   │   ├── responseService.js (.js)
+│   │   │   ├── responseService.js.map
 │   │   │   ├── stripeService.js (.js)
 │   │   │   └── stripeService.js.map
 │   │   ├── templates
@@ -368,12 +382,28 @@
 │   │   │   ├── applicantAutoResponse.js.map
 │   │   │   ├── internalNotification.js (.js)
 │   │   │   └── internalNotification.js.map
-│   │   └── triggers
-│   │       ├── onApplicationCreate.js (.js)
-│   │       ├── onApplicationCreate.js.map
-│   │       ├── onIntakeCreated.js (.js)
-│   │       └── onIntakeCreated.js.map
+│   │   ├── test-pdf.js (.js)
+│   │   ├── test-pdf.js.map
+│   │   ├── triggers
+│   │   │   ├── generateApplicationDraft.js (.js)
+│   │   │   ├── generateApplicationDraft.js.map
+│   │   │   ├── onApplicationCreate.js (.js)
+│   │   │   ├── onApplicationCreate.js.map
+│   │   │   ├── onClientPlaced.js (.js)
+│   │   │   ├── onClientPlaced.js.map
+│   │   │   ├── onIntakeCreated.js (.js)
+│   │   │   ├── onIntakeCreated.js.map
+│   │   │   ├── runAtsSimulation.js (.js)
+│   │   │   ├── runAtsSimulation.js.map
+│   │   │   ├── sendApplicationResponse.js (.js)
+│   │   │   └── sendApplicationResponse.js.map
+│   │   └── types
+│   │       ├── schema.js (.js)
+│   │       └── schema.js.map
 │   ├── package.json
+│   ├── package.json.bak
+│   ├── scripts
+│   │   └── diagnose_gemini.js (.js)
 │   ├── src
 │   │   ├── config
 │   │   │   └── advisors.ts (.ts)
@@ -381,15 +411,28 @@
 │   │   ├── provisionClient.ts (.ts)
 │   │   ├── restore_alex.ts (.ts)
 │   │   ├── services
+│   │   │   ├── aiService.ts (.ts)
+│   │   │   ├── ats
+│   │   │   │   ├── README.md
+│   │   │   │   └── simulateAts.ts (.ts)
 │   │   │   ├── emailService.ts (.ts)
+│   │   │   ├── responseService.ts (.ts)
 │   │   │   └── stripeService.ts (.ts)
 │   │   ├── templates
 │   │   │   ├── applicantAutoResponse.ts (.ts)
 │   │   │   └── internalNotification.ts (.ts)
-│   │   └── triggers
-│   │       ├── onApplicationCreate.ts (.ts)
-│   │       └── onIntakeCreated.ts (.ts)
+│   │   ├── test-pdf.js (.js)
+│   │   ├── triggers
+│   │   │   ├── generateApplicationDraft.ts (.ts)
+│   │   │   ├── onApplicationCreate.ts (.ts)
+│   │   │   ├── onClientPlaced.ts (.ts)
+│   │   │   ├── onIntakeCreated.ts (.ts)
+│   │   │   ├── runAtsSimulation.ts (.ts)
+│   │   │   └── sendApplicationResponse.ts (.ts)
+│   │   └── types
+│   │       └── schema.ts 🔑 (.ts)
 │   └── tsconfig.json
+├── health_related_resume25.pdf
 ├── index.html
 ├── package.json
 ├── postcss.config.js (.js)
@@ -414,7 +457,11 @@
 │   │   │       ├── StageChangeCard.tsx (.tsx)
 │   │   │       └── StandardCard.tsx (.tsx)
 │   │   ├── applications
-│   │   │   └── ApplicationDetailsModal.tsx (.tsx)
+│   │   │   ├── ApplicationContextPanel.tsx (.tsx)
+│   │   │   ├── ApplicationDetailsModal.tsx (.tsx)
+│   │   │   └── ApplicationResponseModal.tsx (.tsx)
+│   │   ├── ats
+│   │   │   └── AtsSimulatorModal.tsx (.tsx)
 │   │   ├── auth
 │   │   │   ├── AdminGuard.tsx (.tsx)
 │   │   │   ├── PrivateRoute.tsx (.tsx)
@@ -430,6 +477,8 @@
 │   │   │   └── LocationManager.tsx (.tsx)
 │   │   ├── dev
 │   │   │   └── DevTools.tsx (.tsx)
+│   │   ├── email
+│   │   │   └── EmailComposer.tsx (.tsx)
 │   │   ├── forms
 │   │   │   ├── DiagnosticForm.tsx (.tsx)
 │   │   │   ├── OpportunityForm.tsx (.tsx)

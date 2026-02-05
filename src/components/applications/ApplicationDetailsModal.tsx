@@ -1,6 +1,7 @@
-import React from 'react';
-import { X, ExternalLink, Calendar, DollarSign, Briefcase, User, FileText, Zap } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, ExternalLink, Calendar, DollarSign, Briefcase, User, FileText, Zap, Shield } from 'lucide-react';
 import type { Application } from '../../types/schema';
+import AtsSimulatorModal from '../ats/AtsSimulatorModal';
 
 interface ApplicationDetailsModalProps {
     application: Application;
@@ -31,6 +32,8 @@ const Field = ({ label, value }: { label: string; value?: string }) => {
 };
 
 export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = ({ application, isOpen, onClose }) => {
+    const [showAtsSimulator, setShowAtsSimulator] = useState(false);
+
     if (!isOpen) return null;
 
     const formatDate = (timestamp: any) => {
@@ -128,23 +131,43 @@ export const ApplicationDetailsModal: React.FC<ApplicationDetailsModalProps> = (
                         </DetailSection>
                     )}
 
-                    {/* Resume */}
-                    {application.resumeUrl && (
-                        <div className="mt-6 flex justify-end">
-                            <a
-                                href={application.resumeUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-600 rounded-lg text-sm font-medium text-gray-200 transition-all"
-                            >
-                                <FileText size={16} />
-                                View Resume PDF
-                            </a>
+                    {/* Resume & Actions */}
+                    <div className="mt-6 flex justify-between items-center pt-6 border-t border-gray-800">
+                        <div>
+                            {/* Placeholder for future left-side actions */}
                         </div>
-                    )}
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setShowAtsSimulator(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-600 hover:border-signal-orange text-gray-200 hover:text-white rounded-lg text-sm font-bold tracking-wide transition-all group"
+                            >
+                                <Shield size={16} className="text-gray-400 group-hover:text-signal-orange transition-colors" />
+                                Run ATS Audit
+                            </button>
+
+                            {application.resumeUrl && (
+                                <a
+                                    href={application.resumeUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 px-4 py-2 bg-oxford-green hover:bg-opacity-90 border border-transparent rounded-lg text-sm font-bold text-white transition-all shadow-md hover:shadow-lg"
+                                >
+                                    <FileText size={16} />
+                                    View PDF
+                                </a>
+                            )}
+                        </div>
+                    </div>
 
                 </div>
             </div>
+
+            {/* ATS Simulator Modal */}
+            <AtsSimulatorModal
+                isOpen={showAtsSimulator}
+                onClose={() => setShowAtsSimulator(false)}
+                application={application}
+            />
         </div>
     );
 };

@@ -33,17 +33,11 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onClientPlaced = exports.generateApplicationDraft = exports.sendApplicationResponse = exports.onApplicationCreate = exports.provisionClient = exports.onIntakeCreated = void 0;
-const functions = __importStar(require("firebase-functions/v1"));
+exports.runAtsSimulation = exports.onClientPlaced = exports.generateApplicationDraft = exports.sendApplicationResponse = exports.onApplicationCreate = exports.provisionClient = exports.onIntakeCreated = void 0;
 const admin = __importStar(require("firebase-admin"));
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
-const stripeService_1 = require("./services/stripeService");
 admin.initializeApp();
-const db = admin.firestore();
-const stripeService = new stripeService_1.StripeService();
-// Constants
-const ISA_PRICE_ID = 'price_isa_placeholder'; // This would come from config/env
 // Triggers
 var onIntakeCreated_1 = require("./triggers/onIntakeCreated");
 Object.defineProperty(exports, "onIntakeCreated", { enumerable: true, get: function () { return onIntakeCreated_1.onIntakeCreated; } });
@@ -55,66 +49,8 @@ var sendApplicationResponse_1 = require("./triggers/sendApplicationResponse");
 Object.defineProperty(exports, "sendApplicationResponse", { enumerable: true, get: function () { return sendApplicationResponse_1.sendApplicationResponse; } });
 var generateApplicationDraft_1 = require("./triggers/generateApplicationDraft");
 Object.defineProperty(exports, "generateApplicationDraft", { enumerable: true, get: function () { return generateApplicationDraft_1.generateApplicationDraftTrigger; } });
-exports.onClientPlaced = functions.firestore
-    .document('users/{userId}')
-    .onUpdate(async (change, context) => {
-    var _a, _b;
-    const before = change.before.data();
-    const after = change.after.data();
-    // Check if status changed to 'placed'
-    if (before.status !== 'placed' && after.status === 'placed') {
-        const userId = context.params.userId;
-        console.log(`Processing placement for user ${userId}`);
-        try {
-            // 1. Get Financial Subscription Doc
-            const subscriptionQuery = await db.collection('financial_subscriptions')
-                .where('userId', '==', db.doc(`users/${userId}`))
-                .limit(1)
-                .get();
-            if (subscriptionQuery.empty) {
-                console.error(`No financial subscription found for user ${userId}`);
-                return;
-            }
-            const subDoc = subscriptionQuery.docs[0];
-            const subData = subDoc.data();
-            const repStripeCustomerId = subData.stripeCustomerId;
-            const repSubscriptionId = subData.stripeSubscriptionId;
-            const repPaymentMethodId = subData.defaultPaymentMethodId; // Assuming we stored this
-            if (!repStripeCustomerId || !repSubscriptionId || !repPaymentMethodId) {
-                console.error("Missing Stripe data in subscription doc");
-                return;
-            }
-            // 2. Cancel Retainer on Rep Account
-            console.log(`Canceling Retainer sub: ${repSubscriptionId}`);
-            await stripeService.cancelRetainerSubscription(repSubscriptionId);
-            // 3. Clone Payment Method to CPF Services
-            // First, ensure/find CPF Customer. 
-            // Ideally we stored cpfCustomerId if it existed, or we create one now matching the email.
-            // For now, we'll create a new customer on CPF for this user.
-            const userEmail = ((_a = after.profile) === null || _a === void 0 ? void 0 : _a.email) || `user_${userId}@example.com`; // Fallback
-            const newCpfCustomer = await stripeService.createCpfCustomer(userEmail, ((_b = after.profile) === null || _b === void 0 ? void 0 : _b.name) || 'Valued Client');
-            const cpfCustomerId = newCpfCustomer.id;
-            console.log(`Cloning Payment Method ${repPaymentMethodId} to CPF Customer ${cpfCustomerId}`);
-            const cpfPaymentMethod = await stripeService.clonePaymentMethodToCpf(repPaymentMethodId, cpfCustomerId);
-            // 4. Create ISA Subscription on CPF Services
-            // Start date: 30 days from now? 
-            const startDate = Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60);
-            console.log(`Creating ISA Subscription starting at ${startDate}`);
-            const isaSub = await stripeService.createIsaSubscription(cpfCustomerId, ISA_PRICE_ID, cpfPaymentMethod.id, startDate);
-            // 5. Update Firestore
-            await subDoc.ref.update({
-                plan: 'isa_agreement',
-                status: 'active', // or 'scheduled'
-                cpfStripeCustomerId: cpfCustomerId,
-                cpfStripeSubscriptionId: isaSub.id,
-                updatedAt: admin.firestore.FieldValue.serverTimestamp()
-            });
-            console.log("Token Transfer and ISA Activation Complete.");
-        }
-        catch (error) {
-            console.error("Error in onClientPlaced trigger:", error);
-            // TODO: Implement alert/notification for manual intervention
-        }
-    }
-});
+var onClientPlaced_1 = require("./triggers/onClientPlaced"); // Ensure this exists or was inline?
+Object.defineProperty(exports, "onClientPlaced", { enumerable: true, get: function () { return onClientPlaced_1.onClientPlaced; } });
+var runAtsSimulation_1 = require("./triggers/runAtsSimulation");
+Object.defineProperty(exports, "runAtsSimulation", { enumerable: true, get: function () { return runAtsSimulation_1.runAtsSimulation; } });
 //# sourceMappingURL=index.js.map
